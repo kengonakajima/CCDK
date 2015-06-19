@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright 2015 Shinra Technologies Inc.
 
 import logging
 import json
@@ -20,12 +21,116 @@ import subprocess
 
 logger = logging.getLogger(__name__)
 
-# By default, shinra.py is installed in MCS_PATH/python
-MCS_PATH=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONF_FILE_NAME = 'Configuration.json'
 MANIFEST_FILE_NAME = 'Manifest.txt'
-STORE_PATH='C:\\Shinra\\Local'
-ARCHIVE_PATH='C:\\Shinra\\UserFiles'
+
+default_settings = {
+	'StorePath': 'C:\\Shinra\\Local',
+	'ArchivePath': 'C:\\Shinra\\UserFiles',
+	'GamesInstallDir': 'C:\\Shinra\\Games',
+	'DisplayStatistics': False,
+	'EncoderThreads': 2,
+	'MaxEncodingFrames': 5,
+	'MaxRenderingFrames': 3,
+	'ShowWindow': False,
+	# By default, shinra.py is installed in MCS_PATH/python
+	'MCSPath' : os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+	'OverwriteGameInstall' : False,
+	'CleanupOnInstall' : False,
+}
+
+userDir = os.environ.get('APPDATA')
+if not userDir:
+	userDir = os.environ.get('HOME')
+if not userDir:
+	userDir = "."
+configurationFile = "%s\\Shinra\\MCS\\Settings.json" % userDir
+
+MCS_DLL_MAPPING = {
+	'D3D9.dll': 'ShimD3D9.dll',
+	'D3D11.dll': 'ShimD3D11.dll',
+	'DXGI.dll': 'ShimDXGI.dll',
+	'XInput1_3.dll': 'ShimXInput.dll',
+	'XInput1_4.dll': 'ShimXInput.dll',
+	'XInput9_1_0.dll': 'ShimXInput.dll',
+	'CloudCoreClient.dll': 'CloudCoreClient.dll',
+	'd3dcompiler_47.dll': 'd3dcompiler_47.dll',
+}
+
+def getMCSSettings():
+	logger.debug("Loading MCS configuration %s", configurationFile)
+	conf = None
+	if os.path.exists(configurationFile):
+		try:
+			with open(configurationFile, "r") as f:
+				conf = json.load(f)
+		except:
+			logger.exception("Failed to parse configuration file %s.", configurationFile)
+	if conf:
+		# if there are some missing fields in the user's conf, make sure we get the default value.
+		tmp = default_settings.copy()
+		tmp.update(conf)
+		conf = tmp
+	else:
+		conf = default_settings
+	return conf
+
+def setMCSSettings(conf):
+	prevConf = getMCSSettings()
+	logger.debug("Setting MCS configuration: %s", conf)
+	prevConf.update(conf)
+	confDir = os.path.dirname(configurationFile)
+	if not os.path.exists(confDir):
+		os.makedirs(confDir)
+	with open(configurationFile, 'w') as f:
+		json.dump(prevConf, f, sort_keys=True, indent=4)
+
+def validateMCSSettings(conf):
+	if 'StorePath' in conf:
+		if not os.path.isdir(conf['StorePath']):
+			raise RuntimeError("StorePath must be an existing directory.")
+	if 'ArchivePath' in conf:
+		if not os.path.isdir(conf['ArchivePath']):
+			raise RuntimeError("ArchivePath must be an existing directory.")
+	if 'GamesInstallDir' in conf:
+		if not os.path.isdir(conf['GamesInstallDir']):
+			raise RuntimeError("GamesInstallDir must be an existing directory.")
+	if 'MCSPath' in conf:
+		if not os.path.isdir(conf['MCSPath']):
+			raise RuntimeError("MCSPath must be an existing directory.")
+		checkMCSPath(conf['MCSPath'])
+	if 'ShowWindow' in conf:
+		if not isinstance(conf['ShowWindow'], bool):
+			raise RuntimeError("ShowWindow must be an boolean value.")
+	if 'DisplayStatistics' in conf:
+		logger.debug("DisplayStatistics is %s", conf['DisplayStatistics'])
+		if not isinstance(conf['DisplayStatistics'], bool):
+			raise RuntimeError("DisplayStatistics must be an boolean value.")
+	if 'EncoderThreads' in conf:
+		val = conf['EncoderThreads']
+		if not isinstance(val, int):
+			raise RuntimeError("EncoderThreads must be an integer value.")
+		if val < 1 or val > 10:
+			raise RuntimeError("EncoderThreads must be between 1 and 10.")
+	if 'MaxEncodingFrames' in conf:
+		val = conf['MaxEncodingFrames']
+		if not isinstance(val, int):
+			raise RuntimeError("MaxEncodingFrames must be an integer value.")
+		if val < 1 or val > 10:
+			raise RuntimeError("MaxEncodingFrames must be between 1 and 10.")
+	if 'MaxRenderingFrames' in conf:
+		val = conf['MaxRenderingFrames']
+		if not isinstance(val, int):
+			raise RuntimeError("MaxRenderingFrames must be an integer value.")
+		if val < 1 or val > 10:
+			raise RuntimeError("MaxRenderingFrames must be between 1 and 10.")
+	if 'OverwriteGameInstall' in conf:
+		if not isinstance(conf['OverwriteGameInstall'], bool):
+			raise RuntimeError("OverwriteGameInstall must be an boolean value.")
+	if 'CleanupOnInstall' in conf:
+		if not isinstance(conf['CleanupOnInstall'], bool):
+			raise RuntimeError("CleanupOnInstall must be an boolean value.")
+
 
 def getFileHash(f, blockSizeBytes = 1024 * 1024 * 4):
 	h = hashlib.sha1()
@@ -96,7 +201,8 @@ def _getFilesFromDataPack(datapack):
 def _getDataPackSize(datapack):
 	totalsize = 0
 	for alias, file in _getFilesFromDataPack(datapack).items():
-		totalsize += os.path.getsize(file)
+		if os.path.exists(file):
+			totalsize += os.path.getsize(file)
 	return totalsize
 
 def _resolveDataPackAlias(datapack, alias):
@@ -111,6 +217,20 @@ def _resolveDataPackAlias(datapack, alias):
 		raise RuntimeError("File mapping in data pack {0} refers to invalid path: {1}".format(datapackid, mapFsysPath))
 	aliasRelPath = os.path.relpath(alias, mapAliasPath)
 	return os.path.join(mapFsysPath, aliasRelPath)
+
+def checkMCSPath(mcsPath):
+	mcsDir = os.path.join(mcsPath, 'Shinra', 'x32', 'Release')
+	for linkName, dllName in MCS_DLL_MAPPING.items():
+		linkTarget = os.path.join(mcsDir, dllName)
+		if not os.path.exists(linkTarget):
+			relPath = os.path.relpath(linkTarget, mcsPath)
+			raise RuntimeError("Directory {0} does not contain MCS dll {1}.".format(mcsPath, relPath))
+	mcsDir = os.path.join(mcsPath, 'Shinra', 'x64', 'Release')
+	for linkName, dllName in MCS_DLL_MAPPING.items():
+		linkTarget = os.path.join(mcsDir, dllName)
+		if not os.path.exists(linkTarget):
+			relPath = os.path.relpath(linkTarget, mcsPath)
+			raise RuntimeError("Directory {0} does not contain MCS dll {1}.".format(mcsPath, relPath))
 
 def checkDllLink(linkPath, linkTarget):
 	if os.path.exists(linkPath):
@@ -244,11 +364,11 @@ class project:
 			raise RuntimeError("Project {0} contains startup {1} with executable pointing to invalid file {2} in dataPack {3}: {4}".format(self.projectfile, id, executable, dataPackId, exePath))
 		return s, dataPack
 	
-	def name(self):
+	def projectId(self):
 		c = self.conf
-		name = c.get('projectName')
+		name = c.get('projectId')
 		if not name:
-			raise RuntimeError("Project {0} has empty projectName property".format(self.projectfile))
+			raise RuntimeError("Project {0} has empty projectId property".format(self.projectfile))
 		return name
 	
 	def version(self):
@@ -272,10 +392,16 @@ class project:
 				p = self._finddatapack(dataPackId)
 				if not p:
 					raise RuntimeError("Project {0} has startup configuration {0} referring to non existing datapack {1}.".format(self.projectfile, startupid, dataPackId))
-			datapacks[dataPackId] = p
+				datapacks[dataPackId] = p
 		for dpid, datapack in datapacks.items():
 			totalsize += _getDataPackSize(datapack)
 		return totalsize
+	
+	def getStartupFilesSize(self, startupId):
+		totalsize = 0
+		datapacks = {}
+		startup, datapack = self.getstartup(startupId)
+		return _getDataPackSize(datapack)
 
 class package(progressreport):
 	"""Manages a ShinraPackage"""
@@ -287,11 +413,12 @@ class package(progressreport):
 	
 	def compress(self, project):
 		datapacks = {}
-		conf = { 'id': project.name(), 'version': project.version() , 'startups' : [], 'server_packs' : [] }
+		projectId = project.projectId()
+		conf = { 'id': projectId, 'version': project.version() , 'startups' : [], 'server_packs' : [] }
 		for startup in project._startups():
 			id = startup.get('id')
 			if not id:
-				raise RuntimeError("Project {0} has startup configuration with empty id.")
+				raise RuntimeError("Project {0} has startup configuration with empty id.".format(projectId))
 			startup, dataPack = project.getstartup(id)
 			datapacks[startup['dataPackId']] = dataPack
 			conf['startups'].append(startup)
@@ -302,12 +429,18 @@ class package(progressreport):
 		with zipfile.ZipFile(self.archive, 'w', allowZip64=True) as z:
 			manifest[CONF_FILE_NAME] = zipHashJson(z, conf, CONF_FILE_NAME)
 			for dpid, datapack in datapacks.items():
+				logger.debug("Zipping DataPack %s", dpid)
 				for alias, file in _getFilesFromDataPack(datapack).items():
-					alias = os.path.join(dpid, alias)
-					with open(file, "rb") as f:
-						manifest[alias] = getFileHash(f)
-					z.write(file, alias)
-					self.progressUpdate(os.path.getsize(file))
+					if not os.path.exists(file):
+						raise RuntimeError("File {0} cannot be found or link cannot be resolved.".format(file))
+					else:
+						alias = os.path.join(dpid, alias)
+						logger.debug("Compute hash for %s", file)
+						with open(file, "rb") as f:
+							manifest[alias] = getFileHash(f)
+						logger.debug("Compress file %s", file)
+						z.write(file, alias)
+						self.progressUpdate(os.path.getsize(file))
 			zipManiefst(z, manifest)
 	
 	def validate(self):
@@ -365,7 +498,7 @@ class package(progressreport):
 				raise RuntimeError("Configuration in {0} does not contain package id.".format(self.archive))
 			if (not 'version' in conf):
 				raise RuntimeError("Configuration in {0} does not contain version.".format(self.archive))
-			proj = { 'projectName': packId, 'projectVersion': conf['version'],
+			proj = { 'projectId': packId, 'projectVersion': conf['version'],
 					 'startups': [], 'dataPacks': []
 					}
 			server_packs = conf.get('server_packs')
@@ -475,95 +608,105 @@ def archSize(exePath):
 
 class game(progressreport):
 	
-	def __init__(self, gamedir, mcs = MCS_PATH):
+	def __init__(self, gamedir, projectid):
 		self.gamedir = gamedir
-		self.mcs = mcs
+		self.projectid = projectid
+		self.projectDir = os.path.join(gamedir, projectid)
 	
 	def loadConf(self):
-		confPath = os.path.join(self.gamedir, "GameConfiguration.json")
+		confPath = os.path.join(self.projectDir, "GameConfiguration.json")
 		with open(confPath, 'r') as f:
 			return json.load(f)
 	
 	def saveConf(self, conf):
-		confPath = os.path.join(self.gamedir, "GameConfiguration.json")
+		confPath = os.path.join(self.projectDir, "GameConfiguration.json")
 		with open(confPath, 'w') as f:
 			json.dump(conf, f, indent=3, sort_keys=True)
 	
-	def install(self, project, startupid, overwrite=False):
+	def install(self, mcsPath, project, overwrite=False, cleanup=False):
 		try:
 			conf = self.loadConf()
 		except:
 			# if file does not exist or is invalid, assume empty conf.
 			conf = {}
-		startup, dataPack = project.getstartup(startupid)
-		self.installData(dataPack, overwrite)
-		fileHooks = startup.get('FileHooks')
-		customProps = startup.get('CustomProperties')
+		# startup, dataPack = project.getstartup(startupid)
+		for dataPack in project._datapacks():
+			dataPackId = dataPack.get('id');
+			dataPackDir = os.path.join(self.projectDir, dataPackId)
+			self.installData(dataPack, dataPackDir, overwrite, cleanup)
 		if not 'startups' in conf:
 			conf['startups'] = {}
-		newStatup = {
-			'id': startupid,
-			'executable': startup['executable'],
-			'workDir': startup['workDir'],
-			'arguments': startup['arguments'],
-			'FileHooks': fileHooks,
-			'CustomProperties': customProps}
-		conf['startups'][startupid] = newStatup
-		self.saveConf(conf)
-		exe = os.path.join(self.gamedir, startup['executable'])
-		self.linkDlls(exe)
+		for startup in project._startups():
+			startupid = startup.get('id')
+			fileHooks = startup.get('FileHooks')
+			customProps = startup.get('CustomProperties')
+			newStatup = {
+				'id': startupid,
+				'executable': startup['executable'],
+				'dataDir': startup['dataPackId'],
+				'workDir': startup['workDir'],
+				'arguments': startup['arguments'],
+				'FileHooks': fileHooks,
+				'CustomProperties': customProps}
+			conf['startups'][startupid] = newStatup
+			self.saveConf(conf)
+			exe = os.path.join(self.projectDir, startup['dataPackId'], startup['executable'])
+			self.linkDlls(exe, mcsPath)
 	
-	def installData(self, datapack, overwrite):
-		for alias, file in _getFilesFromDataPack(datapack).items():
-			fileSize = os.path.getsize(file)
-			dest = os.path.join(self.gamedir, alias)
-			skipFile = False
-			if os.path.exists(dest):
-				logger.debug("%s: %s, %s: %s", dest, os.path.getmtime(dest), file, os.path.getmtime(file))
-				if overwrite or (os.path.getmtime(dest) < os.path.getmtime(file)) or os.path.getsize(dest) != os.path.getsize(file):
-					logger.debug("delete file")
-					os.chmod(dest, stat.S_IWRITE)
-					os.remove(dest)
+	def installData(self, datapack, datapackdir, overwrite, cleanup):
+		datapackFiles = _getFilesFromDataPack(datapack)
+		for root, dirs, files in os.walk(datapackdir):
+			for f in files:
+				destPath = os.path.join(root, f)
+				aliasPath = os.path.relpath(destPath, datapackdir)
+				srcPath = datapackFiles.pop(aliasPath, None)
+				if srcPath and os.path.exists(srcPath):
+					fileSize = os.path.getsize(srcPath)
+					if overwrite or (os.path.getmtime(destPath) < os.path.getmtime(srcPath)) or (os.path.getsize(destPath) != fileSize):
+						logger.debug("delete file %s", destPath)
+						os.chmod(destPath, stat.S_IWRITE)
+						os.remove(destPath)
+						dir = os.path.dirname(destPath)
+						if not os.path.isdir(dir):
+							os.makedirs(dir)
+						shutil.copy(srcPath, destPath)
+					else:
+						logger.debug("skip unchanged file %s", destPath)
+					self.progressUpdate(fileSize)
 				else:
-					logger.debug("skip file")
-					skipFile = True
-			if not skipFile:
+					if cleanup:
+						logger.debug("delete old file %s", destPath)
+						os.chmod(destPath, stat.S_IWRITE)
+						os.remove(destPath)
+		for alias, file in datapackFiles.items():
+			if not os.path.exists(file):
+				raise RuntimeError("File {0} cannot be found or link cannot be resolved.".format(file))
+			else:
+				dest = os.path.join(datapackdir, alias)
+				fileSize = os.path.getsize(file)
 				dir = os.path.dirname(dest)
 				if not os.path.isdir(dir):
 					os.makedirs(dir)
+				logger.debug("copy file %s to %s", file, dest)
 				shutil.copy(file, dest)
-			self.progressUpdate(fileSize)
+				self.progressUpdate(fileSize)
 	
-	def linkDlls(self, exePath):
+	def linkDlls(self, exePath, mcsPath):
 		exeDir = os.path.dirname(exePath)
 		arch = archSize(exePath)
 		if arch == 32:
-			mcsDir = os.path.join(self.mcs, 'Shinra', 'x32', 'Release')
+			mcsDir = os.path.join(mcsPath, 'Shinra', 'x32', 'Release')
 		elif arch == 64:
-			mcsDir = os.path.join(self.mcs, 'Shinra', 'x64', 'Release')
+			mcsDir = os.path.join(mcsPath, 'Shinra', 'x64', 'Release')
 		else:
 			raise RuntimeError("Failed to get arch type for {0}".format(exePath))
-		for d in ['D3D9', 'D3D11', 'DXGI']:
-			dllName = "Shim{0}.dll".format(d)
-			linkName = "{0}.dll".format(d)
-			linkTarget = os.path.join(mcsDir, dllName)
-			linkPath = os.path.join(exeDir, linkName)
-			checkDllLink(linkPath, linkTarget)
-		for d in [ '1_3', '1_4', '9_1_0' ]:
-			dllName = "ShimXInput.dll".format(d)
-			linkName = "XInput{0}.dll".format(d)
-			linkTarget = os.path.join(mcsDir, dllName)
-			linkPath = os.path.join(exeDir, linkName)
-			checkDllLink(linkPath, linkTarget)
-		for d in [ 'CloudCoreClient', 'd3dcompiler_47' ]:
-			dllName = "{0}.dll".format(d)
-			linkName = "{0}.dll".format(d)
+		for linkName, dllName in MCS_DLL_MAPPING.items():
 			linkTarget = os.path.join(mcsDir, dllName)
 			linkPath = os.path.join(exeDir, linkName)
 			checkDllLink(linkPath, linkTarget)
 	
-	def createCloudProperties(self, exedir, startup, userid, gameport, videoport):
-		storepath = STORE_PATH
+	def createCloudProperties(self, cloudPropertiesFilePath, startup, userid, gameport, videoport, mcsConf):
+		storepath = mcsConf.get("StorePath")
 		if not storepath.endswith("\\"):
 			storepath += "\\"
 		properties = {
@@ -589,11 +732,11 @@ class game(progressreport):
 					"Enable": True
 				},
 				"Local": {
-					"ShowWindow": False,
-					"DisplayStatistics": False,
-					"EncoderThreads": 2,
-					"MaxRenderingFrames": 3,
-					"MaxEncodingFrames": 5
+					"ShowWindow": mcsConf.get("ShowWindow"),
+					"DisplayStatistics": mcsConf.get("DisplayStatistics"),
+					"EncoderThreads": mcsConf.get("EncoderThreads"),
+					"MaxRenderingFrames": mcsConf.get("MaxRenderingFrames"),
+					"MaxEncodingFrames": mcsConf.get("MaxEncodingFrames")
 				},
 				"CloudCore": {
 					"D3D9": "CloudCoreClient.dll",
@@ -619,53 +762,70 @@ class game(progressreport):
 						x[key] = {}
 					x = x[key]
 				x[keys[-1]] = customProperties[property]
-		fileName = "CloudProperties_{0}_{1}.json".format(startup['id'], time.time())
-		fileName = os.path.join(exedir, fileName)
-		with open(fileName, "w") as f:
+		with open(cloudPropertiesFilePath, "w") as f:
 			json.dump(properties, f, indent=3, sort_keys=True)
-		return fileName
 	
-	def getstartup(self, conf, id):
-		if not 'startups' in conf:
-			raise RuntimeError("Game configuration in {0} does not contain startups section".format(self.gameDir))
-		startups = conf['startups']
-		if not id in startups:
-			raise RuntimeError("Game configuration in {0} does not contain startup {1}".format(self.gameDir, id))
-		startup = startups[id]
-		if not startup:
-			raise RuntimeError("Game configuration in {0} contains empty configuration for startup {1}".format(self.gameDir, id))
-		if not 'executable' in startup:
-			raise RuntimeError("Game configuration in {0} does not contain executable for startup {1}".format(self.gameDir, id))
-		executable = startup['executable']
-		if not executable:
-			raise RuntimeError("Game configuration in {0} contains empty executable for startup {1}".format(self.gameDir, id))
-		if not 'workDir' in startup:
-			raise RuntimeError("Game configuration in {0} does not contain workDir for startup {1}".format(self.gameDir, id))
-		workDir = startup['workDir']
-		if not 'arguments' in startup:
-			raise RuntimeError("Game configuration in {0} does not contain arguments for startup {1}".format(self.gameDir, id))
-		arguments = startup['arguments']
-		fileHooks = startup.get('FileHooks')
-		customProps = startup.get('CustomProperties')
-		return startup
-	
-	def run(self, startid, userid, gameport, videoport):
-		logger.debug("Starting %s for user %s with gameport %s, videoport %s", startid, userid, gameport, videoport)
+	def getstartup(self, id):
 		try:
 			conf = self.loadConf()
 		except:
 			raise RuntimeError("Failed to load configuration file. Make sure the game was properly installed.")
-		startup = self.getstartup(conf, startid)
-		exe = os.path.join(self.gamedir, startup['executable'])
-		if not os.path.isfile(exe):
-			raise RuntimeError("Game configuration in {0} has statup {1} with invalid executable: {2}".format(self.gameDir, startid, exe))
+		if not 'startups' in conf:
+			raise RuntimeError("Game configuration in {0} does not contain startups section".format(self.projectDir))
+		startups = conf['startups']
+		if not id in startups:
+			raise RuntimeError("Game configuration in {0} does not contain startup {1}".format(self.projectDir, id))
+		startup = startups.get(id)
+		if not startup:
+			raise RuntimeError("Game configuration in {0} contains empty configuration for startup {1}".format(self.projectDir, id))
+		executable = startup.get('executable')
+		if not executable:
+			raise RuntimeError("Game configuration in {0} does not contain executable for startup {1}".format(self.projectDir, id))
+		dataDir = startup.get('dataDir')
+		if not dataDir:
+			raise RuntimeError("Game configuration in {0} does not contain dataDir for startup {1}".format(self.projectDir, id))
+		exePath = os.path.join(self.projectDir, dataDir, executable)
+		if not os.path.isfile(exePath):
+			raise RuntimeError("Game configuration in {0} has startup {1} with invalid executable: {2}".format(self.projectDir, startid, exePath))
+		startup['exeFullPath'] = exePath
+		if not 'workDir' in startup:
+			raise RuntimeError("Game configuration in {0} does not contain workDir for startup {1}".format(self.projectDir, id))
+		workDir = startup['workDir']
+		if not workDir:
+			startup['workDir'] = ""
+		if not 'arguments' in startup:
+			raise RuntimeError("Game configuration in {0} does not contain arguments for startup {1}".format(self.projectDir, id))
+		return startup
+	
+	def setup(self, cloudPropertiesFileName, startup, startid, userid, gameport, videoport, mcsConf):
+		logger.debug("Setup %s for user %s with gameport %s, videoport %s", startid, userid, gameport, videoport)
+		exe = startup['exeFullPath']
 		exedir = os.path.dirname(exe)
-		self.prepareUserFiles(userid, startid)
-		cloudconf = self.createCloudProperties(exedir, startup, userid, gameport, videoport)
-		logger.debug("Created cloud properties at: %s", cloudconf)
+		cloudPropertiesFilePath = os.path.join(exedir, cloudPropertiesFileName)
+		self.prepareUserFiles(userid, startid, mcsConf.get("StorePath"), mcsConf.get("ArchivePath"))
+		self.createCloudProperties(cloudPropertiesFilePath, startup, userid, gameport, videoport, mcsConf)
+		logger.debug("Created cloud properties at: %s", cloudPropertiesFilePath)
+	
+	def cleanup(self, cloudPropertiesFileName, startup, startid, userid, mcsConf):
+		logger.debug("Cleanup %s for user %s", startid, userid)
+		if cloudPropertiesFileName:
+			exe = startup['exeFullPath']
+			exedir = os.path.dirname(exe)
+			cloudPropertiesFilePath = os.path.join(exedir, cloudPropertiesFileName)
+			if os.path.exists(cloudPropertiesFilePath):
+				os.remove(cloudPropertiesFilePath)
+		self.saveUserFiles(userid, startid, mcsConf.get("StorePath"), mcsConf.get("ArchivePath"))
+	
+	def run(self, startid, userid, gameport, videoport, mcsConf):
+		logger.debug("Starting %s for user %s with gameport %s, videoport %s", startid, userid, gameport, videoport)
+		startup = self.getstartup(startid)
+		exe = startup['exeFullPath']
+		workDir = startup['workDir']
+		cloudPropertiesFilePath = "CloudProperties_{0}_{1}.json".format(startup['id'], time.time())
+		self.setup(cloudPropertiesFilePath, startup, startid, userid, gameport, videoport, mcsConf)
 		env = os.environ.copy()
-		env["FLARE_CONFIG"] = cloudconf
-		cwd = os.path.join(self.gamedir, startup['workDir'])
+		env["FLARE_CONFIG"] = cloudPropertiesFilePath
+		cwd = os.path.join(self.projectDir, startup['dataDir'], workDir)
 		args = startup.get('arguments')
 		if args:
 			args = args.replace("{UserId}", userid)
@@ -680,30 +840,29 @@ class game(progressreport):
 				sys.stdout.flush()
 				p.wait()
 			logger.debug("Game ended")
-			time.sleep(5)
+			time.sleep(2)
 		finally:
-			os.remove(cloudconf)
-			self.saveUserFiles(userid, startid)
+			self.cleanup(cloudPropertiesFilePath, startup, startid, userid, mcsConf)
 	
-	def prepareUserFiles(self, userid, gameid):
+	def prepareUserFiles(self, userid, gameid, storePath, archivePath):
 		logger.debug("Restore user files %s %s", userid, gameid)
-		self.tempDir = os.path.join(STORE_PATH, "UserFiles", userid, gameid, "Temp")
-		self.cloudDir = os.path.join(STORE_PATH, "UserFiles", userid, gameid, "Cloud")
-		self.archivePath = os.path.join(ARCHIVE_PATH, userid, gameid + ".tag.gz")
-		if not os.path.isdir(self.tempDir):
-			os.makedirs(self.tempDir)
-		if not os.path.isdir(self.cloudDir):
-			os.makedirs(self.cloudDir)
-		if os.path.isfile(self.archivePath):
-			gameDir = os.path.dirname(self.cloudDir)
-			logger.debug("Untar %s to %s", self.archivePath, gameDir)
-			with tarfile.open(self.archivePath, 'r:gz') as t:
+		tempDir = os.path.join(storePath, "UserFiles", userid, gameid, "Temp")
+		cloudDir = os.path.join(storePath, "UserFiles", userid, gameid, "Cloud")
+		archivePath = os.path.join(archivePath, userid, gameid + ".tar.gz")
+		if not os.path.isdir(tempDir):
+			os.makedirs(tempDir)
+		if not os.path.isdir(cloudDir):
+			os.makedirs(cloudDir)
+		if os.path.isfile(archivePath):
+			gameDir = os.path.dirname(cloudDir)
+			logger.debug("Untar %s to %s", archivePath, gameDir)
+			with tarfile.open(archivePath, 'r:gz') as t:
 				t.extractall(gameDir)
 	
 	# clean both the directories which are not in the hashes file, and the directories which contain nothing
-	def cleanUnusedDirectories(self):
-		if os.path.isdir(self.cloudDir):
-			hashesFile = os.path.join(self.cloudDir,'hashes.txt')
+	def cleanUnusedDirectories(self, cloudDir):
+		if os.path.isdir(cloudDir):
+			hashesFile = os.path.join(cloudDir,'hashes.txt')
 			logging.debug("Looking for {0} for unused directories...".format(hashesFile))
 			hashList = []
 			if os.path.isfile(hashesFile):
@@ -713,33 +872,80 @@ class game(progressreport):
 					hashList.append(splitLine[0])
 				
 				# check if every directory is in the hashes file. if not, delete it
-				cloudDirList = os.listdir(self.cloudDir)
-				for cloudDir in cloudDirList:
-					cloudDirPath = os.path.join(self.cloudDir, cloudDir)
+				cloudDirList = os.listdir(cloudDir)
+				for cDir in cloudDirList:
+					cloudDirPath = os.path.join(cloudDir, cDir)
 					if os.path.isdir(cloudDirPath):
-						if not cloudDir in hashList:
+						if not cDir in hashList:
 							logging.debug("{0} is not in hash list => removing it.".format(cloudDirPath))
 							remove_dir(cloudDirPath)
 							
 			# check the remaining directories and remove them if they contain nothing
-			cloudDirList = os.listdir(self.cloudDir)
-			for cloudDir in cloudDirList:
-				cloudDirPath = os.path.join(self.cloudDir, cloudDir)
+			cloudDirList = os.listdir(cloudDir)
+			for cDir in cloudDirList:
+				cloudDirPath = os.path.join(cloudDir, cDir)
 				if os.path.isdir(cloudDirPath) and not os.listdir(cloudDirPath):
 					logging.debug("{0} contains nothing => removing it.".format(cloudDirPath))
 					remove_dir(cloudDirPath)
 
-	def saveUserFiles(self, userid, gameid):
+	def saveUserFiles(self, userid, gameid, storePath, archivePath):
 		logger.debug("Save user files %s %s", userid, gameid)
-		self.cleanUnusedDirectories()
-		archivesDir = os.path.dirname(self.archivePath)
+		tempDir = os.path.join(storePath, "UserFiles", userid, gameid, "Temp")
+		cloudDir = os.path.join(storePath, "UserFiles", userid, gameid, "Cloud")
+		archivePath = os.path.join(archivePath, userid, gameid + ".tar.gz")
+		self.cleanUnusedDirectories(cloudDir)
+		archivesDir = os.path.dirname(archivePath)
 		if not os.path.isdir(archivesDir):
 			os.makedirs(archivesDir)
-		make_tarfile(self.archivePath, self.cloudDir)
-		remove_dir(self.tempDir)
-		remove_dir(self.cloudDir)
+		make_tarfile(archivePath, cloudDir)
+		remove_dir(tempDir)
+		remove_dir(cloudDir)
+
+def add_gamesInstall_path_opt(parser, defConf):
+	parser.add_argument('-games-install-dir', help="Directory where games will be installed for local execution.", default=conf['GamesInstallDir'])
+	
+def add_mcs_path_opt(parser, defConf):
+	parser.add_argument('-mcs-path', help="Path where MCS is installed.", default=defConf['MCSPath'])
+
+def add_overwrite_opt(parser, defConf):
+	parser.add_argument('-overwrite', dest='overwrite', help="Force overwrite of all files on install.", action='store_true')
+	parser.add_argument('-no-overwrite', dest='overwrite', help="Only files with a older modification date, or a different size than the source will be overwritten on install.",
+	action='store_false')
+	parser.set_defaults(overwrite=defConf['OverwriteGameInstall'])
+
+def add_cleanup_opt(parser, defConf):
+	parser.add_argument('-cleanup', dest='cleanup', help="Force deletion of files in the installation directory that are not part of the datapack.", action='store_true')
+	parser.add_argument('-no-cleanup', dest='cleanup', help="Leave files in the installation directory that are not part of the datapack.", action='store_false')
+	parser.set_defaults(cleanup=defConf['CleanupOnInstall'])
+
+def add_store_path_opt(parser, defConf):
+	parser.add_argument('-store-path', help="Working directory where user data will be stored during game execution.", default=defConf['StorePath'])
+
+def add_archive_path_opt(parser, defConf):
+	parser.add_argument('-archive-path', help="Directory where user data will be archived between two game executions.", default=defConf['ArchivePath'])
+
+def add_show_window_opt(parser, defConf):
+	parser.add_argument('-show-window', dest='show_window', help="Show renderer window.", action='store_true')
+	parser.add_argument('-no-show-window', dest='show_window', help="Hide renderer window.", action='store_false')
+	parser.set_defaults(show_window=defConf['ShowWindow'])
+
+def add_display_statistics_opt(parser, defConf):
+	parser.add_argument('-display-statistics', dest='display_statistics', help="Display statistics in renderer window. Ineffective if -no-show-window.", action='store_true')
+	parser.add_argument('-no-display-statistics', dest='display_statistics', help="Hide statistics in renderer window. Ineffective if -no-show-window.", action='store_false')
+	parser.set_defaults(display_statistics=defConf['DisplayStatistics'])
+
+def add_encoder_threads_opt(parser, defConf):
+	parser.add_argument('-encoder-threads', help="The number of threads dedicated to encoding the video stream.", type=int, default=defConf['EncoderThreads'])
+
+def add_max_encoding_frames_opt(paser, defConf):
+	paser.add_argument('-max-encoding-frames', help="The maximum number of queued encoding frame requested before the game start to block.", type=int, default=defConf['MaxEncodingFrames'])
+
+def add_max_rendering_frames_opt(parser, defConf):
+	parser.add_argument('-max-rendering-frames', help="The maximum number of queued rendering frame requested before the game start to block.", type=int, default=defConf['MaxRenderingFrames'])
 
 if __name__ == "__main__":
+	conf = getMCSSettings()
+	
 	parser = argparse.ArgumentParser(description='Shinra MCS management script.')
 	subparsers = parser.add_subparsers(help='command help.', dest='command')
 	parser_pkg = subparsers.add_parser('package', help='Create a Shinra package from a project.')
@@ -748,9 +954,10 @@ if __name__ == "__main__":
 	
 	parser_instgame = subparsers.add_parser('install', help='Install a game from a project.')
 	parser_instgame.add_argument('project', help="Shinra project to install.")
-	parser_instgame.add_argument('startup', help="Id of the startup configuration to install.")
-	parser_instgame.add_argument('dir', help="Installation directory.")
-	parser_instgame.add_argument('-overwrite', help="Force overwrite of files on install. By default, only files with a older modification date than the source are overwritten on install.", action='store_true')
+	add_gamesInstall_path_opt(parser_instgame, conf)
+	add_mcs_path_opt(parser_instgame, conf)
+	add_overwrite_opt(parser_instgame, conf)
+	add_cleanup_opt(parser_instgame, conf)
 	
 	parser_instarch = subparsers.add_parser('project', help='Build a project from a package.')
 	parser_instarch.add_argument('archive', help="Shinra package to use as source.")
@@ -758,13 +965,58 @@ if __name__ == "__main__":
 	parser_instarch.add_argument('project', help="Name of Shinra project file to create.")
 	
 	parser_rungame = subparsers.add_parser('run', help='Run an installed game.')
-	parser_rungame.add_argument('dir', help="Path to the game installation.")
-	parser_rungame.add_argument('userid', help="User id to use to run the game.")
+	parser_rungame.add_argument('projectid', help="Project id of the game to run.")
 	parser_rungame.add_argument('gameid', help="Startup id to use to run the game.")
+	parser_rungame.add_argument('userid', help="User id to use to run the game.")
 	parser_rungame.add_argument('gameport', help="Port to use for game communications.", type=int)
 	parser_rungame.add_argument('videoport', help="Port to use for video communications.", type=int)
+	add_gamesInstall_path_opt(parser_rungame, conf)
+	add_store_path_opt(parser_rungame, conf)
+	add_archive_path_opt(parser_rungame, conf)
+	add_show_window_opt(parser_rungame, conf)
+	add_display_statistics_opt(parser_rungame, conf)
+	add_encoder_threads_opt(parser_rungame, conf)
+	add_max_encoding_frames_opt(parser_rungame, conf)
+	add_max_rendering_frames_opt(parser_rungame, conf)
 	
-	parser.add_argument('--mcs-install', help="Directory where MCS is installed. By default it is assumed shinra.py is placed in the python directory under the MCS installation path.")
+	parser_setupgame = subparsers.add_parser('setup', help='Setup a game instance for manual execution. Restore the user data from the archive and create proper settings files.')
+	parser_setupgame.add_argument('projectid', help="Project id of the game to run.")
+	parser_setupgame.add_argument('gameid', help="Startup id to use to run the game.")
+	parser_setupgame.add_argument('userid', help="User id to use to run the game.")
+	parser_setupgame.add_argument('gameport', help="Port to use for game communications.", type=int)
+	parser_setupgame.add_argument('videoport', help="Port to use for video communications.", type=int)
+	parser_setupgame.add_argument('-cloud-properties', help="File name to use for creating the cloud property file.")
+	add_gamesInstall_path_opt(parser_setupgame, conf)
+	add_store_path_opt(parser_setupgame, conf)
+	add_archive_path_opt(parser_setupgame, conf)
+	add_show_window_opt(parser_setupgame, conf)
+	add_display_statistics_opt(parser_setupgame, conf)
+	add_encoder_threads_opt(parser_setupgame, conf)
+	add_max_encoding_frames_opt(parser_setupgame, conf)
+	add_max_rendering_frames_opt(parser_setupgame, conf)
+	
+	parser_cleanupgame = subparsers.add_parser('cleanup', help='Cleanup a game instance after a game execution. Archive user data and cleanup temporary files.')
+	parser_cleanupgame.add_argument('projectid', help="Project id of the game to run.")
+	parser_cleanupgame.add_argument('userid', help="User id to use to run the game.")
+	parser_cleanupgame.add_argument('gameid', help="Startup id to use to run the game.")
+	parser_cleanupgame.add_argument('-cloud-properties', help="File name of the cloud property file to cleanup.")
+	add_gamesInstall_path_opt(parser_cleanupgame, conf)
+	add_store_path_opt(parser_cleanupgame, conf)
+	add_archive_path_opt(parser_cleanupgame, conf)
+	
+	parser_setconfig = subparsers.add_parser('configure', help='Set default MCS settings values for current user. Configuration file for current user is {0}.'.format(configurationFile))
+	add_store_path_opt(parser_setconfig, conf)
+	add_archive_path_opt(parser_setconfig, conf)
+	#parser_setconfig.add_argument('-games-install-dir', help="Directory where games will be installed for local execution.", default=conf['GamesInstallDir'])
+	add_show_window_opt(parser_setconfig, conf)
+	add_display_statistics_opt(parser_setconfig, conf)
+	add_encoder_threads_opt(parser_setconfig, conf)
+	add_max_encoding_frames_opt(parser_setconfig, conf)
+	add_max_rendering_frames_opt(parser_setconfig, conf)
+	add_mcs_path_opt(parser_setconfig, conf)
+	add_overwrite_opt(parser_setconfig, conf)
+	add_cleanup_opt(parser_setconfig, conf)
+
 	parser.add_argument('--log-level', choices=['DEBUG', 'INFO', 'WARN', 'ERROR'])
 	parser.add_argument('--log-file')
 	
@@ -789,20 +1041,72 @@ if __name__ == "__main__":
 		a.compress(p)
 	elif args.command == 'install':
 		p = project(args.project)
-		if args.mcs_install:
-			mcs = args.mcs_install
-		else:
-			mcs = MCS_PATH
-		g = game(args.dir, mcs)
+		g = game(args.games_install_dir, p.projectId())
 		totalsize = p.getTotalFilesSize()
 		g.progressInit(totalsize)
 		overwrite = False
 		if args.overwrite:
 			overwrite = args.overwrite
-		g.install(p, args.startup, overwrite)
+		cleanup = False
+		if args.cleanup:
+			cleanup = args.cleanup
+		g.install(args.mcs_path, p, overwrite, cleanup)
 	elif args.command == 'run':
-		g = game(args.dir)
-		g.run(args.gameid, args.userid, args.gameport, args.videoport)
+		logger.debug("args.games_install_dir=%s, args.projectid=%s", args.games_install_dir, args.projectid)
+		g = game(args.games_install_dir, args.projectid)
+		conf["StorePath"] = args.store_path
+		conf["ArchivePath"] = args.archive_path
+		conf['DisplayStatistics'] = args.display_statistics
+		conf['EncoderThreads'] = args.encoder_threads
+		conf['MaxEncodingFrames'] = args.max_encoding_frames
+		conf['MaxRenderingFrames'] = args.max_rendering_frames
+		conf['ShowWindow'] = args.show_window
+		validateMCSSettings(conf)
+		logger.debug("args.gameid=%s, args.userid=%s, args.gameport=%s, args.videoport=%s, conf=%s", args.gameid, args.userid, args.gameport, args.videoport, conf)
+		g.run(args.gameid, args.userid, args.gameport, args.videoport, conf)
+	elif args.command == 'setup':
+		logger.debug("cmd args: %s", args)
+		g = game(args.games_install_dir, args.projectid)
+		startup = g.getstartup(args.gameid)
+		cloudProperties = "CloudProperties.json"
+		if args.cloud_properties:
+			cloudProperties = args.cloud_properties
+		logger.debug("conf before = %s", conf)
+		conf["StorePath"] = args.store_path
+		conf["ArchivePath"] = args.archive_path
+		logger.debug("args.display_statistics %s", args.display_statistics)
+		conf['DisplayStatistics'] = args.display_statistics
+		conf['EncoderThreads'] = args.encoder_threads
+		conf['MaxEncodingFrames'] = args.max_encoding_frames
+		conf['MaxRenderingFrames'] = args.max_rendering_frames
+		conf['ShowWindow'] = args.show_window
+		logger.debug("conf after = %s", conf)
+		validateMCSSettings(conf)
+		g.setup(cloudProperties, startup, args.gameid, args.userid, args.gameport, args.videoport, conf)
+	elif args.command == 'cleanup':
+		g = game(args.games_install_dir, args.projectid)
+		startup = g.getstartup(args.gameid)
+		cloudProperties = None
+		if args.cloud_properties:
+			cloudProperties = args.cloud_properties
+		conf["StorePath"] = args.store_path
+		conf["ArchivePath"] = args.archive_path
+		validateMCSSettings(conf)
+		g.cleanup(cloudProperties, startup, args.gameid, args.userid, conf)
+	elif args.command == 'configure':
+		conf['StorePath'] = args.store_path
+		conf['ArchivePath'] = args.archive_path
+		conf['GamesInstallDir'] = args.games_install_dir
+		conf['DisplayStatistics'] = args.display_statistics
+		conf['EncoderThreads'] = args.encoder_threads
+		conf['MaxEncodingFrames'] = args.max_encoding_frames
+		conf['MaxRenderingFrames'] = args.max_rendering_frames
+		conf['ShowWindow'] = args.show_window
+		conf['MCSPath'] = args.mcs_path
+		conf['OverwriteGameInstall'] = args.overwrite_game_install
+		conf['CleanupOnInstall'] = args.cleanup_on_install
+		validateMCSSettings(conf)
+		setMCSSettings(conf)
 	elif args.command == 'project':
 		a = package(args.archive)
 		totalsize = 2 * a.getTotalFilesSize()

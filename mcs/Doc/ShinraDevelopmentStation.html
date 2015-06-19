@@ -1,0 +1,235 @@
+<h1>Shinra Development Station</h1>
+<p>The Shinra Development Station (SDS) is a graphical interface tool intended to ease:</p>
+<ul>
+<li>Shinra project creation and edition</li>
+<li>Execution of games using the Minimal Cloud Set (MCS)</li>
+<li>Project deployment and execution with the Shinra Command Center (SCC).</li>
+</ul>
+<h2>SDS</h2>
+<p>The interface is composed of three main elements:</p>
+<ul>
+<li><strong>The menu bar</strong> on the top gives access to most of the important actions like project loading and saving, or configuration settings of SDS, MCS and SCC connection.</li>
+<li><strong>The project tree</strong> on the left gives a representation of the different elements of the project including the data pack and the startup configurations. Those two concepts are detailed in the &quot;Shinra Project Structure&quot; section below. You can select individual element in the tree to have access to its properties and edit them.</li>
+<li><strong>The contextual properties</strong> on the right will display a set of properties you can edit. Those properties will vary depending on the selected item in the project tree.</li>
+</ul>
+<h3>SDS Configuration</h3>
+<p>SDS is mostly a front end for different underlying tools, but the application itself
+requires some settings to access these tools. You can edit the SDS settings by clicking &quot;Settings&quot; and &quot;SDS Configuration&quot; in the main menu bar.</p>
+<p><strong>Python executable</strong> is the path to python.exe used to execute the MCS Shinra script.
+Python 3 is required.</p>
+<p><strong>Shinra script path</strong> is the path to the shinra.py script used for packaging, game
+installation and execution. By default the path is deduced from a relative path from
+the SDS executable.</p>
+<p><strong>Default game user id</strong> is the user id that will be used by default when creating new
+game instances.</p>
+<p>The SDS configuration is saved in the user's settings in a json format: %APPDATA%/Shinra/SDS/Settings.json</p>
+<h3>Project edition</h3>
+<p>The main aspect of SDS is to create and edit project files.</p>
+<h4>Shinra Project structure</h4>
+<p>A Shinra project is composed of two main parts: the <strong>data pack</strong> and the <strong>startup configurations</strong>, and an optional <strong>reporting system</strong>.
+A data pack allows to define a directory containing the data that will be included in
+the game deployment. A startup configuration allows to define how a game has to be
+executed, and how MCS has to be configured for this execution. The paths for executable
+and work directory are relative to the root of the a data pack, so your need to specify
+which data pack to use for each startup configuration. The normal flow of configuration
+is to first create a data pack, and then to crate a startup configuration using an executable contained in this data pack.
+The file hooks configuration is specific to MCS. You can check the &quot;File hook&quot; section in the MCS_REAMDE documentation for more details.</p>
+<p>See <a href="MCS_README.html#ShinraProject">&quot;Shinra project file format&quot; in MCS_README</a> for more information on the shinra project file format.</p>
+<h4>Create a data pack</h4>
+<p>You can create a new Data pack by three different means:</p>
+<ul>
+<li>Click &quot;Add data pack&quot; in the Project menu.</li>
+<li>Right click on the &quot;Data packs&quot; section in the project tree and select &quot;Add data pack&quot;.</li>
+<li>Drag and drop a directory containing the data on the project tree.</li>
+</ul>
+<p>Once you have your Data pack created, you can configure the different properties:</p>
+<ul>
+<li><strong>Id</strong> is string used to identify this data pack from the others. It can be configured to your liking.</li>
+<li><strong>Version</strong> is a string used only for tracking purpose.</li>
+<li><strong>Directory</strong> is the path where the data you want to include is located.</li>
+<li><strong>Alias</strong> is the name of the directory under which the data will be deployed. By default it is the same as the original directory name, but it can be changed for convenience.</li>
+</ul>
+<h4>Create a startup configuration</h4>
+<p>You can create a new Startup configuration by three different means:</p>
+<ul>
+<li>Click &quot;Add Startup configuration&quot; in the Project menu.</li>
+<li>Right click on the &quot;Startup configurations&quot; section in the project tree and select &quot;Add Startup configuration&quot;.</li>
+<li>For a given Data pack, right click on an executable file you want to start and select &quot;Add startup configuration&quot;.</li>
+</ul>
+<p>Once you have your Startup configuration created, you can configure the different properties:</p>
+<ul>
+<li><strong>Id</strong> is a string used to identify this startup configuration form the others.</li>
+<li><strong>Executable</strong> is the path to the executable inside the data pack.</li>
+<li><strong>Arguments</strong> will be used when running the executable.</li>
+<li><strong>Work directory</strong> will be used as the current work directory for the execution. The path is relative to Data pack itself.</li>
+<li><strong>Data pack</strong> will be used as the reference for path definition.</li>
+<li><strong>Save data</strong> is a list of Path filter expressions (or file hooks) used to define what game file needs to be redirected and saved on the end of a game execution. The data will be restored on the next execution of the same game for the same user. See <a href="MCS_README.html#FileHooks">&quot;File hooks&quot; section in MCS_README</a> for more information on the file hooks configuration and inner workings.</li>
+<li><strong>Temp data</strong> is a list of Path filter expressions (or file hooks) used to define what game file needs to be redirected and discarded on the end of a game execution. See <a href="MCS_README.html#FileHooks">&quot;File hooks&quot; section in MCS_README</a> for more information on the file hooks configuration and inner workings.</li>
+<li><strong>Custom properties</strong> allows to define specific values for any property in the CloudProperty file of a game instance. This is mostly used as a workaround to set some specific options required for some legacy games. See <a href="MCS_README.html#CloudProperties">&quot;CloudProperties configuration file&quot; section in MCS_README</a> for more information on the property file, and its possible options.</li>
+</ul>
+<p>Note you can drag the files from the data pack preview window to the text fields.
+You can also have multiple startup configurations pointing at the same executable in the same data pack and using different arguments.</p>
+<h3>Project packaging</h3>
+<p>SDS allows to package a project in a zip file that will contain the files from the datapack, and the required information to deploy the project on the Shinra servers. Note it is also possible to deploy a Shinra pack or on another workstation.
+You can create a ShinraPack in two different ways:</p>
+<ul>
+<li>In the Project menu select &quot;Build ShinraPack&quot;.</li>
+<li>Right click on the project item in the project tree and select &quot;Start game&quot;.</li>
+</ul>
+<h3>Project import</h3>
+<p>A packaged project can be re-imported to create a new Shinra project. To import a project click File and Import project. This will open the import dialog box. You need to specify:</p>
+<ul>
+<li>Import from package: The zip file containing the packaged project.</li>
+<li>Store data in: A directory where the project data will be extracted to.</li>
+<li>Project file: The name of the new project file to be created.</li>
+</ul>
+<h3>Reporting</h3>
+<p>SDS can be configured to interact with a reporting system to create issues. The Reporting configuration is composed in two parts:</p>
+<ul>
+<li>The SDS configuration, where you can define Report Commands that will be used to create issued. For each Report command you can also define a set of variables that have to be defined on the project level.</li>
+<li>The Project configuration, where you define which Report Commands to use, and define project specific variables required by the selected command.</li>
+</ul>
+<h4>Report commands configuration</h4>
+<p>To add a reporting system you need to define a ReportCommands section in the file %AppData%/Shinra/SDS/Settings.json file. Below is an example definition for github.
+For the moment SDS doesn't provide a UI to edit those values, so you'll have to edit
+the settings file manually.</p>
+<pre><code>{
+  &quot;ReportCommands&quot;: {
+    &quot;github&quot;: {
+      &quot;Command&quot;: &quot;{ProjectURL}/issues/new?title={Title}&amp;body={Body}&quot;,
+      &quot;Type&quot;: &quot;url&quot;,
+      &quot;Variables&quot;: {
+        &quot;ProjectURL&quot;: {
+          &quot;Default&quot;: &quot;https://github.com/user/project&quot;,
+          &quot;UrlEscape&quot;: false,
+          &quot;Multiline&quot;: false
+        },
+        &quot;Title&quot;: {
+          &quot;Default&quot;: &quot;[{GameId}]&quot;,
+          &quot;UrlEscape&quot;: true,
+          &quot;Multiline&quot;: false
+        },
+        &quot;Body&quot;: {
+          &quot;Default&quot;: &quot;GameId={GameId}\nUserId={UserId}\nVideoPort={VideoPort}\nGamePort={GamePort}\n&quot;,
+          &quot;UrlEscape&quot;: true,
+          &quot;Multiline&quot;: true
+        }
+      }
+    }
+  }
+}
+</code></pre>
+<ul>
+<li><strong>ReportCommands</strong>: Root property for the report commands definitions.</li>
+<li><strong>ReportCommands.[commandId]</strong>: Each command is identified by a unique id. This id will be used in the project configuration to specify.</li>
+<li><strong>ReportCommands.[commandId].Command</strong>: This defines the command line that will be executed to create a issue. This command can be a URL that will be opened in the default web browser.</li>
+<li><strong>ReportCommands.[commandId].Type</strong>: Specify the type of command. If set to &quot;url&quot;, the command will treated as a URL and opened in the default web browser. If set to &quot;command&quot;, the command will be executed as a command line. Not when running as a &quot;command&quot; the different Command variables, and <a href="#GameInstanceVariable">Game instance variables</a> will be defined as environment variable and accessible to you script or executable.</li>
+<li><strong>ReportCommands.[commandId].Variables</strong>: Root property for the list of variables required by the command. Those variables will be defined for each project.</li>
+<li><strong>ReportCommands.[commandId].Variables.[variableName].Default</strong>: Default value for the variable.</li>
+<li><strong>ReportCommands.[commandId].Variables.[variableName].UrlEscape</strong>: Boolean that defines if the variable content should be escaped before being set in the command line, or in the environment.</li>
+<li><strong>ReportCommands.[commandId].Variables.[variableName].Multiline</strong>: Boolean that defines if variable edition in the project UI should be single-line or multi-line.</li>
+</ul>
+<h4>Project report configuration</h4>
+<p>On the project side, you can use SDS UI to specify which Report command to
+use for the project, and define the values for each variable required by this command.
+You have access to the <a href="#GameInstanceVariable">Game instance variables</a> when defining the
+variable values. Report variables cannot refer to each other.
+Below is an example of a report configuration section for a project file.</p>
+<pre><code>{
+  &quot;reportConfig&quot;: {
+    &quot;Id&quot;: &quot;github&quot;,
+    &quot;Variables&quot;: {
+      &quot;ProjectURL&quot;: &quot;https://github.com/aterrienne-eidosmontreal/testing&quot;,
+      &quot;Title&quot;: &quot;[{GameId}]&quot;,
+      &quot;Body&quot;: &quot;GameId={GameId}\nUserId={UserId}\nVideoPort={VideoPort}\nGamePort={GamePort}\n&quot;
+    }
+  }
+}
+</code></pre>
+<h3><a name="GameInstanceVariable"></a> Game instance variables</h3>
+<p>When defining a report command line, or a report variable value, you have access to
+a set of game instance variables:</p>
+<ul>
+<li>{GameId} : Id of the game instance.</li>
+<li>{UserId} : Id of the user playing the game.</li>
+<li>{VideoPort} : Video port used for this game instance.</li>
+<li>{GamePort} : Game port used for this game instance.</li>
+<li>{GameDumpPath} : Path to the minidump file of the game (.mdmp). May be empty id game didn't crashed.</li>
+<li>{UserDataPath} : Path the the user game data archive.</li>
+<li>{UserLogsPath} : Path to the user error log file. Not this file is user specific, but not game specific.</li>
+<li>{ExitCode} : Error code returned by the game executable.</li>
+</ul>
+<h2>MCS</h2>
+<p>MCS is the underlying tool used to run games locally. SDS provides a convenient interface to configure MCS, install and run games from Shinra projects.</p>
+<h3>MCS Configuration</h3>
+<p>MCS has a set of configuration that can be edited using SDS interface.
+You can check the MCS configuration by clicking &quot;MCS Configuration&quot; in the Settings menu.</p>
+<p><strong>Shinra MCS path</strong> must be set to the directory where the MCS package was unzipped. This directory must contain the various executables and Dlls required to run a game in MCS environment. SDS will automatically create links and configuration files to run the game for you.</p>
+<p><strong>User data work dir</strong> will be used as the root directory where the user data will be stored during game execution. For more information on how MCS is handling user data see <a href="MCS_README.html#FileHooks">&quot;File hooks&quot; section in MCS_README</a> documentation. Make sure it points to a directory where you have proper write access, and enough disk space to receive the files from the data packs.</p>
+<p><strong>User data archive dir</strong> will be used as the root directory where the user data will be archived between two game executions. For more information on how MCS is handling user data see <a href="MCS_README.html#FileHooks">&quot;File hooks&quot; section in MCS_README</a> documentation. Make sure it points to a directory where you have proper write access, and enough disk space to receive the files from the data packs.</p>
+<p><strong>Games installation dir</strong> will be used as a root directory to deploy the game files locally and perform execution. Make sure it points to a directory where you have proper write access, and enough disk space to receive the files from the data packs.</p>
+<p>When <strong>Force overwriting of game data on install</strong> is unchecked, and re-installing a game, only the data with a more recent changed date, or with a different file size will be overwritten. This enables to avoid unnecessary copy of big files when re-installing a game. You can disable this feature and force overwriting by checking this option.</p>
+<p>When <strong>Cleanup unused files on install</strong> is checked, the installation of a game will delete all files in the destination directory that is not part of the datapack being installed.</p>
+<p>The <strong>Local execution options</strong> are settings that allow to tune the performance for running the game on MCS. See <a href="MCS_README.html#Properties">&quot;Properties options&quot; section in MCS_README</a> documentation for more information on these options. Note those settings are for MCS execution only and won't be used on the Cloud server deployment.</p>
+<p>The MCS configuration is saved in json format at %APPDATA%/Shinra/SDS/Settings.json.</p>
+<h3>Game execution</h3>
+<p>You can start a MCS game using SDS in two different ways:</p>
+<ul>
+<li>In the Project menu select &quot;Start game&quot;, then select the startup configuration you want to run.</li>
+<li>Right click on a given Startup configuration and select &quot;Start game&quot;.</li>
+</ul>
+<p>When starting a game, the game data will be deployed in the directory specified under the &quot;MCS configuration&quot;, and then executed there. Once the installation is over you will be prompted the Game running window.</p>
+<h3>Game running window</h3>
+<p>When running a game you are presented with a window enabling to start several instances of the game. Each instance is composed of:</p>
+<ul>
+<li><strong>User id</strong> to be used for this particular instance of the game. Note we cannot have multiple instances of the same game with the same user id. Each instance has to have a specific user id.</li>
+<li><strong>Game port</strong> to be used for this particular instance of the game. The port must be available and not conflict with the other ports of other game instances.</li>
+<li><strong>Video port</strong> to be used for this particular instance of the game. The same restrictions than for the Game port applies here.</li>
+<li><strong>Game</strong> start button. This will start the game instance itself with the specified user id, game port and video port. The &quot;start client&quot; check-box defines if the ShinraClient will be automatically started at the same time than the game instance. Uncheck this option if you want to run the client manually.</li>
+<li><strong>Create issue</strong> button. This button is enabled only if the project has a reporting configuration. Click on this button to execute the report command associated to your project. The report variables will be set for the particular game instance. The &quot;create on game error&quot; check-box allows to automatically run the Report command in case the game quits with an error status.</li>
+</ul>
+<p>You can add a new game instance by right clicking in the list and select &quot;Add game instance&quot;. You can remove a game instance by clicking on a instance and hit delete key.</p>
+<h2>SCC</h2>
+<p>The Shinra Command Center is a http rest service that serves as the interface to deploy
+and manage games on the Shinra cloud services.
+SDS allows to connect to SCC and perform those tasks easily.</p>
+<h3>SCC Configuration</h3>
+<p><strong>Server URL</strong> is the url to the SCC service to use.</p>
+<p><strong>Proxy URL</strong> is an optional Url SDS will use as proxy for http requests. By default SDS uses the proxy settings of the system, but in case you need specific proxy setting.</p>
+<p><strong>Api Key</strong> is a key provided to you by the Shinra team. It is private to your development team. This key is required by SCC to allow requests execution.</p>
+<p><strong>Refresh time</strong> is the time between to refresh of the VM status. SDS UI will automatically request the status for the project VM. Set this to 0 to disable the automatic refresh.</p>
+<h3>Upload a project</h3>
+<p>To upload a project, you first need a complete project and a valid SCC
+configuration including an Api Key. You are encouraged to first test your game with MCS
+and make sure everything works and the configuration is correct before attempting
+an upload. Note the upload process can be very long.
+The upload process is composed of three steps, each can be time consuming depending on the size of the project:</p>
+<ul>
+<li><strong>Package building.</strong> A new package is created from the project for upload.</li>
+<li><strong>Package upload.</strong> The package is uploaded to SCC using http.</li>
+<li><strong>Package installation.</strong> After SCC receives the package, the installation process starts. A new VM is created and the game data are installed on it. You will see the status of the VM going to &quot;installing&quot;. When the installation ends.</li>
+</ul>
+<h3>Start a VM</h3>
+<p>Once a project has been uploaded and installed, the VM is in state &quot;ready&quot;.
+From this point you can start the VM using &quot;Start&quot; button.
+The &quot;Clients password&quot; field enables to define a password the clients will have to
+use to connect to the game. By default, any client with the proper connection information (ip and port) can connect to a game. You can restrict the access to only
+client using the password.
+This password can only be set when starting the VM. If you want to change the password you will have to stop the VM first and re-start it with the new password.</p>
+<p>When you click on Start, the VM goes in &quot;starting&quot; status while the system is booting. When the VM ends its boot process it will go to &quot;running&quot; status. You will also be
+displayed to the connection information for your game (IP address and ). From this point you can start clients to play the game.</p>
+<h3>Stop a VM</h3>
+<p>When the VM is in state &quot;running&quot; you can stop it using the &quot;Stop&quot; button. This will shut the VM down and stop all the current game instances. Once the stopping process is
+done the VM is back in &quot;ready&quot; state. You will also have access to a link to download
+a zip file containing the VM logs.</p>
+<h3>Run client manually</h3>
+<p>When a VM is running you have access to the game connection information composed of:</p>
+<ul>
+<li>game server IP</li>
+<li>game server port
+You can  use these information to manually run a client. Note if the server uses a
+simple authentication password, you will also need to specify it in command line.
+Following is an example connecting to a server on Ip 192.34.56.88 and port 16666, using password MYPASS:</li>
+</ul>
+<pre><code>ShinraClent.exe -l 192.34.56.88:16666 -sa MYPASS
+</code></pre>

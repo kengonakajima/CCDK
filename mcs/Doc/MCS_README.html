@@ -1,0 +1,514 @@
+<h1>Shinra MCS</h1>
+<p>Shinra MCS is a minimal emulator of Shinra Remote Renderer.</p>
+<h2><a name="InstallHowTo"></a> How to install</h2>
+<ol>
+<li>Install Python 3.4 if not already present on your computer.</li>
+<li>Unpack the ShinraMCS.zip file on a local drive.</li>
+<li>Run ShinraDevelopmentStation.exe, and check the configuration in Settings-&gt;SDS Configuration:</li>
+</ol>
+<ul>
+<li>Make sure the path to the python 3.4 executable is correct.</li>
+<li>The path to the shinra.py script and the MCS directory should be ok.</li>
+</ul>
+<ol start="4">
+<li>Check the configuration in Settings-&gt;MCS Configuration:</li>
+</ol>
+<ul>
+<li>&quot;User data work dir&quot; and &quot;User data archive dir&quot; contains path to directories where users' games data will be saved and archived. Make sure they point to places where you have enough disk space and proper access rights (see <a href="#FileHooks">&quot;File hooks&quot;</a> section for more information on MCS user data management).</li>
+<li>The &quot;Games installation dir&quot; will be used to install games data for running games, make sure this points to a place where you have enough disk space and proper access rights.</li>
+</ul>
+<h2><a name="SDS"></a> Shinra Development Station</h2>
+<p>The Shinra Development Station (or SDS) is a graphical interface used to create and manage projects. It is mainly a graphical layer on top of the shinra.py script and the MCS libraries.
+For more information in SDS you can check the <a href="ShinraDevelopmentStation.html">ShinraDevelopmentStation</a> documentation.</p>
+<h2><a name="ShinraScript"></a> Shinra python script</h2>
+<p>In the python directory of MCS, you can find the shinra.py script. The shinra.py script is used to handle packaging, game installation and execution. It can be used as a stand-alone tool to automate ShinraPack generation, game execution and some deployment tasks.</p>
+<pre><code>usage: shinra.py [-h] [--log-level {DEBUG,INFO,WARN,ERROR}]
+                 [--log-file LOG_FILE]
+                 {package,install,project,run,setup,cleanup,configure} ...
+
+Shinra MCS management script.
+
+positional arguments:
+  {package,install,project,run,setup,cleanup,configure}
+                        command help.
+    package             Create a Shinra package from a project.
+    install             Install a game from a project.
+    project             Build a project from a package.
+    run                 Run an installed game.
+    setup               Setup a game instance for manual execution. Restore
+                        the user data from the archive and create proper
+                        settings files.
+    cleanup             Cleanup a game instance after a game execution.
+                        Archive user data and cleanup temporary files.
+    configure           Set default MCS settings values for current user.
+                        Configuration file for current user is C:\Users\aterri
+                        enne\AppData\Roaming\Shinra\MCS\Settings.json.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --log-level {DEBUG,INFO,WARN,ERROR}
+  --log-file LOG_FILE
+</code></pre>
+<h3>Package command</h3>
+<pre><code>usage: shinra.py package [-h] project archive
+
+positional arguments:
+  project     Shinra project to use.
+  archive     Shinra package to create.
+
+optional arguments:
+  -h, --help  show this help message and exit
+</code></pre>
+<p>The following example produces the package &quot;package.zip&quot; from the project file &quot;project.shinra&quot;:</p>
+<pre><code>shinra.py package project.shinra package.zip
+</code></pre>
+<h3>Install command</h3>
+<pre><code>usage: shinra.py install [-h] [-games-install-dir GAMES_INSTALL_DIR]
+                         [-mcs-path MCS_PATH] [-overwrite] [-no-overwrite]
+                         [-cleanup] [-no-cleanup]
+                         project
+
+positional arguments:
+  project               Shinra project to install.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -games-install-dir GAMES_INSTALL_DIR
+                        Directory where games will be installed for local
+                        execution.
+  -mcs-path MCS_PATH    Path where MCS is installed.
+  -overwrite            Force overwrite of all files on install.
+  -no-overwrite         Only files with a older modification date, or a
+                        different size than the source will be overwritten on
+                        install.
+  -cleanup              Force deletion of files in the installation directory
+                        that are not part of the datapack.
+  -no-cleanup           Leave files in the installation directory that are not
+                        part of the datapack.
+</code></pre>
+<p>The following example installs the SSW startup configuration from the project &quot;project.shinra&quot; in the &quot;C:\Flare\Games\SSW&quot; directory:</p>
+<pre><code>shinra.py install project.shinra
+</code></pre>
+<h3><a name="RunCommand"></a> Run command</h3>
+<pre><code>usage: shinra.py run [-h] [-games-install-dir GAMES_INSTALL_DIR]
+                     [-store-path STORE_PATH] [-archive-path ARCHIVE_PATH]
+                     [-show-window] [-no-show-window] [-display-statistics]
+                     [-no-display-statistics]
+                     [-encoder-threads ENCODER_THREADS]
+                     [-max-encoding-frames MAX_ENCODING_FRAMES]
+                     [-max-rendering-frames MAX_RENDERING_FRAMES]
+                     projectid gameid userid gameport videoport
+
+positional arguments:
+  projectid             Project id of the game to run.
+  gameid                Startup id to use to run the game.
+  userid                User id to use to run the game.
+  gameport              Port to use for game communications.
+  videoport             Port to use for video communications.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -games-install-dir GAMES_INSTALL_DIR
+                        Directory where games will be installed for local
+                        execution.
+  -store-path STORE_PATH
+                        Working directory where user data will be stored
+                        during game execution.
+  -archive-path ARCHIVE_PATH
+                        Directory where user data will be archived between two
+                        game executions.
+  -show-window          Show renderer window.
+  -no-show-window       Hide renderer window.
+  -display-statistics   Display statistics in renderer window. Ineffective if
+                        -no-show-window.
+  -no-display-statistics
+                        Hide statistics in renderer window. Ineffective if
+                        -no-show-window.
+  -encoder-threads ENCODER_THREADS
+                        The number of threads dedicated to encoding the video
+                        stream.
+  -max-encoding-frames MAX_ENCODING_FRAMES
+                        The maximum number of queued encoding frame requested
+                        before the game start to block.
+  -max-rendering-frames MAX_RENDERING_FRAMES
+                        The maximum number of queued rendering frame requested
+                        before the game start to block.
+</code></pre>
+<p>The following example starts a game instance for the ssw_debug startup configuration in the SSW project. The game instance will be executed with user &quot;user47&quot;, game port 60001 and video port 60000.</p>
+<pre><code>shinra.py run SSW ssw_debug user47 60001 60000
+</code></pre>
+<p>Note the client has to be executed with a matching port configuration to be able to connect (<a href="#ShinraClient">see &quot;Shinra Client&quot; for more information</a>).</p>
+<h3>Setup command</h3>
+<p>The setup command allows to perform all the necessary steps to prepare the execution of a Shinra game instance (similar to what run command does), without performing the actual game execution. It is useful in cases where you need full control on the game execution, like running the game in a debugger environment. The setup command will extract the user data where MCS expects it to be, and create a cloud property file with the proper configuration values. As you are responsible for the game execution you need to consider a few aspects usually handled automatically by MCS:</p>
+<ul>
+<li>To be able to run multiple instances of the same game you will need to specify a different property filename for each instance with -cloud-properties option. See <a href="#MultipleGames">Multiple game instances section</a> for more information.</li>
+<li>Make sure to use the proper command line parameters for the game itself.</li>
+<li>Note the client has to be executed with a matching port configuration to be able to connect (<a href="#ShinraClient">see &quot;Shinra Client&quot; for more information</a>).</li>
+<li>After a game execution, you are responsible to call the cleanup command (see <a href="#CleanupCommand">&quot;Cleanup command&quot;</a> section below).</li>
+</ul>
+<pre><code>usage: shinra.py setup [-h] [-cloud-properties CLOUD_PROPERTIES]
+                       [-games-install-dir GAMES_INSTALL_DIR]
+                       [-store-path STORE_PATH] [-archive-path ARCHIVE_PATH]
+                       [-show-window] [-no-show-window] [-display-statistics]
+                       [-no-display-statistics]
+                       [-encoder-threads ENCODER_THREADS]
+                       [-max-encoding-frames MAX_ENCODING_FRAMES]
+                       [-max-rendering-frames MAX_RENDERING_FRAMES]
+                       projectid gameid userid gameport videoport
+
+positional arguments:
+  projectid             Project id of the game to run.
+  gameid                Startup id to use to run the game.
+  userid                User id to use to run the game.
+  gameport              Port to use for game communications.
+  videoport             Port to use for video communications.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -cloud-properties CLOUD_PROPERTIES
+                        File name to use for creating the cloud property file.
+  -games-install-dir GAMES_INSTALL_DIR
+                        Directory where games will be installed for local
+                        execution.
+  -store-path STORE_PATH
+                        Working directory where user data will be stored
+                        during game execution.
+  -archive-path ARCHIVE_PATH
+                        Directory where user data will be archived between two
+                        game executions.
+  -show-window          Show renderer window.
+  -no-show-window       Hide renderer window.
+  -display-statistics   Display statistics in renderer window. Ineffective if
+                        -no-show-window.
+  -no-display-statistics
+                        Hide statistics in renderer window. Ineffective if
+                        -no-show-window.
+  -encoder-threads ENCODER_THREADS
+                        The number of threads dedicated to encoding the video
+                        stream.
+  -max-encoding-frames MAX_ENCODING_FRAMES
+                        The maximum number of queued encoding frame requested
+                        before the game start to block.
+  -max-rendering-frames MAX_RENDERING_FRAMES
+                        The maximum number of queued rendering frame requested
+                        before the game start to block.
+</code></pre>
+<h3><a name="CleanupCommand"></a> Cleanup command</h3>
+<p>The cleanup command allows to archive the user game data after a manual execution. This command should only be used in conjunction with the setup command.</p>
+<pre><code>usage: shinra.py cleanup [-h] [-cloud-properties CLOUD_PROPERTIES]
+                         [-games-install-dir GAMES_INSTALL_DIR]
+                         [-store-path STORE_PATH] [-archive-path ARCHIVE_PATH]
+                         projectid userid gameid
+
+positional arguments:
+  projectid             Project id of the game to run.
+  userid                User id to use to run the game.
+  gameid                Startup id to use to run the game.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -cloud-properties CLOUD_PROPERTIES
+                        File name of the cloud property file to cleanup.
+  -games-install-dir GAMES_INSTALL_DIR
+                        Directory where games will be installed for local
+                        execution.
+  -store-path STORE_PATH
+                        Working directory where user data will be stored
+                        during game execution.
+  -archive-path ARCHIVE_PATH
+                        Directory where user data will be archived between two
+                        game executions.
+</code></pre>
+<p>See <a href="#FileHooks">File Hooks section</a> for more information on how user data saving in handled by MCS.</p>
+<h3>Project command</h3>
+<pre><code>usage: shinra.py project [-h] archive dir project
+
+positional arguments:
+  archive     Shinra package to use as source.
+  dir         Directory where to store project data.
+  project     Name of Shinra project file to create.
+
+optional arguments:
+  -h, --help  show this help message and exit
+</code></pre>
+<p>The following example will extract the package data in &quot;C:\Path\to\data&quot;, and create a new project file with the proper datapack configuration pointing to the extracted data, and the corresponding startup configurations.</p>
+<pre><code>shinra.py project archive.zip C:\Path\to\data project.shinra
+</code></pre>
+<h3>Configure command</h3>
+<p>Each command of shinra.py uses a set of optional arguments. The default values for these arguments are stored in %APPDATA%/Shinra/MCS/Settings.json configuration file. You can set these default options to a specific value using the configure command.</p>
+<pre><code>usage: shinra.py configure [-h] [-store-path STORE_PATH]
+                           [-archive-path ARCHIVE_PATH]
+                           [-games-install-dir GAMES_INSTALL_DIR]
+                           [-show-window] [-no-show-window]
+                           [-display-statistics] [-no-display-statistics]
+                           [-encoder-threads ENCODER_THREADS]
+                           [-max-encoding-frames MAX_ENCODING_FRAMES]
+                           [-max-rendering-frames MAX_RENDERING_FRAMES]
+                           [-mcs-path MCS_PATH] [-overwrite] [-no-overwrite]
+                           [-cleanup] [-no-cleanup]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -store-path STORE_PATH
+                        Working directory where user data will be stored
+                        during game execution.
+  -archive-path ARCHIVE_PATH
+                        Directory where user data will be archived between two
+                        game executions.
+  -games-install-dir GAMES_INSTALL_DIR
+                        Directory where games will be installed for local
+                        execution.
+  -show-window          Show renderer window.
+  -no-show-window       Hide renderer window.
+  -display-statistics   Display statistics in renderer window. Ineffective if
+                        -no-show-window.
+  -no-display-statistics
+                        Hide statistics in renderer window. Ineffective if
+                        -no-show-window.
+  -encoder-threads ENCODER_THREADS
+                        The number of threads dedicated to encoding the video
+                        stream.
+  -max-encoding-frames MAX_ENCODING_FRAMES
+                        The maximum number of queued encoding frame requested
+                        before the game start to block.
+  -max-rendering-frames MAX_RENDERING_FRAMES
+                        The maximum number of queued rendering frame requested
+                        before the game start to block.
+  -mcs-path MCS_PATH    Path where MCS is installed.
+  -overwrite            Force overwrite of all files on install.
+  -no-overwrite         Only files with a older modification date, or a
+                        different size than the source will be overwritten on
+                        install.
+  -cleanup              Force deletion of files in the installation directory
+                        that are not part of the datapack.
+  -no-cleanup           Leave files in the installation directory that are not
+                        part of the datapack.
+</code></pre>
+<p>The Settings.json file is a simple json text file that can easily be manually edited. Following is an example of the content of Settings.json.</p>
+<pre><code>{
+  &quot;MCSPath&quot;: &quot;D:\\Shinra\\ShinraMCS&quot;,
+  &quot;GamesInstallDir&quot;: &quot;D:\\Shinra\\Games&quot;,
+  &quot;StorePath&quot;: &quot;D:\\Shinra\\Local&quot;,
+  &quot;ArchivePath&quot;: &quot;D:\\Shinra\\UserFiles&quot;,
+  &quot;DisplayStatistics&quot;: false,
+  &quot;EncoderThreads&quot;: 2,
+  &quot;MaxEncodingFrames&quot;: 5,
+  &quot;MaxRenderingFrames&quot;: 3,
+  &quot;ShowWindow&quot;: false,
+  &quot;OverwriteGameInstall&quot;: false,
+  &quot;CleanupOnInstall&quot;: false
+}
+</code></pre>
+<p>Note any additional property in the json object will be ignored by MCS.</p>
+<h2><a name="ShinraClient"></a> Shinra Client</h2>
+<p>ShinraClient.exe can be found in the MCS installation directory under &lt;MCS_INSTALL&gt;/Shinra/x32/Release/ShinraClient.exe.
+It is the client application in charge of interacting with the player. It displays the
+game video, plays the game audio and sends the player inputs to the game server.
+You can manually run the ShinraClient to connect to a game instance running on a distant computer. When connecting to an existing game instance, make sure you specify the proper server IP, game port and video port.</p>
+<p>Parameters:</p>
+<ul>
+<li>-t : Server IP or host-name of the game server.</li>
+<li>-pv : Video Port</li>
+<li>-pg : Game Port</li>
+</ul>
+<p>Following is an example connecting to a game instance running on the local computer, using game port 60001 and video port 60000.</p>
+<pre><code>&lt;MCS_INSTALL&gt;/Shinra/x32/Release/ShinraClient.exe -t 127.0.0.1 -pg 60001 -pv 60000
+</code></pre>
+<h3>How to play remotely</h3>
+<p>You can execute the client application on a separate computer where the game instance is running. Just unpack the MCS package in the remote computer, then edit the StartShinraClient.bat to point to the IP address where you run the game, and set the game port and video port to match those defined for the corresponding game instance you want to connect to. You can then start the Shinra Client and connect to your game.</p>
+<h2><a name="ShinraProject"></a> Shinra project file format</h2>
+<p>Shinra projects are json text files containing the necessary information for:</p>
+<ul>
+<li>packaging and deployment of game data (dataPacks),</li>
+<li>execution and configuration of the game (startups).</li>
+</ul>
+<p>The SDS interface is the preferred way to create and edit project files. But the project structure is simple enough so you can manually edit it. The following is an example of a simple configuration with one datapack, and one startup configuration.</p>
+<pre><code>{
+    &quot;dataPacks&quot;: [
+        {
+            &quot;files&quot;: [
+                {
+                    &quot;aliasPath&quot;: &quot;&quot;,
+                    &quot;fileSystemPath&quot;: &quot;D:\\Shinra\\import\\DX3\\DX3&quot;
+                }
+            ],
+            &quot;id&quot;: &quot;DX3&quot;,
+            &quot;version&quot;: &quot;1&quot;
+        }
+    ],
+    &quot;projectId&quot;: &quot;DX3&quot;,
+    &quot;projectVersion&quot;: &quot;1&quot;,
+    &quot;startups&quot;: [
+        {
+            &quot;FileHooks&quot;: {
+                &quot;CloudFilteredPaths&quot;: [
+                    &quot;&lt;RoamingAppData&gt;\\Eidos Montreal\\**&quot;
+                ],
+                &quot;TempFilteredPaths&quot;: [
+                    &quot;&lt;LocalAppData&gt;\\dxhr\\**&quot;
+                ]
+            },
+            &quot;arguments&quot;: &quot;-archive&quot;,
+            &quot;dataPackId&quot;: &quot;DX3&quot;,
+            &quot;executable&quot;: &quot;DX3.exe&quot;,
+            &quot;id&quot;: &quot;DX3&quot;,
+            &quot;workDir&quot;: &quot;&quot;
+            &quot;CustomProperties&quot;: {}
+        }
+    ]
+}
+</code></pre>
+<ul>
+<li><strong>projectId</strong>: Id of the project. This id will be used to uniquely identify your project on the Shinra platform.</li>
+<li><strong>projectVersion</strong>: Version number only used for tracking purposes.</li>
+<li><strong>dataPacks[].id</strong>: Id of the data pack. This Id is used to reference the datapack across the project and must be unique for each datapack.</li>
+<li><strong>dataPacks[].version</strong>: Version of the datapack, Only used for tacking purposes.</li>
+<li><strong>dataPacks[].files[].fileSystemPath</strong>: Path to a directory containing the files to be deployed for the game.</li>
+<li><strong>dataPacks[].files[].aliasPath</strong>: path to append to the existing path on installation.</li>
+<li><strong>startups[].id</strong> : Id of the startup configuration. This id is used to reference this configuration across the project. It will be used to create a GameID for game execution.</li>
+<li><strong>startups[].dataPackId</strong> : Id of the datapack containing the files required by this startup configuration.</li>
+<li><strong>startups[].executable</strong> : Path to the executable file used to run the game. This path is relative to the datapack root.</li>
+<li><strong>startups[].arguments</strong> : Line command arguments to be passed to the executable. See <a href="#StartupArgs">&quot;Startup arguments&quot;</a> for more informations.</li>
+<li><strong>startups[].workDir</strong> : Path of the work directory to be used to run the executable. This path is relative to the datapack root.</li>
+<li><strong>startups[].FileHooks.CloudFilteredPaths</strong> : List of file hook filters used for cloud storage data. See <a href="#FileHooks">&quot;File hooks&quot;</a> for more information.</li>
+<li><strong>startups[].FileHooks.TempFilteredPaths</strong> : List of file hook filters used for temporary game data. See <a href="#FileHooks">&quot;File hooks&quot;</a> for more information.</li>
+<li><strong>startups[].CustomProperties</strong> : List of custom values to used for properties. See  <a href="#CustomProperties">&quot;Custom properties&quot;</a> for more information.</li>
+</ul>
+<h2><a name="StartupArgs"></a> Startup arguments</h2>
+<p>The arguments field of a startup configuration can contain some special variable that will be automatically replaced when running the game instance:</p>
+<ul>
+<li>{UserId} : will be replaced by the id of the user running the game instance.</li>
+</ul>
+<p>Following is a simple example of command line including {UserId}.</p>
+<pre><code>--debug --username={UserId} --dbhost=192.137.16.50 --rthost=192.137.16.50
+</code></pre>
+<p>When a new game instance is executed using shinra.py script (<a href="#RunCommand">see &quot;Run command&quot;</a>), the id of the user is replaced in place just before executing the game instance for this user.</p>
+<pre><code>--debug --username=user47 --dbhost=192.137.16.50 --rthost=192.137.16.50
+</code></pre>
+<h2><a name="CustomProperties"></a> Custom properties</h2>
+<p>The CustomProperties field of a startup configuration is used to force some settings in the CloudProperties.json configuration file. You can find more about the format and the content of the CloudProperties file in the <a href="#CloudProperties">&quot;CloudProperties configuration file&quot;</a> section.</p>
+<p>The following example will overwrite the property Cloud.Debug.BreakOnStartup to True, and Cloud.Local.EncoderThreads to 3. Note the property names are case sensitive.</p>
+<pre><code>&quot;CustomProperties&quot;: {
+  &quot;Debug.BreakOnStartup&quot;: True,
+  &quot;Local.EncoderThreads&quot;: 3,
+}
+</code></pre>
+<h2><a name="FileHooks"></a> File hooks</h2>
+<p>Shinra projects enable to define File Hooks for games. These File hooks are used to redirect the file-system access of the game application to a different place. This redirection is completely transparent to the game application. The main goal of these file access redirections is to enable running two instances of the same game with the same Windows user on the same machine, and avoid file conflicts when those different instances try to access the user's data.
+The file hook redirection depends on the Shinra UserID and the GameID to make sure each instance is isolated from the other.</p>
+<p>There are two kinds of file hook redirection:</p>
+<ul>
+<li>Temp hooks: files redirected by these hooks will be discarded when the game is over. These hooks are only to work-around multiple instances accessing the same data.</li>
+<li>Cloud save hooks: files redirected by these hooks will be saved when the game is over, and restored at the next game execution for the same user. See <a href="#CloudSave">&quot;Cloud save files&quot;</a> section for more information.</li>
+</ul>
+<p>If a particular file path is matched by both Temp and Cloud file hooks, the Temp hooks have priority so the file won't be saved.</p>
+<h3>File hook syntax</h3>
+<p>A File hook is defined by a pattern used to match the path of the files accessed by the application. To define a pattern, you have access to some predefined variables and wildcard operators.</p>
+<p>Predefined variables:</p>
+<ul>
+<li>&lt;USERID&gt; : The Shinra UserID as specified when starting the game instance.</li>
+<li>&lt;EXEPATH&gt; : Path where the game executable is running.</li>
+<li>&lt;USERNAME&gt; : Windows user name.</li>
+<li>&lt;Profile&gt; : Windows profile folder for the current user.</li>
+<li>&lt;Documents&gt; : Windows Document folder for the current user.</li>
+<li>&lt;LocalAppData&gt; : Windows AppData/Local folder for the current user.</li>
+<li>&lt;LocalAppDataLow&gt; : Windows AppData/LocalLow folder for the current user.</li>
+<li>&lt;RoamingAppData&gt; : Windows AppData/Roaming folder for the current user.</li>
+</ul>
+<p>Wildcard operators:</p>
+<ul>
+<li>some/path/* : Simple star * matches all the files directly under some/path, but none of the sub-directories.</li>
+<li>some/path/** : Double star ** matches all the files under some/path, and all its sub-directories.</li>
+</ul>
+<p>The following example will match all the files under &quot;C:\Users\user47\AppData\Roaming\Eidos Montreal&quot;:</p>
+<pre><code>&lt;RoamingAppData&gt;\Eidos Montreal\**
+</code></pre>
+<h3>File hook redirection</h3>
+<p>When the application tries to access a file that matches a file hook, this file access will be redirected to a different path. This new path will depend on:</p>
+<ul>
+<li>StorePath variable defined in the MCS settings.</li>
+<li>UserID used to start the game instance</li>
+<li>GameID used to start the game instance</li>
+<li>Type of the hook (Temp or Cloud)</li>
+</ul>
+<p>The file will be redirected to:</p>
+<pre><code>&lt;StorePath&gt;/UserFiles/&lt;UserID&gt;/&lt;GameID&gt;/&lt;Type&gt;/
+</code></pre>
+<h3><a name="CloudSave"></a> Cloud save files</h3>
+<p>Between to executions of a game instance, the user's data for a particular game is stored in a tar.gz archive. This archive is stored in a directory depending on:</p>
+<ul>
+<li>ArchivePath variable defined in the MCS settings</li>
+<li>UserID used to start the game instance</li>
+<li>GameID used to start the game instance</li>
+</ul>
+<p>The save data for a particular user will be:</p>
+<pre><code>&lt;ArchivePath&gt;/&lt;UserID&gt;/&lt;GameID&gt;.tar.gz
+</code></pre>
+<h2><a name="RegistryRedirection"></a> Registry redirection</h2>
+<p>Just like FileHooks are way to avoid multiple Shinra users performing conflicting
+file accesses, the Registry redirection is there to avoid multiple Shinra users to
+perform conflicting registry key accesses. All the access to the registry keys in
+HKEY_CURRENT_USER will be redirected in a local registry hive. This local registry
+hive will be saved and restored the save way as the <a href="#CloudSave">Cloud save files</a>.
+The Registry redirection is automatic and does not require additional configuration.</p>
+<h2><a name="CloudProperties"></a>CloudProperties configuration file</h2>
+<p>MCS games are reading their configuration from a CloudProperties.json file. When running a game with the shinra.py script, a CloudProperties file is automatically created for each the new instance, and cleaned-up on game termination. When running game manually with the setup command you have the opportunity to directory edit the CloudProperties.json file before running the game.</p>
+<h3><a name="MultipleGames"></a> Multiple game instances</h3>
+<p>The default behaviour for MCS is to read the properties from a file named &quot;CloudProperties.json&quot; next to the executable file. As a result you can only have one game instance of the game using this method. To run multiple instances, you need to create multiple cloud properties files, each specifying its own set of game port, video port and user id.
+When running a game you can set the FLARE_CONFIG environment variable to specify which property file to use. Here is an example running DX3 using the MyCloudProperties.json configuration file.</p>
+<pre><code>set FLARE_CONFIG=MyCloudProperties.json
+DX3.exe -archive
+</code></pre>
+<h3><a name="Properties"></a> Properties options</h3>
+<p>The CloudProperties.json generated by shinra.py script can be edited if you need to test different settings. Some options inside it can be changed to provide a better experience. The properties are presented with the following syntax:</p>
+<pre><code>Cloud.Section.Name: default
+</code></pre>
+<p>which correspond to the following <a href="http://json.org">JSON</a> property:</p>
+<pre><code>{ &quot;Cloud&quot;: { &quot;Section&quot;: { &quot;Name&quot;: default } } }
+</code></pre>
+<ul>
+<li>
+<p>Cloud.Performance.MaxFPS: 30</p>
+<p>The maximum number of frames requests per second, after which the game start to be throttled down by pausing in the render thread.</p>
+</li>
+<li>
+<p>Cloud.Session.TokenTimeoutSec: 120</p>
+<p>The maximum number of seconds before the game stop accepting new connections.</p>
+</li>
+<li>
+<p>Cloud.Local.EncoderThreads: 1</p>
+<p>The number of threads dedicated to encoding the video stream.</p>
+</li>
+<li>
+<p>Cloud.Local.MaxRenderingFrames: 3</p>
+<p>The maximum number of queued rendering frame requested before the game start to block.</p>
+</li>
+<li>
+<p>Cloud.Local.MaxEncodingFrames: 5</p>
+<p>The maximum number of queued encoding frame requested before the game start to block.</p>
+</li>
+</ul>
+<h2>FAQ</h2>
+<ol>
+<li>
+<p><a name="FAQ1"></a>Is MCS the same as Shinra Remote Rendering technology ?</p>
+<p>Shinra MCS used the same abstraction of the Direct X API to generate the rendering commands on Shinra Remote Renderer.  The implementation is however independent and simplified, and does not include many hardware acceleration and optimizations allowing Shinra Remote Renderer to scale to many clients on a single server.  It's also used a simple JPEG encoder instead of Shinra optimized encoder.</p>
+</li>
+<li>
+<p><a name="FAQ2"></a>My game is slower when I used Shinra MCS... will it be also the case with the Shinra Remote Renderer ?</p>
+<p>As said in <a href="#FAQ1">question 1</a>, Shinra MCS is an independant implementation of the Shinra Remote Renderer technology. It uses no hardware acceleration, can't share any resources from other clients and uses a software-only encoder delivering a bigger video stream.  It's also use the same resources as the client itself (it run in the same process) which can slow down your game further.  Briefly, Shinra MCS just try to imitate the Remote Rendering experience but aren't intend as a benchmark for the kind of performance you can get from Shinra Remote Rendering.</p>
+</li>
+<li>
+<p><a name="FAQ3"></a>Which port is used by MCS ?</p>
+<p>Shinra MCS used the following ports by default (with the <a href="#CloudProperties">CloudProperties</a> name in parenthesis) :</p>
+<ul>
+<li>Video Port (<code>Cloud.Network.VideoPort</code>): 60000</li>
+<li>Audio/Game Port (<code>Cloud.Network.GamePort</code>): 60001</li>
+</ul>
+<p>You can change which ports the ShinraMCS <code>-pv</code> and <code>-pg</code> (respectively for video and game port) options like this:</p>
+<pre><code>ShinraClient -t localhost -pv 70000 -pg 70001
+</code></pre>
+</li>
+</ol>
+<h2>Contacts</h2>
+<p>For more information, you can contact <a href="mailto:fabien.ninoles@eidosmontreal.com">fabien.ninoles@eidosmontreal.com</a>.</p>
