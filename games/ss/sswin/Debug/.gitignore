@@ -1,0 +1,6 @@
+*.tlog
+*.obj
+*.exe
+*.ilk
+*.pdb
+vce.lib

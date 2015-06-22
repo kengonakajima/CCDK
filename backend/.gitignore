@@ -4,3 +4,4 @@ ssbench
 Debug
 Release
 deps.make
+dump.rdb

@@ -1,0 +1,173 @@
+﻿#ifndef _CONF_H_
+#define _CONF_H_
+
+#define SCRW 1280
+#define SCRH 720
+
+#define FIELD_W 2048
+#define FIELD_H 2048
+
+
+
+#define DEFAULT_STACK_MAX 50
+
+#define DEFAULT_TEX_EPS 0.00001
+
+#define DEBRI_WARN_ERASE_SEC 15
+#define DEBRI_ERASE_SEC 20
+
+#define BLOCK_PUT_DISTANCE (1*PPC)
+#define BLASTER_DISTANCE (6*PPC)
+
+#define FIELD_MIN_INTERVAL_SEC 0.2
+
+
+#define ENEMY_DEFAULT_TIMEOUT 30
+
+// Threshold for trees to have apples
+#define TREE_CONTENT_MAX 20 
+#define TREE_CONTENT_RIPE_THRES 10
+
+
+#define WEED_MOSS_MAX 20
+#define TREE_MOSS_MAX 50
+
+#define POISONBALL_DAMAGE 3
+#define SPARIO_DAMAGE 10
+
+#define APPLE_HP_UNIT 25
+#define HEAL_BLASTER_HP_UNIT 50
+
+#define PC_BELT_NUM 4
+#define PC_SUIT_NUM 4
+#define PC_ITEM_NUM (PC_BELT_NUM+PC_SUIT_NUM+(3*8))
+
+
+#define POLE_ELECTRICITY_AREA 2
+#define POLE_NEIGHBOUR_THRES 20
+
+#define POWERGRID_DECAY_INTERVAL 0.3
+
+#define PC_CHARGE_INTERVAL 0.25
+
+#define BLAST_DAMAGE 100
+
+#define ENE_PER_BATTERY_LV1 1000
+#define ENE_PER_BATTERY_LV2 4000
+
+
+#define MOTHERSHIP_CHARGE_UNIT 200
+#define DEPOSIT_ITEM_NUM 24
+#define EXCHANGE_CONSUME_ENE_PER_ITEM 20
+
+#define WARP_ENE_CONSUME_PER_FRAME 20
+#define PORTAL_ENE_REQUIRED_TO_WARP 1000
+
+#define MILESTONE_MAX 200
+
+#define TURRET_RANGE (15*PPC)
+
+#define SHOOT_PC_DISTANCE_THRES (20*PPC)
+#define SHOOT_PLAYER_BUILDING_DISTANCE_THRES_CELL (20)
+
+#define MAX_NODE_IN_A_GRID (4096)
+
+#define DEFAULT_FLY_HEIGHT (PPC*0.75)
+
+#define HYPER_TIME_SEC (10)
+
+
+
+#define MACHINE_SHOOT_DISTANCE (50*PPC)
+#define TAKWASHI_SHOOT_DISTANCE (30*PPC)
+#define WORM_SHOOT_DISTANCE (30*PPC)
+#define MAX_SHOOT_DISTANCE (MACHINE_SHOOT_DISTANCE*1.5) // For enemy buildings
+#define SHRIMP_SEEK_DISTANCE (10*PPC)
+
+
+#define BARRIER_INTERVAL 12
+
+#define ENERGY_PARTICLE_UNIT 100
+
+
+
+
+
+#define WATER_MOISTURE_MAX 12
+
+#define VENT_CONTENT_MAX 300
+#define VENT_READY_CONTENT_THRES 280
+
+#define LAVA_DAMAGE 10
+
+#define FIREGEN_MAX_CONTENT 100
+#define FIREGEN_READY_CONTENT 90
+
+#define FIREBALL_DAMAGE 10
+
+#define COPTERGEN_MAX_CONTENT 100
+#define SLIMEGEN_MAX_CONTENT 100
+#define BIRDGEN_MAX_CONTENT 200    
+
+
+#define BEEHIVE_BEE_NUM 50
+
+#define GRAY_GOO_INTERVAL 40
+
+#define SHIFTER_ACCEL 400
+
+#define BEAM_NORMAL_VEL (PPC*20)
+#define BEAM_BLASTER_VEL (PPC*10)
+
+#define PAIRBARRIER_CONTENT_THRES 30
+
+#define TELEPORTER_FADE_SEC (0.5)
+#define TELEPORTER_GEN_LATENCY (10) // simclk
+
+
+#define FLY_DAMAGE 5
+#define WORM_DAMAGE 10
+#define GROUNDER_PUSH_PC_DAMAGE 5
+
+
+
+#define PC_SHOOT_INTERVAL_NORMAL_SEC (1.0f/6.0f)
+#define PC_SHOOT_INTERVAL_ACCELERATED_SEC (1.0f/15.0f) // Note that we have to support both 30fps and 60fps
+
+#define PC_MAXHP 100
+
+#define PC_MAX_WALK_SPEED (PPC*10)
+
+#define PC_SHOOT_SOUND_CANDIDATE_NUM 6
+
+#define MAX_PRIVATE_PROJECT 3
+
+#define PC_NICKNAME_MAXLEN 7
+#define PC_NICKNAME_MINLEN 2
+
+#define PROJECT_STATUS_LEN 10
+
+
+#define SYNC_CELL_DIA 200 // Diameter of sending synccell. Wider than enemies and bullets.
+#define DESTROY_CELL_DIA 9999 // Diameter of syncing destruction (infinity)
+#define SYNC_CHAR_DIA 300  // Diameter of syncing character motin and activities
+#define DELETE_CHAR_DIA 9999  // Diameter of killing enemies and bullets
+#define SYNC_EFFECT_DIA 80 // Diameter of syncing effects
+
+#define INCREMENT_PLAYTIME_INTERVAL_SEC 10
+
+#define LEAVE_GAME_DELAY_SEC 5
+
+#define WAIT_FOR_VSYNC 1 // Set 1 to wait for VSYNC. Handled by GLFW.
+
+#define HIT_STOP_TIME 0.5
+
+#define POWERSYSTEM_SAVE_INTERVAL 15
+
+#define JOYSTICK_CURSOR_THRES 0.5
+#define JOYSTICK_REPEAT_WAIT 0.3
+#define JOYSTICK_REPEAT_INTERVAL 0.033
+
+#define PC_RECOVERY_COUNT_MAX 5
+
+#endif

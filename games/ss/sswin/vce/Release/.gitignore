@@ -1,0 +1,8 @@
+*.tlog
+*.obj
+*.log
+*.lastbuildstate
+*.idb
+*.pdb
+*.unsuccessfulbuild
+vce.lib
