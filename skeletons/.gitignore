@@ -5,8 +5,10 @@ Debug/*
 ipch/*
 one_to_one/Debug/*
 many_to_many/Debug/*
+one_to_many/Debug/*
 one_to_one/Release/*
 many_to_many/Release/*
+one_to_many/Release/*
 packages
 
 
