@@ -1,0 +1,129 @@
+<h1>Game API</h1>
+<p>The Game API from Shinra Technologies is intend to provide complementary functionalities
+over the standard Windows API already wrapped by Shinra.  Actually, the Shinra API is only
+required, and useful, for 1:N games, but some functionalities could later be added that could
+benefits any game.</p>
+<h2>Using the Game API</h2>
+<p>The API is fully documented inside the C++ header file <a href="ShinraGame.h"><code>ShinraGame.h</code></a>.</p>
+<h3>The Game loop</h3>
+<p>A basic example of a normal game loop with Shinra is the following:</p>
+<pre><code>#include &lt;ShinraGame.h&gt;
+
+int main()
+{
+    MyGame game;
+    game.Initialize(); // Must create the D3D11 swap chain here.
+    while (game.IsRunning())
+    {
+        shinra::Event* event = GetNextEvent();
+        if (event != nullptr)
+        {
+            switch(event-&gt;type)
+            {
+                case shinra::ET_PLAYER_LOGGED_IN:
+                {
+                    game.AddPlayer(event-&gt;playerID);
+                } break;
+                case shinra::ET_PLAYER_LOGGED_OFF:
+                {
+                    game.RemovePlayer(event-&gt;playerID);
+                } break;
+                default:
+                {
+                    // Ignore event for forward compatibility.
+                }
+            }
+        }
+        game.Update();
+    }
+}
+</code></pre>
+<h3>Adding a player</h3>
+<p>The method <code>MyGame::AddPlayer()</code> should add the player avatar to the game.  The <code>playerID</code> member of
+the <code>ET_PLAYER_LOGGED_IN</code> event is used for accessing the different devices used by your player:</p>
+<pre><code>#include &lt;ShinraGame.h&gt;
+
+void MyGame::AddPlayer(shinra::PlayerID playerID)
+{
+  MyPlayer* player = new MyPlayer(playerID);
+  
+  // Set specific rendering context.
+  ID3D11DeviceContext* d3dContext = shinra::GetPlayerRenderingContext(playerID);
+  assert(d3dContext != nullptr);  
+  player-&gt;SetD3D11ImmediateContext(d3dContext);
+  
+  // Set audio device to output.
+  IMMDevice* audioDevice = shinra::GetPlayerAudioDevice(playerID);
+  assert(audioDevice != nullptr);  
+  player-&gt;SetMMAudioDevice(audioDevice);
+  
+  DWORD gamepadID = shinra::GetPlayerGamepadID(playerID);
+  player-&gt;SetXInputGamepadID(gamepadID);
+  
+  AddPlayerToUpdateLoop(player);
+}
+</code></pre>
+<h3>Removing the player</h3>
+<p>The method <code>MyGame::RemovePlayer()</code> should removed the player avatar to the game and free the associated
+resources.</p>
+<pre><code>#include &lt;ShinraGame.h&gt;
+
+void MyGame::RemovePlayer(shinra::PlayerID playerID)
+{
+  MyPlayer* player = RemovePlayerFromUpdateLoop(playerID);
+  if (player == nullptr)
+  {
+    return;
+  }
+  
+  // Set specific rendering context.
+  ID3D11DeviceContext* d3dContext = player-&gt;GetD3D11ImmediateContext();
+  assert(d3dContext != nullptr);  
+  d3dContext-&gt;Release();
+  
+  // Set audio device to output.
+  IMMDevice* audioDevice = player-&gt;GetMMAudioDevice();
+  assert(audioDevice != nullptr);  
+  audioDevice-&gt;Release();
+
+  delete player;
+}
+</code></pre>
+<h3>Using the API with XAudio2</h3>
+<p>The <code>IMMDevice</code> provide by the Shinra API is compatible with the low-level <code>CoreAudio</code> API from
+Windows.  However, you can use an higher level API like
+<a href="https://msdn.microsoft.com/en-us/library/windows/desktop/hh405049%28v=vs.85%29.aspx">XAudio2</a>.
+You simply need to create the XAudio2 MasterVoice using the audio device ID of the player:</p>
+<pre><code>  ...
+  HRESULT hr = S_OK;
+
+  IXAudio2* xaudio2 = nullptr;
+  hr = XAudio2Create( &amp;xaudio2, 0, XAUDIO2_DEFAULT_PROCESSOR ) );
+  assert(SUCCEEDED(hr));
+  
+  const std::wstring audioDeviceID = shinra::GetPlayerAudioDeviceID(playerID);
+  IXAudio2MasteringVoice* masterVoice = nullptr;
+  hr = pXAudio2-&gt;CreateMasteringVoice( 
+                                      &amp;masterVoice,
+                                      XAUDIO2_DEFAULT_CHANNELS,
+                                      XAUDIO2_DEFAULT_SAMPLERATE,
+                                      0,
+                                      audioDeviceID.c_str());
+  assert(SUCCEEDED(hr));
+  
+  ... // Continue with initialization.
+  
+</code></pre>
+<h2>Linking the Game API</h2>
+<p>The whole API is include in <code>CloudCoreClient.dll</code>, and we provide a library stub in
+<code>CloudCoreClient.lib</code> for linking.  Just add the right version (x32 for 32 bits applications,
+and x64 for 64 bits application) to your linker and it's ready.  Note that you must not provided
+your own version of the library in our deployment.  Our service will always deployed your game
+with the latest version of our libraries.</p>
+<h2>FAQ</h2>
+<ol>
+<li>Do I have to use the Game API for my single player game ?</li>
+</ol>
+<p>No, the Game API is only necessary for accessing functionality specific to Shinra Technologies.
+A single player game only required to run on Windows platform using DirectX11 and other Windows
+API supported by Shinra Technologies.</p>
