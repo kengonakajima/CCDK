@@ -74,7 +74,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugD3D|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(ProjectDir)\..\..\..\;$(ProjectDir)\..\sswin\;$(ProjectDir)\..\..\..\..\externals;$(ProjectDir)\..\..\..\..\vce;$(ProjectDir)\..\..\..\..\backend;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\..\..\..\..\externals\moyai\windeps_compiled\vs2013\;$(ProjectDir)\..\..\..\..\externals\moyai\fmodwin\api\lib;C:\Users\win7\Documents\GitHub\ss\cl\sswin\Debug;$(ProjectDir)\..\..\..\..\externals\moyai\demowin\DebugD3D;$(ProjectDir)\..\..\..\..\Debug;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)\..\..\..\..\externals\moyai\windeps_compiled\vs2013\;$(ProjectDir)\..\..\..\..\externals\moyai\fmodwin\api\lib;$(ProjectDir)\..\..\..\..\externals\moyai\demowin\DebugD3D;$(ProjectDir)\..\..\..\..\Debug;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseOGL|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -83,8 +83,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseD3D|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)\..\..\..\;$(ProjectDir)\..\..\..\moyai\zlib-1.2.7;$(ProjectDir)\..\sswin\;$(ProjectDir)\..\..\..\CCDK\vce;$(ProjectDir)\..\..\..\CCDK\backend;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\..\..\..\moyai\windeps_compiled\vs2013\;$(ProjectDir)\..\..\..\moyai\fmodwin\api\lib;C:\Users\win7\Documents\GitHub\ss\cl\sswin\Release;$(ProjectDir)\..\..\..\moyai\demowin\ReleaseD3D;$(ProjectDir)\..\..\..\CCDK\Release;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\..\..\..\;$(ProjectDir)\..\sswin\;$(ProjectDir)\..\..\..\..\vce;$(ProjectDir)\..\..\..\..\backend;$(ProjectDir)\..\..\..\..\externals;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\..\..\..\moyai\demowin\ReleaseD3D;$(ProjectDir)\..\..\..\CCDK\Release;$(ProjectDir)\..\..\..\..\Release;$(ProjectDir)\..\..\..\..\externals\moyai\demowin\ReleaseD3D;$(ProjectDir)\..\..\..\..\externals\moyai\windeps_compiled\vs2013\;$(ProjectDir)\..\..\..\..\externals\moyai\fmodwin\api\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugOGL|Win32'">
     <ClCompile>
