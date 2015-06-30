@@ -4,3 +4,4 @@
 *.vsp
 DebugD3D/*
 sswin/DebugD3D/*
+sswin/ReleaseD3D/*
