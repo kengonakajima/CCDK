@@ -335,7 +335,7 @@ public:
     inline int getMaxBlockHP() {
         switch(bt) {
         case BT_CELL: return 4;
-        case BT_SOIL: return 8;
+        case BT_SOIL: return 3;
         case BT_SNOW: return 1;
         case BT_IVY: return 10;
         case BT_BOMBFLOWER: return 9;

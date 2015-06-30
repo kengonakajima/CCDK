@@ -131,7 +131,7 @@
 
 
 
-#define PC_SHOOT_INTERVAL_NORMAL_SEC (1.0f/6.0f)
+#define PC_SHOOT_INTERVAL_NORMAL_SEC (1.0f/10.0f)
 #define PC_SHOOT_INTERVAL_ACCELERATED_SEC (1.0f/15.0f) // Note that we have to support both 30fps and 60fps
 
 #define PC_MAXHP 100
