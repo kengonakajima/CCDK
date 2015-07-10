@@ -488,7 +488,7 @@ bool dbLoadResearchState( int pjid ) {
     Format f( "research_%d", pjid );
     size_t sz = sizeof(g_research_state);
     bool res = dbLoadFileSync( f.buf, (char*)g_research_state, &sz );
-    if(!res) resetResearchStateLocked();
+    if(!res) ResearchState::resetAllProgress();
     print("dbLoadResearchState: path:%s ret:%d", f.buf, res );
     return res;
 }

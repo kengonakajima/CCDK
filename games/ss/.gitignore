@@ -1,2 +1,5 @@
+*.o
+ss
+deps.make
 dumped.png
 sswin/ReleaseD3D/*

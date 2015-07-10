@@ -3626,7 +3626,7 @@ void leaveGameNow() {
     g_fld->checkSaveAllUnsaved(0.2);
     dbSaveFieldRevealSync( g_current_project_id );
     g_fld->clear();
-    g_flag->reset();
+    g_flag->reset();    
     g_ps->clear();
     g_mapview->notifyChangedAll();
     realtimeCleanAllSend(); // Change runstate to RS_LEFT_PROJECT when receiving responce from backend of this message

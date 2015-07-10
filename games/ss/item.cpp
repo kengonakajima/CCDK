@@ -308,7 +308,8 @@ void setupItemConf(){
                 g_research_state[i].ingrs[j].n = itc->research_ingredients[j].n;
             }                 
         }
-    }
+    }    
+    ResearchState::resetAllProgress();
 }
 
 //
@@ -414,6 +415,14 @@ void ResearchState::unlockAll() {
         unlock(rs->itt);
     }
 }
+void ResearchState::resetAllProgress() {
+    for(int i=0;i<elementof(g_research_state);i++) {
+        g_research_state[i].locked = true;
+        for(int j=0;j<elementof(g_research_state[i].ingrs);j++ ) {
+            g_research_state[i].ingrs[j].current = 0;
+        }
+    }
+}
 
 bool ResearchState::itemIsLocked( ITEMTYPE itt ) {
     ResearchState *rs = ResearchState::getResearchState(itt);
@@ -431,11 +440,7 @@ bool ResearchState::isComplete() {
     }
     return completed;
 }
-void resetResearchStateLocked() {
-    for(int i=0;i<elementof(g_research_state);i++) {
-        g_research_state[i].locked = true;
-    }
-}
+
 /////////////////////
 ItemOwner::ItemOwner( int n, int stackmul ) : stack_multiply(stackmul) {
     size_t sz = sizeof(Item) * n;
