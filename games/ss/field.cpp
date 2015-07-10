@@ -954,7 +954,9 @@ void Field::simStepChunk( bool paused ){
                     ts->last_snapshot_sync_at = nt + range(0, ToSim::SNAPSHOT_SYNC_INTERVAL_SEC/2); // Slightly adjust timing to get smoother
                     CHUNKLOADSTATE ls = getChunkLoadState(Pos2(ts->chx*CHUNKSZ,ts->chy*CHUNKSZ));
                     if( ls == CHUNKLOADSTATE_LOADED ) {
+#ifdef _DEBUG                        
                         debugValidateChunkAt( Pos2(ts->chx*CHUNKSZ,ts->chy*CHUNKSZ) );
+#endif                        
                         realtimeSyncChunkSnapshotSend(ts->chx, ts->chy);
                     }
                 }
@@ -964,7 +966,9 @@ void Field::simStepChunk( bool paused ){
                     if( saved_chunk_this_sim < SAVE_CHUNK_PER_SIM && ls == CHUNKLOADSTATE_LOADED ) {
                         ts->last_save_at = now();
                         print("save chunk %d,%d after change", ts->chx, ts->chy );
+#ifdef _DEBUG                        
                         debugValidateChunkAt(lb);
+#endif                        
                         saveAt( lb, 0);
                         saved_chunk_this_sim ++;
                     } else {
