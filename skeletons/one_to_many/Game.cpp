@@ -389,3 +389,28 @@ void Game::OnDeviceLost()
 
     CreateResources();
 }
+
+
+void Game::addPlayer(shinra::PlayerID playerID) {
+    Player *p = new Player(playerID);
+    ID3D11DeviceContext *d3dc = shinra::GetPlayerRenderingContext( playerID);
+    assert( d3dc != nullptr );
+    p->setD3D11ImmediateContext(d3dc);
+    IMMDevice *mmd = shinra::GetPlayerAudioDevice(playerID);
+    assert( mmd != nullptr );
+    p->setMMAudioDevice( mmd );
+    DWORD padId = shinra::GetPlayerGamepadID(playerID);
+    p->setGamepadID(padId);
+
+    m_players.push_back(p);
+}
+
+void Game::removePlayer(shinra::PlayerID playerID) {
+    for( int i=0;i<m_players.size();i++) {
+        if( m_players[i]->getPlayerID() == playerID ) {
+            Player *p = m_players[i];
+            m_players.erase( remove( m_players.begin(), m_players.end(), p ));
+            break;
+        }
+    }
+}

@@ -8,8 +8,29 @@
 #include "StepTimer.h"
 #include "SpriteFont.h"
 #include "Audio.h"
+#include "ShinraGame.h"
+
+#include <vector>
 
 using namespace DirectX;
+
+
+
+class Player
+{
+public:
+	Player( shinra::PlayerID playerID ) : playerID(playerID) {};
+    void setD3D11ImmediateContext( ID3D11DeviceContext *dc ) { d3dContext = dc; };
+    void setMMAudioDevice( IMMDevice* mmd ) { audioDevice = mmd; };
+    void setGamepadID( DWORD id ) { gamepadId = id; };
+    shinra::PlayerID getPlayerID() { return playerID; }
+private:
+    shinra::PlayerID playerID;
+    DWORD gamepadId;
+    ID3D11DeviceContext *d3dContext;
+    IMMDevice *audioDevice;
+};
+
 
 
 // A basic game implementation that creates a D3D11 device and
@@ -37,6 +58,12 @@ public:
     void OnSuspending();
     void OnResuming();
     void OnWindowSizeChanged();
+
+
+	// 1:N support
+	void addPlayer(shinra::PlayerID playerID);
+	void removePlayer(shinra::PlayerID playerID);
+
 
     // Properites
     void GetDefaultSize( size_t& width, size_t& height ) const;
@@ -78,4 +105,8 @@ private:
 
 	AudioEngine *m_audioEngine;
 	SoundEffect *m_soundEffect;
+
+    // 1:N
+    std::vector<Player*> m_players;
+
 };

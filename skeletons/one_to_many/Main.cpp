@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "Game.h"
+#include "ShinraGame.h"
 
 using namespace DirectX;
 
@@ -77,6 +78,20 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
         }
         else
         {
+			shinra::Event* event = shinra::GetNextEvent();
+			if (event != nullptr) {
+				switch (event->type) {
+				case shinra::ET_PLAYER_LOGGED_IN:
+					g_game->addPlayer(event->playerID);
+					break;
+				case shinra::ET_PLAYER_LOGGED_OFF:
+					g_game->removePlayer(event->playerID);
+					break;
+
+
+				}
+			}
+			//
             g_game->Tick();
         }
     }
