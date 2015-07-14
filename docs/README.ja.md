@@ -16,6 +16,7 @@ CCDKドキュメント
   * [gen.rb C言語出力リファレンス](vce/gen_output_ref_ja.md)
   * [VCEサーバーにおける最大接続数について](vce/connect_ja.md)
 
+* [スペース・スウィーパーのセットアップ](SpaceSweeper.ja.md)
 
 
 権利表記
