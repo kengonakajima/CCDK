@@ -111,12 +111,11 @@ public:
     static ResearchState *getResearchState( ITEMTYPE itt );
     static bool itemIsLocked( ITEMTYPE itt );
     static void unlockAll();
+    static void resetAllProgress();
 };
 
 #define ITEM_CONF_NUM 128
 extern ResearchState g_research_state[ITEM_CONF_NUM];
-void resetResearchStateLocked();
-
 
 
 int getBeamgunEne( ItemConf *itc );
