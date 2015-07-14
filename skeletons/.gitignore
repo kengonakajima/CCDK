@@ -1,6 +1,7 @@
 skeletons.opensdf
 skeletons.sdf
 skeletons.v12.suo
+*Log.txt
 Debug/*
 ipch/*
 one_to_one/Debug/*
