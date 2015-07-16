@@ -5,5 +5,6 @@ SET PLATFORM=x32
 SET CONFIG=Release
 SET PLATFORM_DIR=%GAME_DIR%Shinra\%PLATFORM%\%CONFIG%\
 SET GAME_IP=127.0.0.1
+SET GAME_ID=test
 
-start "" "%PLATFORM_DIR%ShinraClient.exe" -d jpgd -t %GAME_IP%
+start "" "%PLATFORM_DIR%ShinraClient.exe" "shinra://%GAME_IP%/runMCS/%GAME_ID%"
