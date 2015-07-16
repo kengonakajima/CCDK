@@ -1,6 +1,7 @@
 skeletons.opensdf
 skeletons.sdf
 skeletons.v12.suo
+shader_cache.sqlite
 *Log.txt
 Debug/*
 ipch/*
