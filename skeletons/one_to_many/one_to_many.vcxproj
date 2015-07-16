@@ -75,6 +75,8 @@
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(DXSDK_DIR)Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\..\..\api\include</IncludePath>
     <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ProjectDir)\..\..\api\libs\x32\release</LibraryPath>
+    <CustomBuildBeforeTargets>Run</CustomBuildBeforeTargets>
+    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -99,8 +101,11 @@
       <AdditionalDependencies>d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;odbc32.lib;odbccp32.lib;CloudCoreClient.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>C:\Users\ringo\Desktop\ShinraMCS-CCDK-11121.239\python\shinra.py setup one_to_many debug aeris 55000 60000</Command>
+      <Command>C:\Users\ringo\Desktop\ShinraMCS-CCDK-11213.254\python\shinra.py setup one_to_many debug aeris 55000 60000</Command>
     </PostBuildEvent>
+    <CustomBuildStep>
+      <Command>C:\Users\ringo\Desktop\ShinraMCS-CCDK-11213.254\python\shinra.py setup one_to_many debug aeris 55000 60000</Command>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
