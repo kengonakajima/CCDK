@@ -106,7 +106,8 @@
       <AdditionalDependencies>CloudCoreClient.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+      <Command>cd $(MSBuildProjectDirectory)
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
 C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
     <CustomBuildStep />
@@ -125,7 +126,8 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
       <AdditionalDependencies>CloudCoreClient.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+      <Command>cd $(MSBuildProjectDirectory)
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
 C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -147,7 +149,8 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
       <AdditionalDependencies>CloudCoreClient.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+      <Command>cd $(MSBuildProjectDirectory)
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
 C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -169,7 +172,8 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
       <AdditionalDependencies>CloudCoreClient.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+      <Command>cd $(MSBuildProjectDirectory)
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
 C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
