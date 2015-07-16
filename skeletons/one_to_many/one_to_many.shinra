@@ -1,0 +1,51 @@
+{
+  "projectId": "one_to_many",
+  "projectVersion": "",
+  "contentId": null,
+  "apiKey": null,
+  "startups": [
+    {
+      "id": "Debug",
+      "multiconnection": true,
+      "numberOfPlayers": 4,
+      "dataPackId": "DataPack",
+      "executable": "Debug\\one_to_many.exe",
+      "workDir": "",
+      "arguments": null,
+      "FileHooks": null,
+      "CustomProperties": {}
+    },
+    {
+      "id": "Release",
+      "multiconnection": true,
+      "numberOfPlayers": 4,
+      "dataPackId": "DataPack",
+      "executable": "Release\\one_to_many.exe",
+      "workDir": "",
+      "arguments": null,
+      "FileHooks": null,
+      "CustomProperties": {}
+    }
+  ],
+  "dataPacks": [
+    {
+      "id": "DataPack",
+      "version": "",
+      "files": [
+        {
+          "aliasPath": "Debug",
+          "fileSystemPath": "..\\..\\Debug"
+        },
+        {
+          "aliasPath": "assets",
+          "fileSystemPath": "..\\assets"
+        },
+        {
+          "aliasPath": "Release",
+          "fileSystemPath": "..\\..\\Release"
+        }
+      ]
+    }
+  ],
+  "reportConfig": null
+}

@@ -4,7 +4,7 @@ over the standard Windows API already wrapped by Shinra.  Actually, the Shinra A
 required, and useful, for 1:N games, but some functionalities could later be added that could
 benefits any game.</p>
 <h2>Using the Game API</h2>
-<p>The API is fully documented inside the C++ header file <a href="ShinraGame.h"><code>ShinraGame.h</code></a>.</p>
+<p>The API is fully documented inside the C++ header file <a href="../Sources/include/ShinraGame.h"><code>ShinraGame.h</code></a>.</p>
 <h3>The Game loop</h3>
 <p>A basic example of a normal game loop with Shinra is the following:</p>
 <pre><code>#include &lt;ShinraGame.h&gt;
@@ -89,6 +89,13 @@ void MyGame::RemovePlayer(shinra::PlayerID playerID)
   delete player;
 }
 </code></pre>
+<h3>Using the D3D11 Device Context</h3>
+<p>The <code>ID3D11Device</code> and <code>ID3D11DeviceContext</code> create from the DXGI API (either with <code>D3D11CreateDeviceAndSwapChain</code>,
+<code>D3D11CreateDevice</code> or <code>ID3D11Device::CreateSwapChain</code>) can be used to create all resources on all player contexts
+and modifying them in batch. However, most <code>ID3D11DeviceContext</code> read functions aren't actually supported, and even
+if a function seems to work actually, it's behavior is undefined and will likely to change in a future version of
+the API.  For using those functions, you should used the device context return from the
+<code>shinra::GetPlayerRenderingContext</code> API with the user you want to check.</p>
 <h3>Using the API with XAudio2</h3>
 <p>The <code>IMMDevice</code> provide by the Shinra API is compatible with the low-level <code>CoreAudio</code> API from
 Windows.  However, you can use an higher level API like
@@ -113,6 +120,66 @@ You simply need to create the XAudio2 MasterVoice using the audio device ID of t
   
   ... // Continue with initialization.
   
+</code></pre>
+<h2>Registering RawInput Device for Keyboard &amp; Mouse</h2>
+<p>You can access individual players keyboard and mouse input using the
+<a href="https://msdn.microsoft.com/en-us/library/windows/desktop/ms645536%28v=vs.85%29.aspx?f=255&amp;MSPPError=-2147217396">Windows RawInput API</a>.
+As the normal Raw Input usage, you first need to call the
+<a href="https://msdn.microsoft.com/en-us/library/windows/desktop/ms645600%28v=vs.85%29.aspx">RegisterRawInputDevices</a>
+API to register the type of devices you would like to listen to.  You just need to do it once to
+receive the events from all players. For example, the following code allow you to listen to both
+keyboard and mouse events.  You</p>
+<pre><code>  RAWINPUTDEVICE  rids[2] = { 0 };
+  
+  // Mouse
+  rid[0].usUsagePage = 0x01;        // Generic Desktop Page TLC
+  rid[0].usUsage = 0x02;            // Pointer Usage ID
+  rid[0].dwFlags = 0;
+  rid[0].hwndTarget = windowHandle; // NULL for default window
+  
+  // Keyboard
+  rid[1].usUsagePage = 0x01;        // Generic Desktop Page TLC
+  rid[1].usUsage = 0x06;            // Keyboard Usage ID
+  rid[1].dwFlags = RIDEV_NOLEGACY;  // do not generate legacy messages such as WM_KEYDOWN
+  rid[1].hwndTarget = windowHandle; // NULL for default window
+  
+  BOOL res = RegisterRawInputDevices(&amp;rids, 2, sizeof(rids));
+  assert(res);
+</code></pre>
+<p>Once a player get connected, you will start getting WM_INPUT events.  Process it as usual to get
+<code>RAWINPUT</code> data and used the <code>shinra::GetPlayerIDFromRawInputDevice</code> API for finding the PlayerID
+associated the event:</p>
+<pre><code>LRESULT MyGameWindowProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (nMsg)
+    {
+    ...
+    case WM_INPUT:
+        {
+            UINT dwSize = sizeof(RAWINPUT);
+            
+            char buffer[sizeof(RAWINPUT)] = {0};
+            
+            UINT res = GetRawInputData((HRAWINPUT)(lParam), RID_INPUT, buffer, &amp;dwSize, sizeof(RAWINPUTHEADER));
+            
+            if (res == (UINT)(-1)) 
+              break; 
+
+            // extract keyboard raw input data
+            RAWINPUT* raw = reinterpret_cast&lt;RAWINPUT*&gt;(buffer);
+            shinra::PlayerID playerID = shinra::GetPlayerIDFromRawInputDevice(raw-&gt;header.hDevice);
+
+      if (playerID != shinra::PI_INVALID_PLAYERID)
+      {
+        // Handle RawInput data for this player id.
+        MyGame::GetPlayer(playerID).HandleRawInputData(raw);      
+      }
+    }
+    // ... Handle other messages.       
+    }
+
+    return DefWindowProc(hWnd, nMsg, wParam, lParam);
+}
 </code></pre>
 <h2>Linking the Game API</h2>
 <p>The whole API is include in <code>CloudCoreClient.dll</code>, and we provide a library stub in

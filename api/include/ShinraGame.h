@@ -144,7 +144,25 @@ SHINRAGAME_API Event* GetNextEvent();
 
 */
 
-SHINRAGAME_API DWORD GetPlayerGamepadID(PlayerID playerID);
+SHINRAGAME_API ::DWORD GetPlayerGamepadID(PlayerID playerID);
+
+/*
+**  GetPlayerIDFromRawInputDevice
+**
+**  Return the PlayerId associated with a RAWINPUT device handle.
+**  Example:
+**
+**    if(GetRawInputData((HRAWINPUT)lParam, RID_INPUT, pRawInput, &dwSize, sizeof(RAWINPUTHEADER)) > 0)
+**    {
+**       PlayerId playerID = GetPlayerIDFromRawInputHandle(pRawInput->header.hDevice);
+**       if (playerID != PI_INVALID_ID)
+**       {
+**           // Handle input data for this player.
+**       }
+**    }
+*/
+
+SHINRAGAME_API PlayerID GetPlayerIDFromRawInputDevice(HANDLE hRawInputDevice);
 
 /*
 **  GetPlayerAudioDeviceID

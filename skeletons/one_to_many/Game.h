@@ -19,16 +19,22 @@ using namespace DirectX;
 class Player
 {
 public:
-	Player( shinra::PlayerID playerID ) : playerID(playerID) {};
+	explicit Player( shinra::PlayerID playerID );
+	~Player();
     void setD3D11ImmediateContext( ID3D11DeviceContext *dc ) { d3dContext = dc; };
     void setMMAudioDevice( IMMDevice* mmd ) { audioDevice = mmd; };
     void setGamepadID( DWORD id ) { gamepadId = id; };
     shinra::PlayerID getPlayerID() { return playerID; }
+	void Initialize();
+	void Render(int frameCnt);
 private:
+	// Show status logs
     shinra::PlayerID playerID;
     DWORD gamepadId;
     ID3D11DeviceContext *d3dContext;
     IMMDevice *audioDevice;
+	SpriteBatch* m_spriteBatch;
+	SpriteFont* m_spriteFont;
 };
 
 
@@ -97,11 +103,6 @@ private:
     // Game state
     DX::StepTimer                                   m_timer;
 	int m_framecnt;
-
-
-	// Show status logs
-	SpriteBatch* m_spriteBatch;
-	SpriteFont* m_spriteFont;
 
 	AudioEngine *m_audioEngine;
 	SoundEffect *m_soundEffect;

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30723.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "one_to_one", "skeletons\one_to_one\one_to_one.vcxproj", "{B06DBBF6-B83B-4486-91C1-4A7DD9EEA6B5}"
 EndProject
@@ -15,13 +15,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "backend", "backend\backend.vcxproj", "{EB93AE2F-CFA5-46D3-B28F-54DAEB026B17}"
 	ProjectSection(ProjectDependencies) = postProject
 		{94E0DD7F-041E-4A2E-854F-0473BB016D42} = {94E0DD7F-041E-4A2E-854F-0473BB016D42}
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{7FFCAF3B-8DA0-4DEC-9EFC-8E280650A80D}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\NuGet.Config = .nuget\NuGet.Config
-		.nuget\NuGet.exe = .nuget\NuGet.exe
-		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "one_to_many", "skeletons\one_to_many\one_to_many.vcxproj", "{0419E40F-ED98-4761-AB24-7857EF1AFB31}"

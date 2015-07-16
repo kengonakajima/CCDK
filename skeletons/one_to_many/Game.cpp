@@ -4,16 +4,63 @@
 
 #include "pch.h"
 #include "Game.h"
+#include "MMDeviceapi.h"
 
 using namespace DirectX;
 
 using Microsoft::WRL::ComPtr;
 
+Player::Player(shinra::PlayerID pid)
+	: playerID(pid),
+	gamepadId(0),
+	d3dContext(nullptr),
+	audioDevice(nullptr),
+	m_spriteBatch(nullptr),
+	m_spriteFont(nullptr)
+{
+}
+
+void Player::Initialize()
+{
+	m_spriteBatch = new SpriteBatch(d3dContext);
+	ID3D11Device* device = nullptr;
+	d3dContext->GetDevice(&device);
+	m_spriteFont = new SpriteFont(device, L".\\assets\\tahoma32.spritefont");
+	device->Release();
+}
+
+Player::~Player()
+{
+	if (d3dContext) d3dContext->Release();
+	d3dContext = nullptr;
+	if (audioDevice) audioDevice->Release();
+	audioDevice = nullptr;
+	delete m_spriteBatch;
+	delete m_spriteFont;
+}
+
+void Player::Render(int frameCnt)
+{
+	// TODO: Add your rendering code here
+	m_spriteBatch->Begin();
+
+	TCHAR statmsg[100];
+	wsprintf(statmsg, L"Frame: %d", frameCnt);
+	m_spriteFont->DrawString(m_spriteBatch, statmsg, XMFLOAT2(10, 10));
+
+	m_spriteFont->DrawString(m_spriteBatch, L"Skeleton code for 1:N games", XMFLOAT2(100, 100));
+	m_spriteFont->DrawString(m_spriteBatch, L"Press P to play sound effect", XMFLOAT2(130, 160));
+	m_spriteFont->DrawString(m_spriteBatch, L"Press Q to quit", XMFLOAT2(130, 200));
+
+	m_spriteBatch->End();
+}
+
 // Constructor.
 Game::Game() :
     m_window(0),
     m_featureLevel( D3D_FEATURE_LEVEL_9_1 ),
-	m_framecnt(0)
+	m_framecnt(0),
+	m_audioEngine(0)
 {
 }
 
@@ -32,15 +79,15 @@ void Game::Initialize(HWND window)
     m_timer.SetFixedTimeStep(true);
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
-	m_spriteBatch = new SpriteBatch(m_d3dContext.Get());
-	m_spriteFont = new SpriteFont(m_d3dDevice.Get(), L".\\assets\\tahoma32.spritefont");
 
 	// This is only needed in Win32 desktop apps
 	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 	AUDIO_ENGINE_FLAGS eflags = AudioEngine_Default;
+	/* TODO: debug engine is not currently support in Shinra Audio Layer.
 #ifdef _DEBUG
 	eflags = eflags | AudioEngine_Debug;
 #endif
+	*/
 	m_audioEngine = new AudioEngine(eflags);
 	m_soundEffect = new SoundEffect(m_audioEngine, L".\\assets\\coinget.wav");
 	m_soundEffect->Play();
@@ -65,9 +112,12 @@ void Game::Update(DX::StepTimer const& timer)
     // TODO: Add your game logic here
     elapsedTime;
 
-	m_audioEngine->Update();
-	if (m_audioEngine->IsCriticalError()) {
-		OutputDebugString(L"AudioEngine error!");
+	if (m_audioEngine) 
+	{
+		m_audioEngine->Update();
+		if (m_audioEngine->IsCriticalError()) {
+			OutputDebugString(L"AudioEngine error!");
+		}
 	}
 }
 
@@ -82,18 +132,10 @@ void Game::Render()
 
     Clear();
 
-    // TODO: Add your rendering code here
-	m_spriteBatch->Begin();
-
-	TCHAR statmsg[100];
-	wsprintf(statmsg, L"Frame: %d", m_framecnt);
-	m_spriteFont->DrawString(m_spriteBatch, statmsg, XMFLOAT2(10, 10));
-
-	m_spriteFont->DrawString(m_spriteBatch, L"Skeleton code for 1:N games", XMFLOAT2(100, 100));
-	m_spriteFont->DrawString(m_spriteBatch, L"Press P to play sound effect", XMFLOAT2(130, 160));
-	m_spriteFont->DrawString(m_spriteBatch, L"Press Q to quit", XMFLOAT2(130, 200));
-
-	m_spriteBatch->End();
+	for(auto & player : m_players)
+	{
+		player->Render(m_framecnt);
+	}
 
     Present();
 }
@@ -401,6 +443,7 @@ void Game::addPlayer(shinra::PlayerID playerID) {
     p->setMMAudioDevice( mmd );
     DWORD padId = shinra::GetPlayerGamepadID(playerID);
     p->setGamepadID(padId);
+	p->Initialize();
 
     m_players.push_back(p);
 }
@@ -414,3 +457,4 @@ void Game::removePlayer(shinra::PlayerID playerID) {
         }
     }
 }
+
