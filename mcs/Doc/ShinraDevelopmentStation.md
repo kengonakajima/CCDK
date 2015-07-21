@@ -63,7 +63,8 @@ Once you have your Data pack created, you can configure the different properties
 - **Id** is string used to identify this data pack from the others. It can be configured to your 
   liking.
 - **Version** is a string used only for tracking purpose.
-- **Directory** is the path where the data you want to include is located.
+- **Directory** is the path where the data you want to include is located. Relative paths in this place are
+  considered relative to the location of the `.shinra` project file.
 - **Alias** is the name of the directory under which the data will be deployed. By default it is
   the same as the original directory name, but it can be changed for convenience.
 

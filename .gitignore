@@ -1,8 +1,8 @@
 *.sdf
 *.opensdf
 *.suo
-Debug/*
-Release/*
+/Debug/*
+/Release/*
 packages
 .nuget
 ipch

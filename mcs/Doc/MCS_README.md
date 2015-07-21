@@ -411,18 +411,6 @@ with one datapack, and one startup configuration.
 
 ```
 {
-    "dataPacks": [
-        {
-            "files": [
-                {
-                    "aliasPath": "",
-                    "fileSystemPath": "D:\\Shinra\\import\\DX3\\DX3"
-                }
-            ],
-            "id": "DX3",
-            "version": "1"
-        }
-    ],
     "projectId": "DX3",
     "projectVersion": "1",
     "contentId": "DX3Eidos_vffe",
@@ -444,6 +432,18 @@ with one datapack, and one startup configuration.
             "workDir": ""
             "CustomProperties": {}
         }
+    ],
+    "dataPacks": [
+        {
+            "files": [
+                {
+                    "aliasPath": "",
+                    "fileSystemPath": "D:\\Shinra\\import\\DX3\\DX3"
+                }
+            ],
+            "id": "DX3",
+            "version": "1"
+        }
     ]
 }
 ```
@@ -455,7 +455,8 @@ with one datapack, and one startup configuration.
 - **dataPacks[].id**: Id of the data pack. This Id is used to reference the datapack across the project and must be
   unique for each datapack. 
 - **dataPacks[].version**: Version of the datapack, Only used for tracking purposes.
-- **dataPacks[].files[].fileSystemPath**: Path to a directory containing the files to be deployed for the game.
+- **dataPacks[].files[].fileSystemPath**: Path to a directory containing the files to be deployed for the game.  Relative
+  paths are always considered relative to the location of the project file.
 - **dataPacks[].files[].aliasPath**: path to append to the existing path on installation.
 - **startups[].id** : Id of the startup configuration. This id is used to reference this configuration across the
   project. It will be used to create a GameID for game execution.

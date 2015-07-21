@@ -107,7 +107,7 @@
     </Link>
     <PostBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)\mcs -config $(Configuration) -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
 C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
     <CustomBuildStep />
@@ -127,7 +127,7 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
     </Link>
     <PostBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)\mcs -config $(Configuration) -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
 C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -150,7 +150,7 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
     </Link>
     <PostBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)\mcs -config $(Configuration) -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
 C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -173,7 +173,7 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
     </Link>
     <PostBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -config $(Configuration) $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)\mcs -config $(Configuration) -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
 C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

@@ -379,18 +379,6 @@ connect to your game.</p>
 simple enough that you can manually edit it. The following is an example of a simple configuration
 with one datapack, and one startup configuration.</p>
 <pre><code>{
-    &quot;dataPacks&quot;: [
-        {
-            &quot;files&quot;: [
-                {
-                    &quot;aliasPath&quot;: &quot;&quot;,
-                    &quot;fileSystemPath&quot;: &quot;D:\\Shinra\\import\\DX3\\DX3&quot;
-                }
-            ],
-            &quot;id&quot;: &quot;DX3&quot;,
-            &quot;version&quot;: &quot;1&quot;
-        }
-    ],
     &quot;projectId&quot;: &quot;DX3&quot;,
     &quot;projectVersion&quot;: &quot;1&quot;,
     &quot;contentId&quot;: &quot;DX3Eidos_vffe&quot;,
@@ -412,6 +400,18 @@ with one datapack, and one startup configuration.</p>
             &quot;workDir&quot;: &quot;&quot;
             &quot;CustomProperties&quot;: {}
         }
+    ],
+    &quot;dataPacks&quot;: [
+        {
+            &quot;files&quot;: [
+                {
+                    &quot;aliasPath&quot;: &quot;&quot;,
+                    &quot;fileSystemPath&quot;: &quot;D:\\Shinra\\import\\DX3\\DX3&quot;
+                }
+            ],
+            &quot;id&quot;: &quot;DX3&quot;,
+            &quot;version&quot;: &quot;1&quot;
+        }
     ]
 }
 </code></pre>
@@ -423,7 +423,8 @@ with one datapack, and one startup configuration.</p>
 <li><strong>dataPacks[].id</strong>: Id of the data pack. This Id is used to reference the datapack across the project and must be
 unique for each datapack.</li>
 <li><strong>dataPacks[].version</strong>: Version of the datapack, Only used for tracking purposes.</li>
-<li><strong>dataPacks[].files[].fileSystemPath</strong>: Path to a directory containing the files to be deployed for the game.</li>
+<li><strong>dataPacks[].files[].fileSystemPath</strong>: Path to a directory containing the files to be deployed for the game.  Relative
+paths are always considered relative to the location of the project file.</li>
 <li><strong>dataPacks[].files[].aliasPath</strong>: path to append to the existing path on installation.</li>
 <li><strong>startups[].id</strong> : Id of the startup configuration. This id is used to reference this configuration across the
 project. It will be used to create a GameID for game execution.</li>

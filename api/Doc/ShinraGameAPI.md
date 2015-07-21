@@ -1,7 +1,7 @@
 # Game API
 
 The Game API from Shinra Technologies is intend to provide complementary functionalities
-over the standard Windows API already wrapped by Shinra.  Actually, the Shinra API is only
+over the standard Windows API already wrapped by Shinra.  Actually, the Game API is only
 required, and useful, for 1:N games, but some functionalities could later be added that could
 benefits any game.
 
@@ -11,7 +11,7 @@ The API is fully documented inside the C++ header file [`ShinraGame.h`](../Sourc
 
 ### The Game loop
 
-A basic example of a normal game loop with Shinra is the following:
+A basic example of a normal game loop with Shinra Technologies is the following:
 ```
 #include <ShinraGame.h>
 
@@ -105,7 +105,7 @@ void MyGame::RemovePlayer(shinra::PlayerID playerID)
 
 ### Using the D3D11 Device Context
 
-The `ID3D11Device` and `ID3D11DeviceContext` create from the DXGI API (either with `D3D11CreateDeviceAndSwapChain`,
+The `ID3D11Device` and `ID3D11DeviceContext` created from the DXGI API (either with `D3D11CreateDeviceAndSwapChain`,
 `D3D11CreateDevice` or `ID3D11Device::CreateSwapChain`) can be used to create all resources on all player contexts
 and modifying them in batch. However, most `ID3D11DeviceContext` read functions aren't actually supported, and even
 if a function seems to work actually, it's behavior is undefined and will likely to change in a future version of
@@ -115,7 +115,7 @@ the API.  For using those functions, you should used the device context return f
 
 ### Using the API with XAudio2
 
-The `IMMDevice` provide by the Shinra API is compatible with the low-level `CoreAudio` API from
+The `IMMDevice` provide by the Game API is compatible with the low-level `CoreAudio` API from
 Windows.  However, you can use an higher level API like
 [XAudio2](https://msdn.microsoft.com/en-us/library/windows/desktop/hh405049%28v=vs.85%29.aspx).
 You simply need to create the XAudio2 MasterVoice using the audio device ID of the player:
@@ -213,6 +213,7 @@ LRESULT MyGameWindowProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 ## Linking the Game API
 
 The whole API is include in `CloudCoreClient.dll`, and we provide a library stub in
+`CloudCoreClient.lib` for linking.  Just add the right version (x32 for 32 bits applications,
 `CloudCoreClient.lib` for linking.  Just add the right version (x32 for 32 bits applications,
 and x64 for 64 bits application) to your linker and it's ready.  Note that you must not provided
 your own version of the library in our deployment.  Our service will always deployed your game

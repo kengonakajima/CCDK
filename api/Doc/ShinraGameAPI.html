@@ -1,12 +1,12 @@
 <h1>Game API</h1>
 <p>The Game API from Shinra Technologies is intend to provide complementary functionalities
-over the standard Windows API already wrapped by Shinra.  Actually, the Shinra API is only
+over the standard Windows API already wrapped by Shinra.  Actually, the Game API is only
 required, and useful, for 1:N games, but some functionalities could later be added that could
 benefits any game.</p>
 <h2>Using the Game API</h2>
 <p>The API is fully documented inside the C++ header file <a href="../Sources/include/ShinraGame.h"><code>ShinraGame.h</code></a>.</p>
 <h3>The Game loop</h3>
-<p>A basic example of a normal game loop with Shinra is the following:</p>
+<p>A basic example of a normal game loop with Shinra Technologies is the following:</p>
 <pre><code>#include &lt;ShinraGame.h&gt;
 
 int main()
@@ -90,14 +90,14 @@ void MyGame::RemovePlayer(shinra::PlayerID playerID)
 }
 </code></pre>
 <h3>Using the D3D11 Device Context</h3>
-<p>The <code>ID3D11Device</code> and <code>ID3D11DeviceContext</code> create from the DXGI API (either with <code>D3D11CreateDeviceAndSwapChain</code>,
+<p>The <code>ID3D11Device</code> and <code>ID3D11DeviceContext</code> created from the DXGI API (either with <code>D3D11CreateDeviceAndSwapChain</code>,
 <code>D3D11CreateDevice</code> or <code>ID3D11Device::CreateSwapChain</code>) can be used to create all resources on all player contexts
 and modifying them in batch. However, most <code>ID3D11DeviceContext</code> read functions aren't actually supported, and even
 if a function seems to work actually, it's behavior is undefined and will likely to change in a future version of
 the API.  For using those functions, you should used the device context return from the
 <code>shinra::GetPlayerRenderingContext</code> API with the user you want to check.</p>
 <h3>Using the API with XAudio2</h3>
-<p>The <code>IMMDevice</code> provide by the Shinra API is compatible with the low-level <code>CoreAudio</code> API from
+<p>The <code>IMMDevice</code> provide by the Game API is compatible with the low-level <code>CoreAudio</code> API from
 Windows.  However, you can use an higher level API like
 <a href="https://msdn.microsoft.com/en-us/library/windows/desktop/hh405049%28v=vs.85%29.aspx">XAudio2</a>.
 You simply need to create the XAudio2 MasterVoice using the audio device ID of the player:</p>
@@ -183,6 +183,7 @@ associated the event:</p>
 </code></pre>
 <h2>Linking the Game API</h2>
 <p>The whole API is include in <code>CloudCoreClient.dll</code>, and we provide a library stub in
+<code>CloudCoreClient.lib</code> for linking.  Just add the right version (x32 for 32 bits applications,
 <code>CloudCoreClient.lib</code> for linking.  Just add the right version (x32 for 32 bits applications,
 and x64 for 64 bits application) to your linker and it's ready.  Note that you must not provided
 your own version of the library in our deployment.  Our service will always deployed your game

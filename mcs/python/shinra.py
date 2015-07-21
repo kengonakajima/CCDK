@@ -186,12 +186,14 @@ def isChildPath(parent, child):
 		childPath.pop(0)
 	return True
 
-def _getFilesFromDataPack(datapack):
+def _getFilesFromDataPack(basedir, datapack):
 	all_files = {}
 	files = datapack.get('files')
 	if files and len(files) > 0:
 		for pair in files:
 			mapFsysPath = pair.get('fileSystemPath')
+			if not os.path.isabs(mapFsysPath):
+				mapFsysPath = os.path.abspath(os.path.join(basedir, mapFsysPath))
 			mapAliasPath = pair.get('aliasPath')
 			if os.path.isdir(mapFsysPath):
 				for root, dirs, files in os.walk(mapFsysPath):
@@ -213,9 +215,9 @@ def _getFilesFromDataPack(datapack):
 				raise RuntimeError("File mapping in data pack {0} refers to invalid path: {1}".format(datapack['id'], mapFsysPath))
 	return all_files
 
-def _getDataPackSize(datapack):
+def _getDataPackSize(basedir, datapack):
 	totalsize = 0
-	for alias, file in _getFilesFromDataPack(datapack).items():
+	for alias, file in _getFilesFromDataPack(basedir, datapack).items():
 		if os.path.exists(file):
 			totalsize += os.path.getsize(file)
 	return totalsize
@@ -254,7 +256,7 @@ def checkDllLink(linkPath, linkTarget):
 	try:
 		os.symlink(linkTarget, linkPath)
 	except:
-		logger.exception("Failed to create link %s to %s. Copy Dll instead.", linkPath, linkTarget)
+		logger.warning("Failed to create link %r to %r. Will copy dll instead.", linkPath, linkTarget)
 		shutil.copy(linkTarget, linkPath)
 
 def remove_readonly(func, path, exc_info):
@@ -313,7 +315,8 @@ class project:
 	"""Manages a Shinra project"""
 	
 	def __init__(self, projectfile):
-		self.projectfile = projectfile
+		self.projectfile = os.path.abspath(projectfile)
+		self.projectdir = os.path.dirname(self.projectfile);
 		with open(projectfile, 'r') as f:
 			self.conf = json.load(f)
 	
@@ -409,14 +412,14 @@ class project:
 					raise RuntimeError("Project {0} has startup configuration {0} referring to non existing datapack {1}.".format(self.projectfile, startupid, dataPackId))
 				datapacks[dataPackId] = p
 		for dpid, datapack in datapacks.items():
-			totalsize += _getDataPackSize(datapack)
+			totalsize += _getDataPackSize(self.projectdir, datapack)
 		return totalsize
 	
 	def getStartupFilesSize(self, startupId):
 		totalsize = 0
 		datapacks = {}
 		startup, datapack = self.getstartup(startupId)
-		return _getDataPackSize(datapack)
+		return _getDataPackSize(self.projectdir, datapack)
 
 class package(progressreport):
 	"""Manages a ShinraPackage"""
@@ -445,7 +448,7 @@ class package(progressreport):
 			manifest[CONF_FILE_NAME] = zipHashJson(z, conf, CONF_FILE_NAME)
 			for dpid, datapack in datapacks.items():
 				logger.debug("Zipping DataPack %s", dpid)
-				for alias, file in _getFilesFromDataPack(datapack).items():
+				for alias, file in _getFilesFromDataPack(project.projectdir, datapack).items():
 					if not os.path.exists(file):
 						raise RuntimeError("File {0} cannot be found or link cannot be resolved.".format(file))
 					else:
@@ -648,7 +651,7 @@ class game(progressreport):
 		for dataPack in project._datapacks():
 			dataPackId = dataPack.get('id');
 			dataPackDir = os.path.join(self.projectDir, dataPackId)
-			self.installData(dataPack, dataPackDir, overwrite, cleanup)
+			self.installData(project.projectdir, dataPack, dataPackDir, overwrite, cleanup)
 		if not 'startups' in conf:
 			conf['startups'] = {}
 		for startup in project._startups():
@@ -673,8 +676,8 @@ class game(progressreport):
 			exe = os.path.join(self.projectDir, startup['dataPackId'], startup['executable'])
 			self.linkDlls(exe, mcsPath, configuration)
 	
-	def installData(self, datapack, datapackdir, overwrite, cleanup):
-		datapackFiles = _getFilesFromDataPack(datapack)
+	def installData(self, basedir, datapack, datapackdir, overwrite, cleanup):
+		datapackFiles = _getFilesFromDataPack(basedir, datapack)
 		for root, dirs, files in os.walk(datapackdir):
 			for f in files:
 				destPath = os.path.join(root, f)
@@ -688,7 +691,7 @@ class game(progressreport):
 					(not os.path.exists(destPath)) or \
 					(os.path.getmtime(destPath) < os.path.getmtime(srcPath)) or \
 					(os.path.getsize(destPath) != fileSize):
-						logger.debug("delete file %s", destPath)
+						logger.debug("delete file %r", destPath)
 						os.chmod(destPath, stat.S_IWRITE)
 						os.remove(destPath)
 						dir = os.path.dirname(destPath)
@@ -696,11 +699,11 @@ class game(progressreport):
 							os.makedirs(dir)
 						shutil.copy(srcPath, destPath)
 					else:
-						logger.debug("skip unchanged file %s", destPath)
+						logger.debug("skip unchanged file %r", destPath)
 					self.progressUpdate(fileSize)
 				else:
 					if cleanup:
-						logger.debug("delete old file %s", destPath)
+						logger.debug("delete old file %r", destPath)
 						os.chmod(destPath, stat.S_IWRITE)
 						os.remove(destPath)
 		for alias, file in datapackFiles.items():
@@ -712,7 +715,7 @@ class game(progressreport):
 				dir = os.path.dirname(dest)
 				if not os.path.isdir(dir):
 					os.makedirs(dir)
-				logger.debug("copy file %s to %s", file, dest)
+				logger.debug("copy file %r to %r", file, dest)
 				shutil.copy(file, dest)
 				self.progressUpdate(fileSize)
 	
