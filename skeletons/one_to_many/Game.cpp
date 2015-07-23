@@ -5,64 +5,104 @@
 #include "pch.h"
 #include "Game.h"
 #include "MMDeviceapi.h"
+#include <cwctype>
 
 using namespace DirectX;
 
 using Microsoft::WRL::ComPtr;
 
-Player::Player(shinra::PlayerID pid)
-	: playerID(pid),
-	gamepadId(0),
-	d3dContext(nullptr),
-	audioDevice(nullptr),
-	m_spriteBatch(nullptr),
-	m_spriteFont(nullptr)
+Player::Player(shinra::PlayerID playerID, std::shared_ptr<SpriteFont> font)
+    : playerID(playerID)
+    , m_spriteFont(font)
+    , m_lastKey(L' ')
 {
+    // D3D Context initialization.
+    auto d3dContext = shinra::GetPlayerRenderingContext(playerID);
+    assert(d3dContext);
+    m_spriteBatch.reset(new SpriteBatch(d3dContext));
+
+    // Audio Device Initialization.
+    AUDIO_ENGINE_FLAGS eflags = AudioEngine_Default;
+    /* TODO: debug engine is not currently support in Shinra Audio Layer.
+#ifdef _DEBUG
+    eflags = eflags | AudioEngine_Debug;
+#endif
+    */
+    auto audioId = shinra::GetPlayerAudioDeviceID(playerID);
+    m_audioEngine.reset(new AudioEngine(eflags, nullptr, audioId.c_str()));
+    m_soundEffect.reset(new SoundEffect(m_audioEngine.get(), L".\\assets\\coinget.wav"));
+
+    // You can also get the GamePad ID with this code:
+    // auto gamepadId = shinra::GetPlayerGamepadID(playerID);
 }
 
-void Player::Initialize()
+void Player::Update()
 {
-	m_spriteBatch = new SpriteBatch(d3dContext);
-	ID3D11Device* device = nullptr;
-	d3dContext->GetDevice(&device);
-	m_spriteFont = new SpriteFont(device, L".\\assets\\tahoma32.spritefont");
-	device->Release();
-}
-
-Player::~Player()
-{
-	if (d3dContext) d3dContext->Release();
-	d3dContext = nullptr;
-	if (audioDevice) audioDevice->Release();
-	audioDevice = nullptr;
-	delete m_spriteBatch;
-	delete m_spriteFont;
+    m_audioEngine->Update();
+    if (m_audioEngine->IsCriticalError()) {
+        OutputDebugString(L"AudioEngine error!");
+    }
 }
 
 void Player::Render(int frameCnt)
 {
-	// TODO: Add your rendering code here
-	m_spriteBatch->Begin();
+    // TODO: Add your rendering code here
+    m_spriteBatch->Begin();
 
-	WCHAR statmsg[100];
-	wsprintf(statmsg, L"Frame: %d", frameCnt);
-	m_spriteFont->DrawString(m_spriteBatch, statmsg, XMFLOAT2(10, 10));
-	wsprintf(statmsg, L"Player: %u", playerID);
-	m_spriteFont->DrawString(m_spriteBatch, statmsg, XMFLOAT2(10, 50));
+    WCHAR statmsg[100];
+    wsprintf(statmsg, L"Frame: %d", frameCnt);
+    m_spriteFont->DrawString(m_spriteBatch.get(), statmsg, XMFLOAT2(10, 10));
+    wsprintf(statmsg, L"Player: %u", playerID);
+    m_spriteFont->DrawString(m_spriteBatch.get(), statmsg, XMFLOAT2(10, 50));
 
-	m_spriteFont->DrawString(m_spriteBatch, L"Skeleton code for 1:N games", XMFLOAT2(100, 100));
-	m_spriteFont->DrawString(m_spriteBatch, L"Press P to play sound effect", XMFLOAT2(130, 160));
-	m_spriteFont->DrawString(m_spriteBatch, L"Press Q to quit", XMFLOAT2(130, 200));
+    m_spriteFont->DrawString(m_spriteBatch.get(), L"Skeleton code for 1:N games", XMFLOAT2(100, 100));
+    m_spriteFont->DrawString(m_spriteBatch.get(), L"Press P to play sound effect", XMFLOAT2(130, 160));
+    m_spriteFont->DrawString(m_spriteBatch.get(), L"Disconnect the client to quit", XMFLOAT2(130, 200));
 
-	m_spriteBatch->End();
+    if (m_spriteFont->ContainsCharacter(m_lastKey))
+    {
+        wsprintf(statmsg, L"Last Key Press: '%c'", m_lastKey);
+    }
+    else
+    {
+        wsprintf(statmsg, L"Last Key Press: '\\U%04X'", m_lastKey);
+    }
+    m_spriteFont->DrawString(m_spriteBatch.get(), statmsg, XMFLOAT2(100, 260));
+
+    m_spriteBatch->End();
+}
+
+void Player::handleInput(const RAWINPUT& rawInput)
+{
+    switch (rawInput.header.dwType)
+    {
+        case RIM_TYPEKEYBOARD:
+        {
+            // Handle keyboard.
+            const auto & kbdata = rawInput.data.keyboard;
+            if (kbdata.Message == WM_KEYDOWN)
+            {
+                m_lastKey = kbdata.VKey;
+                if (m_lastKey == L'P')
+                {
+                    m_soundEffect->Play();
+                }
+            }
+        }
+        case RIM_TYPEMOUSE:
+            // Handle mouse here if you want.
+            break;
+        case RIM_TYPEHID:
+            // Handle other types if you want.
+            break;
+    }
 }
 
 // Constructor.
 Game::Game() :
     m_window(0),
     m_featureLevel( D3D_FEATURE_LEVEL_9_1 ),
-	m_framecnt(0),
-	m_audioEngine(0)
+    m_framecnt(0)
 {
 }
 
@@ -82,17 +122,28 @@ void Game::Initialize(HWND window)
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
 
-	// This is only needed in Win32 desktop apps
-	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-	AUDIO_ENGINE_FLAGS eflags = AudioEngine_Default;
-	/* TODO: debug engine is not currently support in Shinra Audio Layer.
-#ifdef _DEBUG
-	eflags = eflags | AudioEngine_Debug;
-#endif
-	*/
-	m_audioEngine = new AudioEngine(eflags);
-	m_soundEffect = new SoundEffect(m_audioEngine, L".\\assets\\coinget.wav");
-	m_soundEffect->Play();
+    // RAWINPUT initialization
+    {
+        RAWINPUTDEVICE  rids[2] = { 0 };
+
+        // Mouse
+        rids[0].usUsagePage = 0x01;        // Generic Desktop Page TLC
+        rids[0].usUsage = 0x02;            // Pointer Usage ID
+        rids[0].dwFlags = 0;
+        rids[0].hwndTarget = window; // NULL for default window
+
+        // Keyboard
+        rids[1].usUsagePage = 0x01;        // Generic Desktop Page TLC
+        rids[1].usUsage = 0x06;            // Keyboard Usage ID
+        rids[1].dwFlags = RIDEV_NOLEGACY;  // do not generate legacy messages such as WM_KEYDOWN
+        rids[1].hwndTarget = window; // NULL for default window
+
+        BOOL res = RegisterRawInputDevices(rids, 2, sizeof(rids));
+        assert(res);
+    }
+
+    // This is only needed in Win32 desktop apps
+    CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 }
 
 // Executes basic game loop.
@@ -114,19 +165,16 @@ void Game::Update(DX::StepTimer const& timer)
     // TODO: Add your game logic here
     elapsedTime;
 
-	if (m_audioEngine) 
-	{
-		m_audioEngine->Update();
-		if (m_audioEngine->IsCriticalError()) {
-			OutputDebugString(L"AudioEngine error!");
-		}
-	}
+    for(auto & player: m_players)
+    {
+        player->Update();
+    }
 }
 
 // Draws the scene
 void Game::Render()
 {
-	m_framecnt++;
+    m_framecnt++;
 
     // Don't try to render anything before the first Update.
     if (m_timer.GetFrameCount() == 0)
@@ -134,10 +182,10 @@ void Game::Render()
 
     Clear();
 
-	for(auto & player : m_players)
-	{
-		player->Render(m_framecnt);
-	}
+    for(auto & player : m_players)
+    {
+        player->Render(m_framecnt);
+    }
 
     Present();
 }
@@ -146,13 +194,13 @@ void Game::Render()
 void Game::Clear()
 {
     // Clear the views
-	float d = 100.0f;
-	int m = 25;
-	float r = (rand() % m) / d, g = (rand() % m) / d, b = (rand() % m) / d;
-	float col[4] = { r, g, b, 1 };
-	m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), col);
-	m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
-	m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
+    float d = 100.0f;
+    int m = 25;
+    float r = (rand() % m) / d, g = (rand() % m) / d, b = (rand() % m) / d;
+    float col[4] = { r, g, b, 1 };
+    m_d3dContext->ClearRenderTargetView(m_renderTargetView.Get(), col);
+    m_d3dContext->ClearDepthStencilView(m_depthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+    m_d3dContext->OMSetRenderTargets(1, m_renderTargetView.GetAddressOf(), m_depthStencilView.Get());
 }
 
 // Presents the backbuffer contents to the screen
@@ -412,6 +460,8 @@ void Game::CreateResources()
     // Set the current viewport using the descriptor.
     m_d3dContext->RSSetViewports(1, &viewPort);
 
+    m_spriteFont = std::make_shared<SpriteFont>(m_d3dDevice.Get(), L".\\assets\\tahoma32.spritefont");
+
     // TODO: Initialize windows-size dependent objects here
 }
 
@@ -436,27 +486,40 @@ void Game::OnDeviceLost()
 
 
 void Game::addPlayer(shinra::PlayerID playerID) {
-    Player *p = new Player(playerID);
-    ID3D11DeviceContext *d3dc = shinra::GetPlayerRenderingContext( playerID);
-    assert( d3dc != nullptr );
-    p->setD3D11ImmediateContext(d3dc);
-    IMMDevice *mmd = shinra::GetPlayerAudioDevice(playerID);
-    assert( mmd != nullptr );
-    p->setMMAudioDevice( mmd );
-    DWORD padId = shinra::GetPlayerGamepadID(playerID);
-    p->setGamepadID(padId);
-	p->Initialize();
-
-    m_players.push_back(p);
+    m_players.emplace_back(new Player(playerID, m_spriteFont));
 }
 
 void Game::removePlayer(shinra::PlayerID playerID) {
-    for( int i=0;i<m_players.size();i++) {
+    for( size_t i=0;i<m_players.size();i++) {
         if( m_players[i]->getPlayerID() == playerID ) {
             Player *p = m_players[i];
             m_players.erase( remove( m_players.begin(), m_players.end(), p ));
             delete p;
             break;
+        }
+    }
+}
+
+void Game::handleInput(HRAWINPUT hRawInput)
+{
+    RAWINPUT rawInput = { 0 };
+    UINT dwSize = sizeof(rawInput);
+
+    UINT res = GetRawInputData(hRawInput, RID_INPUT, &rawInput, &dwSize, sizeof(RAWINPUTHEADER));
+
+    if (res == (UINT)(-1))
+        return;
+
+    // extract keyboard raw input data
+    shinra::PlayerID playerID = shinra::GetPlayerIDFromRawInputDevice(rawInput.header.hDevice);
+
+    if (playerID != shinra::PI_INVALID_PLAYER)
+    {
+        // Handle RawInput data for this player id.
+        auto player = std::find_if(m_players.begin(), m_players.end(), [playerID](Player* player){ return player->getPlayerID() == playerID; });
+        if (player != m_players.end())
+        {
+            (*player)->handleInput(rawInput);
         }
     }
 }

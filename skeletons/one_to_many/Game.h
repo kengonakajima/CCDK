@@ -19,22 +19,20 @@ using namespace DirectX;
 class Player
 {
 public:
-	explicit Player( shinra::PlayerID playerID );
-	~Player();
-    void setD3D11ImmediateContext( ID3D11DeviceContext *dc ) { d3dContext = dc; };
-    void setMMAudioDevice( IMMDevice* mmd ) { audioDevice = mmd; };
-    void setGamepadID( DWORD id ) { gamepadId = id; };
+    Player( shinra::PlayerID playerID, std::shared_ptr<SpriteFont> font);
     shinra::PlayerID getPlayerID() { return playerID; }
-	void Initialize();
-	void Render(int frameCnt);
+    void Update();
+    void Render(int frameCnt);
+    void handleInput(const RAWINPUT& rawInput);
 private:
-	// Show status logs
+    // Show status logs
     shinra::PlayerID playerID;
-    DWORD gamepadId;
-    ID3D11DeviceContext *d3dContext;
-    IMMDevice *audioDevice;
-	SpriteBatch* m_spriteBatch;
-	SpriteFont* m_spriteFont;
+    std::unique_ptr<SpriteBatch> m_spriteBatch;
+    std::shared_ptr<SpriteFont> m_spriteFont;
+    std::unique_ptr<AudioEngine> m_audioEngine;
+    std::unique_ptr<SoundEffect> m_soundEffect;
+    WCHAR						m_lastKey;
+
 };
 
 
@@ -66,13 +64,15 @@ public:
     void OnWindowSizeChanged();
 
 
-	// 1:N support
-	void addPlayer(shinra::PlayerID playerID);
-	void removePlayer(shinra::PlayerID playerID);
+    // 1:N support
+    void addPlayer(shinra::PlayerID playerID);
+    void removePlayer(shinra::PlayerID playerID);
 
 
     // Properites
     void GetDefaultSize( size_t& width, size_t& height ) const;
+
+    void handleInput(HRAWINPUT hRawInput);
 
 private:
 
@@ -99,13 +99,11 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView>  m_renderTargetView;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView>  m_depthStencilView;
     Microsoft::WRL::ComPtr<ID3D11Texture2D>         m_depthStencil;
+    std::shared_ptr<SpriteFont>                     m_spriteFont;
 
     // Game state
     DX::StepTimer                                   m_timer;
-	int m_framecnt;
-
-	AudioEngine *m_audioEngine;
-	SoundEffect *m_soundEffect;
+    int m_framecnt;
 
     // 1:N
     std::vector<Player*> m_players;

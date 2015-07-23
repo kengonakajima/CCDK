@@ -196,6 +196,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+	case WM_INPUT:
+		if (g_game && GET_RAWINPUT_CODE_WPARAM(wParam) == RIM_INPUT)
+		{
+			g_game->handleInput((HRAWINPUT)lParam);
+		}
+		break;
+
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
