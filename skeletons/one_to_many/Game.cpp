@@ -44,9 +44,11 @@ void Player::Render(int frameCnt)
 	// TODO: Add your rendering code here
 	m_spriteBatch->Begin();
 
-	TCHAR statmsg[100];
+	WCHAR statmsg[100];
 	wsprintf(statmsg, L"Frame: %d", frameCnt);
 	m_spriteFont->DrawString(m_spriteBatch, statmsg, XMFLOAT2(10, 10));
+	wsprintf(statmsg, L"Player: %u", playerID);
+	m_spriteFont->DrawString(m_spriteBatch, statmsg, XMFLOAT2(10, 50));
 
 	m_spriteFont->DrawString(m_spriteBatch, L"Skeleton code for 1:N games", XMFLOAT2(100, 100));
 	m_spriteFont->DrawString(m_spriteBatch, L"Press P to play sound effect", XMFLOAT2(130, 160));
@@ -453,6 +455,7 @@ void Game::removePlayer(shinra::PlayerID playerID) {
         if( m_players[i]->getPlayerID() == playerID ) {
             Player *p = m_players[i];
             m_players.erase( remove( m_players.begin(), m_players.end(), p ));
+            delete p;
             break;
         }
     }
