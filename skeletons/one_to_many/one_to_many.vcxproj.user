@@ -1,23 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LocalDebuggerWorkingDirectory>D:\ShinraMCS\Games\one_to_many\DataPack\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)Install\one_to_many\DataPack\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>D:\ShinraMCS\Games\one_to_many\DataPack\$(Configuration)\one_to_many.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>$(SolutionDir)Install\one_to_many\DataPack\$(Configuration)\one_to_many.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <LocalDebuggerWorkingDirectory>D:\ShinraMCS\Games\one_to_many\DataPack\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)Install\one_to_many\DataPack\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>D:\ShinraMCS\Games\one_to_many\DataPack\$(Configuration)\one_to_many.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>$(SolutionDir)Install\one_to_many\DataPack\$(Configuration)\one_to_many.exe</LocalDebuggerCommand>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerWorkingDirectory>D:\ShinraMCS\Games\one_to_many\DataPack\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)Install\one_to_many\DataPack\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommand>D:\ShinraMCS\Games\one_to_many\DataPack\$(Configuration)\one_to_many.exe</LocalDebuggerCommand>
+    <LocalDebuggerCommand>$(SolutionDir)Install\one_to_many\DataPack\$(Configuration)\one_to_many.exe</LocalDebuggerCommand>
+    <LocalDebuggerAttach>false</LocalDebuggerAttach>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerWorkingDirectory>D:\ShinraMCS\Games\one_to_many\DataPack\</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerCommand>D:\ShinraMCS\Games\one_to_many\DataPack\$(Configuration)\one_to_many.exe</LocalDebuggerCommand>
+    <LocalDebuggerWorkingDirectory>$(SolutionDir)Install\one_to_many\DataPack\</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerCommand>$(SolutionDir)Install\one_to_many\DataPack\$(Configuration)\one_to_many.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

@@ -74,23 +74,23 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(DXSDK_DIR)Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\..\..\api\include</IncludePath>
-    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ProjectDir)\..\..\api\libs\x32\debug</LibraryPath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ProjectDir)\..\..\api\libs\x32\$(Configuration)</LibraryPath>
     <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <IncludePath>$(DXSDK_DIR)Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\..\..\api\include</IncludePath>
-    <LibraryPath>$(DXSDK_DIR)Lib\x64;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\..\..\api\libs\x64\debug</LibraryPath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\..\..\api\libs\x64\$(Configuration)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(DXSDK_DIR)Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\..\..\api\include</IncludePath>
-    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ProjectDir)\..\..\api\libs\x32\release</LibraryPath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x86;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ProjectDir)\..\..\api\libs\x32\$(Configuration)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <IncludePath>$(DXSDK_DIR)Include;$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)\..\..\api\include</IncludePath>
-    <LibraryPath>$(DXSDK_DIR)Lib\x64;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\..\..\api\libs\x64\release</LibraryPath>
+    <LibraryPath>$(DXSDK_DIR)Lib\x64;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\..\..\api\libs\x64\$(Configuration)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -107,8 +107,8 @@
     </Link>
     <PostBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)\mcs -config $(Configuration) -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)mcs -config $(Configuration) -games-install-dir $(SolutionDir)Install -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup -games-install-dir $(SolutionDir)Install $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
     <CustomBuildStep />
   </ItemDefinitionGroup>
@@ -123,12 +123,12 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>CloudCoreClient.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>CloudCoreClient.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)\mcs -config $(Configuration) -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)mcs -config $(Configuration) -games-install-dir $(SolutionDir)Install -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup -games-install-dir $(SolutionDir)Install $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -150,8 +150,8 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
     </Link>
     <PostBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)\mcs -config $(Configuration) -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)mcs -config $(Configuration) -games-install-dir $(SolutionDir)Install -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup -games-install-dir $(SolutionDir)Install $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -169,12 +169,12 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>CloudCoreClient.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>CloudCoreClient.lib;d3d11.lib;dxguid.lib;uuid.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>cd $(MSBuildProjectDirectory)
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)\mcs -config $(Configuration) -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
-C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py install -mcs-path $(SolutionDir)mcs -config $(Configuration) -games-install-dir $(SolutionDir)Install -overwrite -cleanup $(MSBuildProjectDirectory)\$(MSBuildProjectName).shinra
+C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup -games-install-dir $(SolutionDir)Install $(MSBuildProjectName) $(Configuration) aeris 55000 60000</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -202,6 +202,7 @@ C:\python34\python.exe $(SolutionDir)\mcs\python\shinra.py setup $(MSBuildProjec
     <Manifest Include="settings.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\mcs\StartShinraClient.bat" />
     <None Include="one_to_many.shinra" />
     <None Include="packages.config" />
   </ItemGroup>
