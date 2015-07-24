@@ -34,7 +34,7 @@ The link above will take you to the CCDK repository page listed under the Shinra
 Cloning this repository downloads CCDK, including its history, in its entirety.
 Since the clone command contains information from all versions of the repository, you can access any version you may need through the use of the 'git checkout' command.
 
-If you are already familiar with and know how to use Git, feel free to skip to section 3 **(Install additional external tools (including Python and Ruby)**).
+If you are already familiar with and know how to use Git, feel free to skip to section 2 **(Install additional external tools (including Python and Ruby)**).
 
 Git runs on Windows, Linux and OS X and can be used via a number of various command-line and GUI clients.
 
@@ -213,10 +213,6 @@ By launching even more many_to_many programs in addition to what is currently be
 
 The MCS package, located in the CCDK/mcs directory, is required to test video streaming.
 The MCS package can be extracted to a location of your choosing.
-For this example, we will extract the MCS package in its current location (as shown below).
-![ccdk_mcs_content](images/ccdk_mcs_content.png)
-
-The number 9101.8 is the current build number for MCS. This number will change as new versions of MCS are released.
 
 When package extraction has completed, run the ShinraDevelopmentStation.exe program.
 By default, Windows displays a warning when an unsigned program is run; choose to run this program. From here on, the ShinraDevelopmentStation.exe program will be referred to as SDS.
