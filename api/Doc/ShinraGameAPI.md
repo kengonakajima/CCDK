@@ -197,7 +197,7 @@ LRESULT MyGameWindowProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 			RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(buffer);
 			shinra::PlayerID playerID = shinra::GetPlayerIDFromRawInputDevice(raw->header.hDevice);
 
-      if (playerID != shinra::PI_INVALID_PLAYERID)
+      if (playerID != shinra::PI_INVALID_PLAYER)
       {
         // Handle RawInput data for this player id.
         MyGame::GetPlayer(playerID).HandleRawInputData(raw);      

@@ -1,9 +1,12 @@
 *.sdf
 *.opensdf
 *.suo
+*.tlog
+*.lastbuildstate
 /Debug/*
 /Release/*
 packages
 .nuget
 ipch
 .DS_Store
+/Install/*

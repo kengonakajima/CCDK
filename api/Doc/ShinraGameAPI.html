@@ -169,7 +169,7 @@ associated the event:</p>
             RAWINPUT* raw = reinterpret_cast&lt;RAWINPUT*&gt;(buffer);
             shinra::PlayerID playerID = shinra::GetPlayerIDFromRawInputDevice(raw-&gt;header.hDevice);
 
-      if (playerID != shinra::PI_INVALID_PLAYERID)
+      if (playerID != shinra::PI_INVALID_PLAYER)
       {
         // Handle RawInput data for this player id.
         MyGame::GetPlayer(playerID).HandleRawInputData(raw);      
