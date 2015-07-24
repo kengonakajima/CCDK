@@ -4,7 +4,7 @@ CCDKドキュメント
 
 * [CCDKの概要](./Overview.ja.md)
 * [CCDK セットアップ手順](./Setup.ja.md)
-* [Shinra Development Station 概要](./SDS_Overview.ja.md)
+* [Shinra Development Station 概要](../mcs/Doc/ShinraDevelopmentStation_jp.md)
 * [バックエンドサーバーの使い方](./Backend_Howto.ja.md)
 * [1:Nセットアップ手順](./OneN.ja.md)
 
