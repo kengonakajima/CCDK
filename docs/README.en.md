@@ -5,7 +5,7 @@ CCDK Documents
 * [CCDK System Overview](./Overview.en.md)
 * [CCDK Setup](./Setup.en.md)
 * [Shinra Development Station Overview](../mcs/Doc/ShinraDevelopmentStation_en.md)
-* [Minimum Cloud Set Overview](../mcs/Doc/MCS_readme_en.md)
+* [Minimum Cloud Set Overview](../mcs/Doc/MCS_README_en.md)
 * [Using the Backend Server](./Backend_Howto.en.md)
 * [Setting up 1:N](./OneN.en.md)
 
