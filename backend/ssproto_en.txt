@@ -1,0 +1,571 @@
+﻿This is the protocol definition file for the backend server used by Space Sweeper.
+2015 Shinra Technologies, All rights reserved.
+
+In the descriptions below, a “client” is a game server and a “server” is the backend server.
+
+
+=protocolname ssproto
+
+The protocol name. Modify as desired.
+
+=serverconnection conn
+
+Leave this setting as it is.
+
+=version 10003
+
+gen.rb expresses the protocol version as a pair of integers.
+The major version is the value specified here; the minor version is the result of hashing the content in ssproto.txt.
+You can get both of these values with the ssproto_sv_get_version function.
+
+
+Space Sweeper compares the client and server values.
+If the major version doesn’t match, the program exits.
+The major version can only be changed manually.
+Update the major version whenever you make backwards incompatible changes.
+
+=enum AAA AAA_OK 0
+=enum AAA AAA_NG        
+
+These definitions start with the ‘enum’ keyword, followed by the name and value of the enum type, respectively. The examples above create an enum like the one below.
+
+typedef enum {
+ SSPROTO_AAA_OK = 0,
+ SSPROTO_AAA_NG = 1,
+} SSPROTO_AAA;
+
+
+=idmax 256
+The largest internal ID that can be used by RPC function definitions.
+
+=define TEST_INT 10
+=define TEST_STR "test"
+
+This creates code like the following.
+#undef SSPROTO_TEST_INT
+#define SSPROTO_TEST_INT 10
+#undef SSPROTO_TEST_STR
+#define SSPROTO_TEST_STR "test"
+
+
+=struct teststruct { int x, int y}
+
+This defines a structure like the one below. You can use this structure when defining RPC functions.
+
+typedef struct _ssproto_teststruct {
+    int x;
+    int y;
+} ssproto_teststruct;
+
+
+#=sh #include "test.h"
+#=ch #include "test.h"
+
+You can load C and C++ headers.
+
+=c2s 1 ping ( int64 t_usec, int cmd )
+=s2c 2 pong ( int64 t_usec, int cmd )
+
+To ensure that its TCP connection is still active, the client periodically sends a ping to the server, which replies with a pong.
+
+t_usec: The current time, in microseconds
+cmd: An arbitrary value. The server returns this value from the client unchanged.
+Space Sweeper always uses a value of 0.
+
+
+=define USERID_SIZE_MAX 32
+
+=s2c 4 version_notify ( uint maj, uint min )
+Send the server’s version number, which is obtained by the ssproto_get_version() function.
+Upon receiving this value, the client will exit with an error if it doesn’t have a matching major version.
+If at all possible, it’s preferable to define this function first and not modify it during development.
+
+##########
+
+# List of return values
+
+=define OK (0)
+=define E_FILE_NAME_INVALID (-1) 			# Filename contains invalid characters
+=define E_FILE_NAME_TOO_LONG (-2) 			# Filename is too long
+=define E_FILE_ACCESS (-3) 					# Insufficient permissions to access file
+=define E_KVS_COMMAND (-10) 				# Redis returned an error (check your server’s error logs)
+=define E_CHANNEL_FULL (-30) 				# No more clients can join the specified channel
+=define E_CANT_LOCK (-40) 					# Unable to obtain a lock
+=define E_CANT_UNLOCK (-41) 				# Unable to release a lock
+=define E_IMAGE_STORE_CANNOT_ALLOCATE (-42) # Failed to allocate image memory (too many projects in memory)
+=define E_IMAGE_INVALID_SIZE (-43) 			# Invalid image size
+=define E_IMAGE_NOT_FOUND (-44) 			# Couldn’t find an image with the specified ID
+=define E_IMAGE_CANNOT_CONVERT (-45) 		# Couldn’t convert image into a PNG
+=define E_PROJECT_NOT_SHARED (-46) 			# The specified project hasn’t been shared
+
+###########
+
+# Commands related to basic information
+
+# Client ID
+=c2s 10 conn_serial()
+=s2c 11 conn_serial_result( int serial )
+Ask the server for its VCE conn_t serial number. The server returns this value unchanged.
+The conn_t serial number is incremented every time a new connection is accepted.
+Space Sweeper uses this serial number to distinguish clients from each other.
+
+
+=c2s 12 clean_all()
+=s2c 13 clean_all_result()
+
+Unjoin all channels and release all locks.
+
+###########
+
+# Common command specifications
+
+Commands on lines beginning with “=c2s” are functions defined by the client (in ssproto_cli.h).
+These function calls are sent from the client to the server.
+Conversely, commands on lines beginning with “=s2c” are functions defined by the server (in ssproto_sv.h).
+These function calls are sent from the server to the client.
+
+The server sends a single response for each client request from a database mode function.
+As you can see with put_file and its counterpart put_file_result, c2s and s2c form a pair.
+A function’s counterpart has the “_result” suffix.
+
+It may take time for the server to access files and other data for database mode functions.
+To accommodate this, clients must be able to call functions asynchronously.
+For this reason, clients should send requests with an arbitrary query_id set and the server should return that value unchanged.
+ In this way, even if a client calls several functions at the same time, it can look them up later using the query_id value returned by the _result functions and thus handle the results correctly.
+
+
+In realtime mode, the server may actively call functions even when it hasn’t received requests from clients.
+These function calls use the _notify suffix to distinguish themselves from _result functions.
+
+
+# File manipulation commands (available in database mode)
+
+=define FILE_PATH_MAX 64 # Maximum file path length
+=define FILE_SIZE_MAX (128*1024) # Maximum file size
+=define FILE_SIZE_ABS_MAX (1024*1024) # Maximum total size of any file saved in parts
+=c2s 20 put_file( int query_id, string filename[FILE_PATH_MAX], char data[FILE_SIZE_MAX] )
+=s2c 21 put_file_result( int query_id, int result, string filename[FILE_PATH_MAX] )
+
+Save and persist data in static files. ‘data’ is the binary data.
+The server returns ‘query_id’ and ‘filename’ unchanged; ‘result’ will either be SSPROTO_OK or SSPROTO_E_*.
+
+Rather than being saved at their specified paths, files are spread out in the datadir directory.
+
+
+=c2s 30 get_file( int query_id, string filename[FILE_PATH_MAX] )
+=s2c 31 get_file_result( int query_id, int result, string filename[FILE_PATH_MAX], char data[FILE_SIZE_MAX] )
+Load data from a static file.
+
+
+=define FILE_EXIST 1
+=define FILE_NOT_EXIST 0
+=c2s 40 check_file( int query_id, string filename[FILE_PATH_MAX] )
+=s2c 41 check_file_result( int query_id, int result, string filename[FILE_PATH_MAX] )
+Determine whether a file exists. ‘result’ is 1 if the file exists, 0 if the file doesn’t exist, and negative if an error (SSPROTO_E_*) occurred.
+
+
+###############
+
+# (Persistent) image data in memory
+Space Sweeper’s field map is implemented with an image in memory.
+These refer to the backend server’s ImageEntry and ImageStore classes.
+
+It would also be theoretically possible to implement this by splitting the image into small pieces and then using put/get_file.
+Though Space Sweeper makes fine-grained updates to individual 16x16 cells in a single map,
+we want to load a 512x512 map and thus use raw images in memory for efficiency’s sake.
+
+If you want to have a random-access region for very frequent updates,
+a typical approach would be to allocate it in memory on the backend server.
+
+
+=define IMAGE_WIDTH_MAX (2048)
+=define IMAGE_HEIGHT_MAX (2048)
+=define IMAGE_PART_WIDTH_MAX (32)
+=define IMAGE_PART_HEIGHT_MAX (32)
+=c2s 50 ensure_image( int query_id, int image_id, int w, int h )
+=s2c 51 ensure_image_result( int query_id, int result, int image_id )
+Allocate memory for an image if it is not in memory (or a file). The image will be initialized with black (0,0,0) pixels.
+Space Sweeper assigns the project ID to image_id, but you are free to use a different ID.
+‘w’ and ‘h’ are the width and height, respectively.
+result: SSPROTO_*
+
+
+
+=c2s 52 update_image_part( int query_id, int image_id, int x0, int y0, int w, int h, uchar r[1024], uchar g[1024], uchar b[1024] )
+=s2c 53 update_image_part_result( int query_id, int result, int image_id )
+Update part of an image that is already in memory.
+If the image is not in memory, ‘result’ will be used to return an error value.
+The raw image is saved in a static file and then sent to the server several seconds after it is updated.
+Each pixel takes up 4 bytes, so a 2048x2048 image would be 16 MB in size.
+
+=define PNG_SIZE_MAX (1024*1024)
+=c2s 54 get_image_png( int query_id, int image_id )
+=s2c 55 get_image_png_result( int query_id, int result, int image_id, char png_data[PNG_SIZE_MAX] )
+
+Take a raw image from memory and convert it into a PNG.
+Note: this will take a significant amount of time for large images (~100 ms for a 2048x2048 image).
+Space Sweeper does not currently use this function.
+result: SSPROTO_*
+You can save the content of ‘png_data’ directly to a file and use it as an ordinary PNG image.
+
+
+=define RAW_IMAGE_SIZE_MAX (512*512*4)
+=c2s 56 get_image_raw( int query_id, int image_id, int x0, int y0, int w, int h )
+=s2c 57 get_image_raw_result( int query_id, int result, int image_id, int x0, int y0, int w, int h, char raw_data[RAW_IMAGE_SIZE_MAX] )
+Pull raw image data out of memory. You can extract any part of an image.
+‘raw_data’ arranges its pixel data in row-major order, as follows:
+1. Top-to-bottom
+2. Left-to-right
+3. Red, green, blue, alpha
+Note that each pixel is 4 bytes (RGBA).
+
+‘w’ and ‘h’ each have a maximum value of 512.
+result: SSPROTO_*
+
+This does not access any static files.
+
+##############
+
+# Groups of commands for accessing key-value stores (KVS)
+
+To persist rankings and other data (including character data),
+Space Sweeper uses key-value store (KVS) features through a backend server in database mode.
+
+Space Sweeper accesses a KVS through the backend server for two reasons:
+
+1. To access the KVS via asynchronous function calls without creating new threads.
+2. To reduce the number of TCP connections to the KVS.
+
+
+A particularly important motivation behind the first point is that although a KVS (or DBMS) is generally very fast,
+queries occasionally take several seconds to complete.
+However, because the vast majority of Space Sweeper’s queries are extremely simple,
+the game synchronously invokes RPCs on the backend server.
+
+If you aren’t concerned about the number of running threads in your project,
+it would also be perfectly reasonable to access the database directly via hiredis, libmysqlclient, or some other API.
+
+
+
+=define GENERATE_ID_NUM_MAX 100
+=c2s 100 generate_id_32( int query_id, int num )
+=s2c 101 generate_id_32_result( int query_id, int generated_id_start, int num )
+Create a new ID. You can create several IDs at once. This does not access the KVS.
+Space Sweeper does not currently use this function because it uses conn_t serial numbers instead.
+Given that other KVS commands provide equivalent functionality, this function will probably be removed in the future.
+
+
+=define KVS_COMMAND_MAX 1024 # Maximum command length
+=define KVS_ELEMENT_MAX 1024 # Maximum number of array elements
+=define KVS_ARRAYLEN_MAX 1024 # Maximum length of each array element
+
+=define KVS_VALUE_STRING 1 # String type value
+=define KVS_VALUE_ARRAY 2 # String type array
+=define KVS_VALUE_INTEGER 3 # Integer value
+=define KVS_VALUE_NIL 4 # Nil (distinct from an empty string)
+=define KVS_VALUE_ERROR 6 # Error
+
+=c2s 120 kvs_command_str( int query_id, string command[KVS_COMMAND_MAX] )
+=s2c 121 kvs_command_str_result( int query_id, int retcode, int valtype, stringarray result[KVS_ARRAYLEN_MAX][KVS_ELEMENT_MAX] )
+Run an arbitrary string command on a key-value store (Redis) and return the results in a string array.
+This has a variety of uses in Space Sweeper.
+
+For valetype、KVS_VALUE_STRING|ARRAY|INTEGER|NIL|ERROR is returned.
+
+
+
+=c2s 122 kvs_command_str_oneway( string command[KVS_COMMAND_MAX] )
+A one-way query that does not ask for a response (_result) from the backend server.
+Space Sweeper uses this for the game’s log output.
+
+=define KVS_KEY_MAX 128
+=define KVS_FIELD_MAX 128
+=define KVS_BIN_MAX (256*1024)
+
+=c2s 130 kvs_push_to_list( int query_id, string key[KVS_KEY_MAX], string s[KVS_BIN_MAX], int trim )
+=s2c 131 kvs_push_to_list_result( int query_id, int retcode, string key[KVS_KEY_MAX], int updated_num )
+LPUSH a string to a Redis list. If you specify a nonzero value for ‘trim’, “LTRIM 0 trim” will be run after LPUSH. If ‘trim’ is 3, this function will only keep the first 3 elements.
+A ‘retcode’ value of OK indicates success.
+
+Space Sweeper does not currently use this command. (It was used during development.)
+
+
+
+=c2s 132 kvs_get_list_range( int query_id, string key[KVS_KEY_MAX], int start_ind, int end_ind )
+=s2c 133 kvs_get_list_range_result( int query_id, int retcode, int start_ind, int end_ind, string key[KVS_KEY_MAX], stringarray result[KVS_ARRAYLEN_MAX][KVS_ELEMENT_MAX] )
+Get ‘num’ elements from a Redis list, starting at ‘start_ind’ (Redis’s LRANGE command).
+
+
+=c2s 134 kvs_append_string_array( int query_id, string key[KVS_KEY_MAX], string field[KVS_FIELD_MAX], string s[KVS_ELEMENT_MAX], int trim )
+=s2c 135 kvs_append_string_array_result( int query_id, int retcode, string key[KVS_KEY_MAX], string field[KVS_FIELD_MAX] )
+=c2s 136 kvs_get_string_array( int query_id, string key[KVS_KEY_MAX], string field[KVS_FIELD_MAX] )
+=s2c 137 kvs_get_string_array_result( int query_id, int retcode, string key[KVS_KEY_MAX], string field[KVS_FIELD_MAX], stringarray result[KVS_ARRAYLEN_MAX][KVS_ELEMENT_MAX] )
+Append strings to and get strings from a JSON-formatted array of strings.
+The JSON representation of an array of strings (e.g. [“hoge”, “piyo”, “fuga”])
+will be saved as a Redis hash. Consequently, both ‘key’ and ‘field’ are required values.
+Elements are temporarily saved in JSON format because they can’t be nested in Redis lists.
+Space Sweeper saves project activity logs in this format.
+
+
+=c2s 140 kvs_save_bin( int query_id, string key[KVS_KEY_MAX], string field[KVS_FIELD_MAX], char data[KVS_BIN_MAX] )
+=s2c 141 kvs_save_bin_result( int query_id, int retcode, int valtype, string key[KVS_KEY_MAX], string field[KVS_FIELD_MAX] )
+HSET binary data in a Redis hash.
+A hash, rather than a set, is used here because it is easier to manage;
+deletions are difficult in large sets.
+Space Sweeper uses this to save character data and other structures unmodified.
+
+
+=c2s 150 kvs_load_bin( int query_id, string key[KVS_KEY_MAX], string field[KVS_FIELD_MAX] )
+=s2c 151 kvs_load_bin_result( int query_id, int retcode, int has_data, string key[KVS_KEY_MAX], string field[KVS_FIELD_MAX], char data[KVS_BIN_MAX] )
+HGET binary data (originally saved by kvs_save_bin) from Redis.
+‘has_data’ is 0 when there is no data and 1 when there is.
+
+
+############
+# Simple counters (every function call accesses storage)
+=c2s 160 counter_add( int counter_category, int counter_id, int addvalue )
+
+Increment an integer counter managed by the backend server.
+Counters can be differentiated from each other by a pair of values: a category number and a counter ID.
+Space Sweeper uses these to accumulate the total amount of time spent in each project.
+When this happens, ‘counter_category’ is fixed at 100 and ‘counter_id’ specifies the project ID.
+
+Data is saved in a small static file each time a counter’s value changes.
+
+
+=c2s 161 counter_get( int counter_category, int counter_id )
+=s2c 162 counter_get_result( int counter_category, int counter_id, int result, int curvalue )
+
+Get the value of an integer counter.
+
+
+##################
+# Project sharing (not every function call accesses storage)
+
+When the backend server is in database mode,
+Space Sweeper’s “Share/Publish Project” model is implemented in memory.
+That state is lost when the backend server is restarted.
+
+=define SHARE_MAX 128
+=c2s 180 share_project( int user_id, int project_id, int with[SHARE_MAX] )
+=s2c 181 share_project_result( int project_id )
+Allow ‘user_id’ to share the project specified by ‘project_id’ with the friends specified by ‘with’.
+‘with’ is an array of user IDs.
+The backend server does not determine whether the user specified by ‘user_id’ owns ‘project_id’.
+Space Sweeper ignores share_project_result.
+
+=c2s 182 publish_project( int user_id, int project_id )
+=s2c 183 publish_project_result( int project_id )
+Publish the project specified by `project_id` to everyone.
+Space Sweeper ignores publish_project_result.
+
+=define SEARCH_MAX 20
+=c2s 186 search_shared_projects( int user_id )
+=s2c 187 search_shared_projects_result( int user_id, int project_ids[SEARCH_MAX] )
+Find and return up to SEARCH_MAX projects that the user specified by ‘user_id’ can join.
+
+
+=c2s 188 search_published_projects()
+=s2c 189 search_published_projects_result( int project_ids[SEARCH_MAX] )
+Find and return up to SEARCH_MAX projects that have been shared with everyone.
+
+
+=c2s 190 project_is_joinable( int project_id, int user_id )
+=s2c 191 project_is_joinable_result( int project_id, int user_id, int result )
+Determine whether ‘user_id’ can join the project specified by ‘project_id’.
+This will check both published and shared projects.
+This function returns SSPROTO_E_PROJECT_NOT_SHARED if the user can’t join the project or SSPROTO_OK if the user can.
+
+
+=c2s 192 unshare_project( int project_id )
+=c2s 194 unpublish_project( int project_id )
+Make the project specified by ‘project_id’ private (unshare/unpublish it).
+
+
+=c2s 196 is_published_project( int project_id )
+=s2c 197 is_published_project_result( int project_id, int published )
+Determine whether the project specified by ‘project_id’ has been published to everyone.
+‘published’ is 1 if the project has been published or 0 if it hasn’t.
+
+=c2s 198 is_shared_project( int project_id, int owner_uid )
+=s2c 199 is_shared_project_result( int project_id, int shared )
+‘shared’ takes the following values:
+=define PROJECT_IS_NOT_SHARED 0 # Not shared with anyone
+=define PROJECT_IS_SHARED 1 # Shared with friends
+=define PROJECT_IS_PUBLISHED 2 # Published to everyone
+
+Determine whether the project specified by ‘project_id’ has in some way been shared by ‘owner_uid’.
+In other words, determine whether we (the caller) have shared the project.
+This function returns one of three values in the ‘shared’ parameter: PROJECT_IS_NOT_SHARED, PROJECT_IS_SHARED, or PROJECT_IS_PUBLISHED.
+
+
+##################
+
+# Presence
+In database mode, you can use presence state management features to determine whether your friends are currently among a project’s participants.
+
+
+=c2s 200 update_presence( int project_id, int user_id )
+Tell the backend server that user ‘user_id’ is a participant in project ‘project_id’.
+If this command is not sent for 30 seconds, it times out and the player’s “currently playing” state is cleared.
+Space Sweeper issues this command when you go to a project.
+
+
+=c2s 201 delete_presence( int project_id, int user_id )
+Explicitly leave a project.
+Space Sweeper issues this command when you leave a project.
+
+
+=define PRESENCE_PER_PROJECT_MAX 1024
+=c2s 204 list_presence( int project_id )
+=s2c 205 list_presence_result( int project_id, int user_ids[PRESENCE_PER_PROJECT_MAX] )
+Get the user IDs for all of the participants in a project.
+Space Sweeper does not currently use this command.
+
+=c2s 206 count_presence( int project_id )
+=s2c 207 count_presence_result( int project_id, int user_num )
+Get the total number of participants in a project.
+Space Sweeper fetches this user count and shows it in the project list.
+
+
+#################
+
+# Grid locking
+This is a feature of realtime mode.
+Space Sweeper splits a project’s field map (2048x2048 cells) into 16x16 chunks (or 128x128=16,384 total chunks)
+for generating enemy characters, changing terrain, and other processing.
+Because the same chunk is read by multiple game servers,
+a mutex must be applied to each chunk to ensure that it is processed at a fixed speed.
+The backend server implements concurrency control by sharing a 2D grid it maintains, showing who owns which area,
+with all of the game servers participating in a project.
+
+The actual implementation is handled by the backend server’s LockGrid class.
+
+A grid’s lock states are not saved to any file or database and are thus lost when the backend server process restarts.
+
+
+=c2s 210 lock_grid( int grid_id, int x, int y )
+=s2c 211 lock_grid_result( int grid_id, int x, int y, int retcode )
+Set a lock on a chunk. ‘x’ and ‘y’ can take values between 0 and 127.
+The size of the 2D grid is hardcoded into the backend server.
+‘retcode’ will either be SSPROTO_OK or SSPROTO_E_CANT_LOCK.
+
+
+=c2s 212 unlock_grid( int grid_id, int x, int y )
+=s2c 213 unlock_grid_result( int grid_id, int x, int y, int retcode )
+Release a lock on a chunk.
+Space Sweeper sends this at the end of a simulation after a character has moved a fixed distance away from a chunk.
+‘retcode’ will either be SSPROTO_OK or SSPROTO_E_CANT_UNLOCK.
+
+=c2s 214 lock_keep_grid( int grid_id, int x, int y )
+Extend a chunk’s lock.
+Space Sweeper issues this command on every chunk every other second.
+If a lock is not extended for five seconds,
+the backend server will determine that the simulation has ended and release it.
+The backend server also remembers who locked each chunk and will automatically release all of the locks held by a client when that client disconnects.
+This is done to quickly release a mutex without having to wait five seconds when the game server exits unexpectedly.
+
+
+# Per-project locking
+Realtime servers also provide concurrency control using category numbers rather than 2D grids.
+Per-project locks are also not persisted to any file or database and are thus lost when the backend server process restarts.
+Per-project locks, like grid locks, simply keep track of who the owner is.
+
+Space Sweeper mainly uses these for concurrency control to implement structures (such as the mothership) that can only be used by one player at the same time.
+
+
+=c2s 216 lock_project( int project_id, int category )
+=s2c 217 lock_project_result( int project_id, int category, int retcode )
+Get a lock on a category.
+Space Sweeper defines three types of category numbers for locking access permissions to the mothership and terminals for storing items.
+See the LOCKCATEGORY enumerated type.
+‘retcode’ will either be SSPROTO_OK or SSPROTO_E_CANT_LOCK.
+
+=c2s 218 unlock_project( int project_id, int category )
+=s2c 219 unlock_project_result( int project_id, int category, int retcode )
+Release a lock on a category.
+‘retcode’ will either be SSPROTO_OK or SSPROTO_E_CANT_UNLOCK.
+
+=c2s 220 lock_keep_project( int project_id, int category )
+Extend a category’s lock.
+
+
+
+
+#################
+
+# Sending game synchronization packets
+
+The main role of a realtime server is to handle broadcast, channelcast, and nearcast transmissions.
+
+Each of the following commands have two integer parameters in common: ‘type_id’ and ‘sender_cli_id’.
+
+‘type_id’ indicates a packet’s type; the backend server’s behavior is completely unaffected by this value (which is simply ignored and sent along).
+Space Sweeper sends structures as raw, unserialized data from memory with ‘type_id’ set to a different value for each structure that is sent.
+The receiver then copies the data directly to the appropriate structure in memory.
+
+‘sender_cli_id’ is used to specify a game server process.
+This can be any value that is unique among the game servers.
+Because the backend server’s conn_t serial number satisfies this requirement,
+Space Sweeper is designed to send values obtained with the get_conn_serial command between servers.
+
+Though the maximum packet size is 64 KB, in reality very few packets are larger than several dozen bytes.
+
+
+=define PACKET_SIZE_MAX 65536 # Maximum data packet size
+=c2s 230 broadcast( int type_id, char data[PACKET_SIZE_MAX] )
+=s2c 231 broadcast_notify( int type_id, int sender_cli_id, char data[PACKET_SIZE_MAX] )
+Broadcast to all the game servers connected to the backend server.
+Nothing is sent to the backend server that issued the command, however.
+
+=c2s 232 channelcast( int channel_id, int type_id, char data[PACKET_SIZE_MAX] )
+=s2c 233 channelcast_notify( int channel_id, int sender_cli_id, int type_id, char data[PACKET_SIZE_MAX] )
+Send ‘data’ to all the game servers that are subscribed to a specified channel.
+Nothing is sent to the backend server that issued the command, however.
+
+
+=c2s 234 join_channel( int channel_id )
+=s2c 235 join_channel_result( int channel_id, int retcode )
+Join a channel. You can only join one channel at a time.
+If the channel doesn’t exist, a new one will be initialized.
+‘retcode’ will either be SSPROTO_OK or SSPROTO_E_CHANNEL_FULL.
+
+The caller will automatically leave the channel when its TCP connection is lost.
+
+The backend server currently stores pointers to subscribed channels in the conn_t state buffer,
+thus obviating the cost associated with constantly looking up a channel pointer from a channel ID.
+To put this in perspective: data synchronization packets are called hundreds of thousands of times every second.
+
+To allow game servers to join multiple channels simultaneously in a game other than Space Sweeper,
+you will either need to look up a channel pointer from a channel ID every time,
+or you will need to set an upper limit on the number of channels that a server can join simultaneously (e.g., 4) and then allocate extra space in the state buffer for the other channel pointers.
+
+=c2s 236 leave_channel()
+Explicitly leave a subscribed channel.
+Space Sweeper does not currently use this.
+
+=c2s 240 nearcast( int x, int y, int range, int type_id, char data[PACKET_SIZE_MAX])
+=s2c 241 nearcast_notify( int channel_id, int sender_cli_id, int x, int y, int range, int type_id, char data[PACKET_SIZE_MAX])
+
+Send a transmission to other game servers that subscribe to the same channel and whose (x,y) position is no more than ‘range’ units away.
+
+
+Space Sweeper considers a game server’s “position” to be its character’s coordinates on the game map,
+where each coordinate is an integer between 0 and 2047. ‘range’ is a value roughly between 200 and 500.
+There are no particular restrictions on the range of each value.
+
+If ‘range’ is 500 and a game server has (x,y) coordinates of (1200,800), a transmission will be sent to other game servers with coordinates in the range (700,300)–(1700,1300).
+
+
+=c2s 242 update_nearcast_position( int x, int y )
+Update this game server’s position in the channel(s) it is subscribed to.
+Space Sweeper sends this approximately once per second. In the meantime, positions will move by roughly 10 to 40 cells.
+Games must not be implemented to require strictly synchronized positions.
+
+
+
+=c2s 244 get_channel_member_count( int channel_id )
+=s2c 245 get_channel_member_count_result( int channel_id, int maxnum, int curnum )
+Get the total number of game servers that are subscribed to a specified channel.
+‘maxnum’ is the maximum number (currently 256), and ‘curnum’ is the current number.
+If the channel doesn’t exist, a value of 0 will be returned in ‘curnum’.
