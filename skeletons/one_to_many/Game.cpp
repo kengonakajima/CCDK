@@ -28,8 +28,13 @@ Player::Player(shinra::PlayerID playerID, std::shared_ptr<SpriteFont> font)
     eflags = eflags | AudioEngine_Debug;
 #endif
     */
-    auto audioId = shinra::GetPlayerAudioDeviceID(playerID);
-    m_audioEngine.reset(new AudioEngine(eflags, nullptr, audioId.c_str()));
+    auto audioDevice = shinra::GetPlayerAudioDevice(playerID);
+    assert(audioDevice);
+    LPWSTR audioId = nullptr;
+    audioDevice->GetId(&audioId);
+    m_audioEngine.reset(new AudioEngine(eflags, nullptr, audioId));
+    CoTaskMemFree(audioId);
+    audioDevice->Release();
     m_soundEffect.reset(new SoundEffect(m_audioEngine.get(), L".\\assets\\coinget.wav"));
 
     // You can also get the GamePad ID with this code:
