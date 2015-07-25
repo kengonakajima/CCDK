@@ -10,7 +10,7 @@ CCDK Documents
 * [Setting up 1:N](./OneN.en.md)
 
 
-* Shinra 1:N API
+* Shinra 1:N API Documents
   * [Shinra Game API](../api/Doc/ShinraGameAPI.md)
 
 * MCS Documents
