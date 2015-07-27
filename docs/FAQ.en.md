@@ -106,7 +106,7 @@ Shinra games should undergo extensive QA before submission, as they are subject 
 Shinra has long-term plans to allow its developers, from Prototype Accelerator partners to CCDK developers, to deploy in private and/or public test environments.
 <BR><BR>
 - <B>Are Shinra titles subject to ratings board approval?</B><BR>
-At this point, ratings certification is not required by the Shinra platform. However, all content will be held to Shinra's Content Policy, which will be released shortly.
+At this point, ratings certification is not required by the Shinra platform. However, all content will be held to Shinra's Content Policy (https://tech.shinra.com/docs/ShinraContentPolicy.pdf).
 <BR><BR>
 - <B>Can I publish older catalog titles that I've developed to Shinra?</B><BR>
 Shinra is always looking to feature quality content; older titles will be evaluated on a case-by-case basis.
@@ -115,7 +115,7 @@ Shinra is always looking to feature quality content; older titles will be evalua
 No, platform exclusivity is not required. However, games that are specifically written for the Shinra platform are likely to be so unique in their architecture that it's unlikely that the same experience can be transferred to another platform.
 <BR><BR>
 - <B>Can I distribute or publish adult titles on the Shinra platform?</B><BR>
-No. Shinra developers are held to its Content Policy, which does not permit adult titles. (The Content Policy will be released shortly.)
+No. Shinra developers are held to its Content Policy, which does not permit adult titles. (https://tech.shinra.com/docs/ShinraContentPolicy.pdf)
 <BR><BR>
 - <B>How do you test a Shinra game locally?</B><BR>
 A developer can run their game underneath the Shinra MCS (Minimum Cloud Set), which acts as a wrapper for the Shinra platform. The user can start their game and then stream it over their local network in order to test compatibility.
