@@ -2,7 +2,7 @@ CCDK Software License Agreement
 
 (Last Updated: [May 15, 2015])
 
-This End-User License Agreement (this "Agreement") is a legal agreement
+This License Agreement (this "Agreement") is a legal agreement
 between user who uses and/or downloads the CCDK Software (or any portion thereof)
 and who uses the modified Modifiable CCDK Server-Side Software (or any portion
 thereof, and as defined below) (collectively, “you”) and Shinra Technologies, Inc.
@@ -53,7 +53,7 @@ a non-exclusive, non-transferable, non-sublicensable (except
 as expressly permitted under this Agreement), revocable and limited right
 and license to:
 
-(a)	modify the (modified) Modifiable CCDK Server-Side Software (as defined below)
+(a)	modify the (modified) Modifiable CCDK Server-Side Software
 in source code format and integrate and compile
 the Modifiable CCDK Server-Side Software in source code format
 as modified (if applicable) into the server-side component of your
@@ -194,10 +194,10 @@ WITHOUT LIMITATION, FOR COPYRIGHT INFRINGEMENT.
 Without prejudice to any other rights or remedies of Shinra, Shinra
 may immediately terminate this Agreement if you breach any of the terms
 or conditions set forth herein.  Shinra also may terminate this Agreement
-for convenience by providing you with ten (10) days prior written notice
+for convenience by providing you notice
 of such termination via the GitHub website and/or via any other public forum.
 At the termination of this Agreement, you will immediately (a) cease using
-the CCDK Software; and (b) completely remove (i.e., uninstall and delete)
+the CCDK Software; (b) completely remove (i.e., uninstall and delete)
 the CCDK Software from your computer systems; and (c) make materials
 related to the CCDK Software illegible.  Sections 3 (RESTRICTIONS),
 4 (PROPRIETARY RIGHTS), 5 (TERMINATION), 6 (COMPLIANCE WITH LAWS),
