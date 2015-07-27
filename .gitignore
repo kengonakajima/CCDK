@@ -1,6 +1,8 @@
 *.sdf
 *.opensdf
 *.suo
+*.tlog
+*.lastbuildstate
 /Debug/*
 /Release/*
 packages

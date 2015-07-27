@@ -105,12 +105,13 @@ ssbench (realtime|database) [--host=IPADDR] [--maxcon=NUMBER] [--channel=NUMBER]
 The ssbench program has real-time and database running modes. However, only one running mode can be specified at a time.
 
 The meaning of each option flag is listed below.
-```--host=IPADDR``` sets the IP address for the ssv server to stress test. Example: ```--host=192.168.11.10```
-```--maxcon=NUMBER``` specifies the maximum number of simultaneous connections. The default value is 4. Example: ```--maxcon=100```
-```channel=NUMBER``` specifies a channel number to stress test. For example, with the Space Sweeper game, the project ID would be used here to enable the stress testing of an actual game in progress. The default value for this option is 1. Example: ```--channel=38```.
-```--range=DISTANCE``` changes the distance of the coordinate map used by the nearcast function to determine listening range when used in realtime mode. Details for this option will be highlighted in subsequent text. Example: ```--range=1000```
-```--filenum=NUMBER``` sets the number of files to be saved when used in database mode. As the file number increases, the frequency of repeated access to a single file decreases and disk usage increases. The default value is 1024. Example: ```--filenum=65536```.
-```--filesize=NUMBER``` sets the size for a save file when used in database mode. As file size increases disk usage also increases. The default value is 8192. Example: ```--filesize=512```
+
+* ```--host=IPADDR``` sets the IP address for the ssv server to stress test. Example: ```--host=192.168.11.10```
+* ```--maxcon=NUMBER``` specifies the maximum number of simultaneous connections. The default value is 4. Example:  ```--maxcon=100```
+* ```channel=NUMBER``` specifies a channel number to stress test. For example, with the Space Sweeper game, the project ID would be used here to enable the stress testing of an actual game in progress. The default value for this option is 1. Example: ```--channel=38```.
+* ```--range=DISTANCE``` changes the distance of the coordinate map used by the nearcast function to determine listening range when used in realtime mode. Details for this option will be highlighted in subsequent text. Example: ```--range=1000```
+* ```--filenum=NUMBER``` sets the number of files to be saved when used in database mode. As the file number increases, the frequency of repeated access to a single file decreases and disk usage increases. The default value is 1024. Example: ```--filenum=65536```.
+* ```--filesize=NUMBER``` sets the size for a save file when used in database mode. As file size increases disk usage also increases. The default value is 8192. Example: ```--filesize=512```
 
 The following is a list of all options available for use with the ssbench program.
 

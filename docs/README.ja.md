@@ -4,10 +4,16 @@ CCDKドキュメント
 
 * [CCDKの概要](./Overview.ja.md)
 * [CCDK セットアップ手順](./Setup.ja.md)
-* [Shinra Development Station 概要](./SDS_Overview.ja.md)
+* [Shinra Development Station 概要](../mcs/Doc/ShinraDevelopmentStation_jp.md)
 * [バックエンドサーバーの使い方](./Backend_Howto.ja.md)
 * [1:Nセットアップ手順](./OneN.ja.md)
 
+* Shinra 1:N API(英語)
+  * [Shinra Game API](../api/Doc/ShinraGameAPI.md)
+
+* MCSの使い方(英語)
+  * [MCS README](../mcs/Doc/MCS_README_en.md)
+  * [Shinra Development Station](../mcs/Doc/ShinraDevelopmentStation_en.md)
 
 * VCEの使い方
   * [VCE APIリファレンス](vce/apiref/out/vce-api-ja.md)
