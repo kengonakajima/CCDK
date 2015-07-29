@@ -1,7 +1,7 @@
 {
   "projectId": "one_to_many",
   "projectVersion": "",
-  "contentId": null,
+  "contentId": "one_to_many_contentid",
   "apiKey": null,
   "startups": [
     {
@@ -10,17 +10,6 @@
       "numberOfPlayers": 4,
       "dataPackId": "DataPack",
       "executable": "Debug\\one_to_many.exe",
-      "workDir": "",
-      "arguments": null,
-      "FileHooks": null,
-      "CustomProperties": {}
-    },
-    {
-      "id": "Release",
-      "multiconnection": true,
-      "numberOfPlayers": 4,
-      "dataPackId": "DataPack",
-      "executable": "Release\\one_to_many.exe",
       "workDir": "",
       "arguments": null,
       "FileHooks": null,
