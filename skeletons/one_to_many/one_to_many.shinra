@@ -28,10 +28,6 @@
         {
           "aliasPath": "assets",
           "fileSystemPath": "..\\assets"
-        },
-        {
-          "aliasPath": "Release",
-          "fileSystemPath": "..\\..\\Release"
         }
       ]
     }
