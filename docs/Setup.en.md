@@ -80,7 +80,7 @@ If you have problems running CCDK or you would like to have CCDK verified with a
 
 Use the link below to download Python 3.4. 
 <pre>
-https://www.python.org/downloads/windows/
+https://www.python.org/downloads/release/python-343/
 </pre>
 The 'python.exe' program should install itself to the path below during a normal installation. Add this file path to your Windows Environment 'PATH' variable.
 <pre>
@@ -102,12 +102,12 @@ Just like the confirmation for Python, open up a command prompt and type 'ruby' 
 If you see output similar to the output shown below, your Ruby settings were successfully applied.
 
 
-CCDK is compatible with the free version of Visual Studio 2013.
+The CCDK is compatible with the free Community version of Visual Studio 2013.
 Visual Studio 2013 Professional was used for the development of CCDK.
 
-The free version can be downloaded directly from Microsoft's website using the link below.
+Community 2013 can be downloaded directly from Microsoft's website using the link below.
 <pre>
-https://www.visualstudio.com/downloads/
+https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
 </pre>
 
 A Visual Studio compatible version of Redis has been ported from the official project site.
@@ -161,7 +161,16 @@ The Visual Studio solution file for the CCDK library can be opened from its loca
 ![ccdksln](images/ccdk_sln.png)
 
 A complete build can be made by pressing the [build] button. This will compile the entire project.
-During the build process, the DirectX ToolKit package will be automatically downloaded and installed by NuGet.
+
+<B>Step 1.5 - Make sure DirectX SDK June 2010 is installed</B>
+
+During the build process, the DirectX SDK package should be automatically downloaded and installed by NuGet. Sometimes this automatic process fails. 
+
+In order to fix it, you must install DirectX SDK June 2010 edition. Sometimes you need to uninstall other versions of the Visual C++ Redistributable in order to successfully install this version of the SDK. You can find this version of the SDK here: https://www.microsoft.com/en-us/download/details.aspx?id=6812
+
+On some Windows 8 machines, .NET Framework 3.5 is not automatically enabled. Open the Start menu, then find the "Turn Windows features on or off" Settings menu to trigger the download. Or download it directly: 
+
+If your computer belongs to a group network using Windows Server Update Services (WSUS), follow these steps to force an update [https://support.microsoft.com/en-us/kb/2734782] or ask your sysadmin to enable .NET Framework 3.5 updates for you.
 
 <B>Step 2 - Perform validation tests on the one-to-one skeleton program with video streaming disabled</B>
 
