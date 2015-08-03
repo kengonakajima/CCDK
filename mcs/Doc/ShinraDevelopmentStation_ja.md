@@ -11,7 +11,7 @@ SDSの主な目的は、シンラのプロジェクトファイルを操作す�
 ----
 
 SDSのGUIは3つの要素で構成されています。
-![](images/sds_gui.png)
+![](../../docs/images/sds_gui.png)
 
 画面上部にはメニューバーがあり、プロジェクトのセーブ、ロード、ゲームの開始、設定画面などを呼び出すことができます。
 
@@ -24,7 +24,7 @@ SDSのGUIは3つの要素で構成されています。
 ## SDS自体の設定
 
 SDSツールそのものの設定は、メニューバーのSettingsから MCS configurationを選択することで確認できます(図)。
-![](images/sds_mcs_configuration.png)
+![](../../docs/images/sds_mcs_configuration.png)
 
 
 **Python executable** は```python.exe```へのパスです。 Python 3が必要です。CCDKの開発では、3.4を使っています。
@@ -66,7 +66,7 @@ SDSツールそのものの設定は、メニューバーのSettingsから MCS c
 
 データパックを作ると、以下の項目が設定可能になります。
 
-![](images/sds_add_datapack.png)
+![](../../docs/images/sds_add_datapack.png)
 
 - **Id** ほかのデータパックと区別するためのID。　任意の文字列を指定します。
 - **Version**  データパックを追跡するためのバージョン番号です。デバッグに活用します。
@@ -81,7 +81,7 @@ SDSツールそのものの設定は、メニューバーのSettingsから MCS c
 - プロジェクトツリーで```Startup configurations``` を右クリックし、```Add Startup configuration```を選択する
 - 各データパックのファイルリストで、実行可能ファイルで右クリックし、```Add startup configuration```を選択する
 
-![](images/sds_add_startup.png)
+![](../../docs/images/sds_add_startup.png)
 
 スタートアップ設定を追加したら、以下の項目が設定できます。
 
@@ -117,7 +117,7 @@ When starting a game, the game data will be deployed in the directory specified 
 
 プロジェクトメニューから ```Start game```を選択すると以下のようなウインドウが表示されます。
 
-![](images/sds_two_instances.png)
+![](../../docs/images/sds_two_instances.png)
 
 ひとつのスタートアップ設定から、複数のゲームを起動することができます。
 このウインドウでは1行がひとつのゲームの実行インスタンスに対応します。
