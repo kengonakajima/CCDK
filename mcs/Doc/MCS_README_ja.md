@@ -330,7 +330,7 @@ projectid引数, userid引数, gameid引数は、それぞれ runコマンドと
 - ```-games-install-dir GAMES_INSTALL_DIR``` install/setupコマンドと同じ
 - ```-store-path STORE_PATH``` install/setupコマンドと同じ
 - ```-archive-path ARCHIVE_PATH``` install/setupコマンドと同じ
-```
+
 
 ゲームのユーザーデータをセーブするときのさらに詳しい動作については、[ファイルフック](#FileHooks) を参照してください。
 
