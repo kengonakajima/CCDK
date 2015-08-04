@@ -107,9 +107,8 @@ pack and using different arguments.
 ### Project packaging
 SDS allows to package a project in a zip file that will contain the files from the datapack, and the
 required information to deploy the project on the Shinra servers. Note it is also possible to deploy
-a Shinra pack or on another workstation. You can create a ShinraPack in two different ways:
-- In the *Project* menu select *Build ShinraPack*.
-- Right click on the project item in the project tree and select *Start game*.
+a Shinra pack or on another workstation. You can create a ShinraPack by selecting *Build ShinraPack* inside *Project* menu.
+
 
 ### Project import
 A packaged project can be re-imported to create a new Shinra project. To import a project click *File*
