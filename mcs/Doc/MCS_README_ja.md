@@ -203,12 +203,12 @@ videoport引数は、映像を通信するためのTCPポート番号を指定�
 - ```-no-display-statistics``` 統計情報を表示しません。
 - ```-encoder-threads ENCODER_THREADS``` ビデオエンコーディングをするときに使用するスレッドの数を指定します。
 - ```-max-encoding-frames MAX_ENCODING_FRAMES``` ゲームの実行がブロックしはじめるまでにキューされる最大のフレーム数を指定します。
-```
+
 以下の例では、 SSWプロジェクトの ssw_debugという名称のスタートアップ設定を、aerisユーザーで、ゲームポート55000,ビデオポート60000で起動します。
 
-```
+~~~
 shinra.py run SSW ssw_debug aeris 55000 60000
-```
+~~~
 
 ここで指定したポート番号が、正しく ShinraClientでも指定する必要があることに注意してください。 ([Shinra Client](#ShinraClient)を参照)
 
@@ -230,7 +230,6 @@ setupしたゲームを実際に実行するためには、MCSによって自動
 - ゲームを実行したあと、 ```cleanup``` コマンドを実行すること。([Cleanupコマンド](#CleanupCommand) を参照)
 
 オプション無しで起動すると以下の説明が表示されます:
-
 
 ```
 usage: shinra.py setup [-h] [-cloud-properties CLOUD_PROPERTIES]
