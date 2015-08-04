@@ -263,7 +263,6 @@ MCSの設定状態は、ファイル  ```%APPDATA%/Shinra/SDS/Settings.json.``` 
 ゲームを始めると、SDS自体に設定されたゲームのインストールディレクトリ ```Games installation dir``` の中にゲームがコピーされ、必要なDLLなどが自動的にインストールされ、そこでゲームが開始されます。
 インストールが完了すると、ゲームの実行管理ウインドウが表示されます。
 
-When starting a game, the game data will be deployed in the directory specified under the "MCS configuration", and then executed there. Once the installation is over you will be prompted the Game running window.
 
 ### ゲームの実行管理ウインドウ
 
