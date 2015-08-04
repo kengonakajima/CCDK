@@ -11,7 +11,7 @@ CCDK Documents
 
 
 * Shinra 1:N API Documents
-  * [Shinra Game API](../api/Doc/ShinraGameAPI.md)
+  * [Shinra Game API](../api/Doc/ShinraGameAPI_en.md)
 
 * MCS Documents
   * [MCS README](../mcs/Doc/MCS_README_en.md)
