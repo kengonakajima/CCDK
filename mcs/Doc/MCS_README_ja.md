@@ -8,7 +8,7 @@ CCDKにおけるインストール手順は、 [セットアップ手順](../../
 ## <a name="SDS"></a> Shinra Development Station
 
 Shinra Development Station (SDS) は、プロジェクトを作成したり操作をするためのGUIツールです。MCSに含まれるshinra.pyというPythonによるコマンドラインツールを内部で使用して、その機能を提供します。
-より詳しい使用方法については、[ShinraDevelopmentStation](ShinraDevelopmentStation_ja.md)を参照してください。
+より詳しい使用方法については、[Shinra Development Station](ShinraDevelopmentStation_ja.md)を参照してください。
 
 
 ## <a name="ShinraScript"></a> shinra.py スクリプト
@@ -498,7 +498,7 @@ shinra://[<username>@]<game host>[:<game port>]/runMCS/<game id>[?VideoPort=<vid
 - ゲームデータをパッケージするために必要な情報 (dataPacks)
 - ゲームを実行するために必要な情報 (startups)
 
-プロジェクトファイルを操作するためには、通常はSDS(ShinraDevelopmentStation)を使いますが、プロジェクトファイルは単純なので手動で編集できます。
+プロジェクトファイルを操作するためには、通常はSDS(ShinraDevelopmentStation.exe)を使いますが、プロジェクトファイルは単純なので手動で編集できます。
 
 以下は、datapackがひとつと startupがひとつ含まれる設定ファイルの例です:
 
@@ -793,3 +793,8 @@ Cloud.Section.Name: default
    ```
    shinra://localhost:55000/runMCS/mygame?VideoPort=60000
    ```
+
+
+___
+
+※ Windows® その他、このドキュメントに記載されている会社名・商品名は、各社の商標または登録商標です。

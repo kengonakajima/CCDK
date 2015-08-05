@@ -17,7 +17,7 @@ C++のヘッダ[`ShinraGame.h`](../include/ShinraGame.h).
 ### ゲームループ
 
 
-下記はシンラシステム上での通常のゲームループの基本的な例です。
+下記はシンラ・システム上での通常のゲームループの基本的な例です。
 
 ```
 #include <ShinraGame.h>
@@ -226,7 +226,7 @@ LRESULT MyGameWindowProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 
 全てのAPIはCloudCoreClient.dllに含まれています。
 リンクするためのライブラリースタブは、CloudCoreClient.lib内に用意されています。
-32bitアプリケーションにはX32、64bitアップリケーしょんにはX64というように、正しいバージョンをリンカーに設定してください。
+32bitアプリケーションにはX32、64bitアプリケーションにはX64というように、正しいバージョンをリンカーに設定してください。
 
 このライブラリをディプロイメントパッケージ内に独自に作成しないでください。
 シンラのサービスでは、常に最新バージョンのライブラリとゲームが自動的にディプロイされます。
@@ -238,3 +238,10 @@ LRESULT MyGameWindowProc(HWND hWnd, UINT nMsg, WPARAM wParam, LPARAM lParam)
 1. シングルプレイヤーのゲームにShinra Game APIを使用する必要がありますか?
 
   いいえ、シンラゲームAPIはシンラテクノロジーの特定の機能にアクセスするときのみ必要です。 シングルプレイヤーゲームはDirectX11とWindowsAPIを使用することのみが必要です。
+
+
+___
+
+※ Windows® その他、このドキュメントに記載されている会社名・商品名は、各社の商標または登録商標です。
+
+
