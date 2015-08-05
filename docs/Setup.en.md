@@ -24,10 +24,7 @@ GitHub was selected as the host for our project because of its simplicity and re
 In addition to the ability to clone repositories, the use of Git allows us to rollback the repository to older versions of the program.
 Git also allows us to create branches enabling the development team to manage personal changes to the repository, such as the creation of bug fixes and pull requests, with ease.
 
-The link to the CCDK Git repository is listed below.
-<pre>
-https://github.com/ShinraTech/CCDK
-</pre>
+Here is the link to the CCDK Git repository: [https://github.com/ShinraTech/CCDK](https://github.com/ShinraTech/CCDK)
 
 The link above will take you to the CCDK repository page listed under the ShinraTech organization.
 
@@ -41,10 +38,8 @@ Git runs on Windows, Linux and OS X and can be used via a number of various comm
 CCDK was designed primarily as a tool for Windows.
 For this setup guide, we will be using the GitHub’s official **GitHub for Windows** client as the client in our examples.
 
-Start by accessing the URL below to download and installing GitHub for Windows.
-<pre>
-https://windows.github.com/
-</Pre>
+Start by downloading and installing GitHub for Windows, which can be found here: [https://windows.github.com/](https://windows.github.com/)
+
 Once installed, the program can be launched from the Windows Start Menu by navigating to [Start] → [All Programs] → [GitHub, Inc] and selecting the [GitHub] program.
 
 Once the GitHub program has loaded, a new repository can be added by clicking the [+] button located in the upper left corner of the program window.
@@ -78,10 +73,8 @@ The tools listed here refer to the tool versions used on Windows. The tool versi
 All of the tools listed above should be compatible with CCDK regardless of their minor version numbers. However, the CCDK development team has only confirmed compatibility with the tools listed here.
 If you have problems running CCDK or you would like to have CCDK verified with another version of the external tools listed here, contact a development team member for more information.
 
-Use the link below to download Python 3.4. 
-<pre>
-https://www.python.org/downloads/release/python-343/
-</pre>
+Use the link below to download Python 3.4: [https://www.python.org/downloads/release/python-343/](https://www.python.org/downloads/release/python-343/)
+
 The 'python.exe' program should install itself to the path below during a normal installation. Add this file path to your Windows Environment 'PATH' variable.
 <pre>
 C:¥python34¥python.exe
@@ -89,10 +82,8 @@ C:¥python34¥python.exe
 Open up a command prompt and type 'python'. If you see output similar to the output shown below, your python settings were successfully applied.
 ![pythoncmd](images/cmd_python.png)
 
-Ruby 2.1 can be installed by using the installer below.
-<pre>
-http://rubyinstaller.org/downloads/
-</pre>
+Ruby 2.1 can be installed by using the installer here: [http://rubyinstaller.org/downloads/](http://rubyinstaller.org/downloads/)
+
 The 'ruby.exe' program should install itself to the path below during a normal installation. Add this file path to your Windows Environment 'PATH' variable.
 
 <pre>
@@ -105,21 +96,19 @@ If you see output similar to the output shown below, your Ruby settings were suc
 The CCDK is compatible with the free Community version of Visual Studio 2013.
 Visual Studio 2013 Professional was used for the development of CCDK.
 
-Community 2013 can be downloaded directly from Microsoft's website using the link below.
-<pre>
-https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx
-</pre>
+Community 2013 can be downloaded directly from Microsoft's website: [https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx](https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx)
+
 
 A Visual Studio compatible version of Redis has been ported from the official project site.
 Compiling the MSOpenTech version of Redis generates libraries that will be referenced when using Redis in Visual Studio.
 
 If you have cloned the CCDK repository using 'GitHub for Windows', the Redis source code will be automatically checked out to the directory below.
-<Pre>
+<pre>
 CCDK/externals/redis
 </pre>
-<Pre>
+<pre>
 CCDK/externals/redis/msvs/RedisServer.sln
-</prE>
+</pre>
 Opening and doing a complete build of the Visual Studio solution listed above will generate a number of files as listed below.
 <pre>
 CCDK/externals/redis/msvs/Debug/hiredis.lib
@@ -162,15 +151,15 @@ The Visual Studio solution file for the CCDK library can be opened from its loca
 
 A complete build can be made by pressing the [build] button. This will compile the entire project.
 
-<B>Step 1.5 - Make sure DirectX SDK June 2010 is installed</B>
+<B>Note: Make sure DirectX SDK June 2010 is installed</B>
 
 During the build process, the DirectX SDK package should be automatically downloaded and installed by NuGet. Sometimes this automatic process fails. 
 
-In order to fix it, you must install DirectX SDK June 2010 edition. Sometimes you need to uninstall other versions of the Visual C++ Redistributable in order to successfully install this version of the SDK. You can find this version of the SDK here: https://www.microsoft.com/en-us/download/details.aspx?id=6812
+In order to fix it, you must install DirectX SDK June 2010 edition. Sometimes you need to uninstall other 2010-dated versions of the Visual C++ Redistributable in order to successfully install this version of the SDK. You can find this version of the SDK [here](https://www.microsoft.com/en-us/download/details.aspx?id=6812).
 
 On some Windows 8 machines, .NET Framework 3.5 is not automatically enabled. Open the Start menu, then find the "Turn Windows features on or off" Settings menu to trigger the download. Or download it directly: 
 
-If your computer belongs to a group network using Windows Server Update Services (WSUS), follow these steps to force an update [https://support.microsoft.com/en-us/kb/2734782] or ask your sysadmin to enable .NET Framework 3.5 updates for you.
+If your computer belongs to a group network using Windows Server Update Services (WSUS), follow [these](https://support.microsoft.com/en-us/kb/2734782) steps to force an update or ask your sysadmin to enable .NET Framework 3.5 updates for you.
 
 <B>Step 2 - Perform validation tests on the one-to-one skeleton program with video streaming disabled</B>
 
@@ -350,14 +339,11 @@ If you will be running the backend server on OS X, skip this step.
 
 We will go over a method for setting up a completely free Linux server environment using Ubuntu Server on VirtualBox.
 
-First, download VirtualBox from the official website.
-
-[http://www.oracle.com/technetwork/server-storage/virtualbox/downloads/index.html](http://www.oracle.com/technetwork/server-storage/virtualbox/downloads/index.html)
+First, download VirtualBox from the [official website](http://www.oracle.com/technetwork/server-storage/virtualbox/downloads/index.html).
 
 VirtualBox can be installed on either Windows or OS X.
 
-Next, download the Ubuntu Server from the official website.
-[http://www.ubuntu.com/download/server](http://www.ubuntu.com/download/server) 
+Next, download the Ubuntu Server from the [official website](http://www.ubuntu.com/download/server) .
 
 Download the ISO file named 'ubuntu-14.04.2-server-amd64.iso' (similar ISO file names will also work). The file should be approximately 600MB in size. You should not have any issues if version numbers differ slightly. Ubuntu-desktop can also be used as a host for the backend server.
 
