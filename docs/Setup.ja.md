@@ -19,7 +19,7 @@ LinuxやMacOS Xに関することは最後の4.で説明します。
 gitレポジトリの位置は以下です。
 
 ~~~
-https://github.com/ShinraTech/CCDK
+[https://github.com/ShinraTech/CCDK](https://github.com/ShinraTech/CCDK)
 ~~~
 
 このレポジトリをcloneすることでCCDKの全体が取得できます。
@@ -37,7 +37,7 @@ CCDKは主にWindows用のツールなので、以下では、GitHub社が提供
 まず、以下のURLからGitHub for Windowsをダウンロードしてインストールします。
 
 ~~~
-https://windows.github.com/
+[https://windows.github.com/](https://windows.github.com/)
 ~~~
 
 インストールに成功すると、　「すべてのプログラム」→「GitHub, Inc」→「GitHub」でプログラムを起動できます。
@@ -78,9 +78,7 @@ CCDKは、以下の外部ツールを利用しています。
 
 Python 3.4は、以下のURLのものをご利用ください。 
 
-~~~
-https://www.python.org/downloads/windows/
-~~~
+[https://www.python.org/downloads/windows/](https://www.python.org/downloads/windows/)
 
 python.exeは、通常、以下のパスにインストールされます。環境変数PATHに追加しておいてください。
 
@@ -93,9 +91,7 @@ cmd.exeなどを起動して、 pythonとタイプして以下のように表示
 
 Ruby 2.1は、以下からインストーラーをダウンロードできます。
 
-~~~
-http://rubyinstaller.org/downloads/
-~~~
+[http://rubyinstaller.org/downloads/](http://rubyinstaller.org/downloads/)
 
 ruby.exeは、通常、以下のパスにインストールされます。環境変数PATHに追加しておいてください。
 
@@ -112,9 +108,7 @@ CCDKの開発では、　Professional 2013を利用しています。
 
 無償版のダウンロードは、以下のマイクロソフト社のサイトが利用できます。
 
-~~~
-https://www.visualstudio.com/downloads/
-~~~
+[https://www.visualstudio.com/downloads/](https://www.visualstudio.com/downloads/)
 
 Redisは、Redis公式プロジェクトから派生した、
 マイクロソフト社のオープンソース版をVisualStudioでコンパイルすると、

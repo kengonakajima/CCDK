@@ -53,6 +53,7 @@ We are constantly striving toward the realization of these goals below, and it i
 CCDK Cans and Can’ts
 ====
 <B>What you can do with the CCDK:</B>
+
 1. Game staging and test play: The CCDK is designed to support 1:1, 1:N, and N:N game architectures, with the ability to test locally and simulate a streaming game on the Shinra platform (including local video streaming and latency simulation). You can also test with a backend server.
 
 2. Shinra platform-ready: The CCDK can create a package that is ready to be deployed to a Shinra production server (to be supported in future versions), and can be tested for QA and compatibility locally.

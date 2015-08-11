@@ -22,5 +22,6 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="one_to_many.shinra" />
+    <None Include="..\..\mcs\StartShinraClient.bat" />
   </ItemGroup>
 </Project>

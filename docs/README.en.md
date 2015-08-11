@@ -9,6 +9,14 @@ CCDK Documents
 * [Using the Backend Server](./Backend_Howto.en.md)
 * [Setting up 1:N](./OneN.en.md)
 
+
+* Shinra 1:N API Documents
+  * [Shinra Game API](../api/Doc/ShinraGameAPI_en.md)
+
+* MCS Documents
+  * [MCS README](../mcs/Doc/MCS_README_en.md)
+  * [Shinra Development Station](../mcs/Doc/ShinraDevelopmentStation_en.md)
+
 * VCE Support Documents
   * [VCE API Reference](vce/apiref/out/vce-api-en.md)
   * [VCE Error Codes](vce/ecode_en.md)
