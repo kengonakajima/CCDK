@@ -58,14 +58,15 @@ optional arguments:
 
 ### Package command
 ```
-usage: shinra.py package [-h] project archive
+usage: shinra.py package [-h] [-scc-validation] project archive
 
 positional arguments:
-  project     Shinra project to use.
-  archive     Shinra package to create.
+  project          Shinra project to use.
+  archive          Shinra package to create.
 
 optional arguments:
-  -h, --help  show this help message and exit
+  -h, --help       show this help message and exit
+  -scc-validation  Perform validation for SCC deployment.
 ```
 
 The following example produces the package `package.zip` from the project file `project.shinra`:
@@ -109,7 +110,7 @@ shinra.py install project.shinra
 ### <a name="RunCommand"></a> Run command
 ```
 usage: shinra.py run [-h] [-games-install-dir GAMES_INSTALL_DIR]
-                     [-store-path STORE_PATH] [-archive-path ARCHIVE_PATH]
+                     [-store-path STORE_PATH] [-archive-path ARCHIVE_PATH] [-services-file SERVICES_FILE]
                      [-show-window] [-no-show-window] [-display-statistics]
                      [-no-display-statistics]
                      [-encoder-threads ENCODER_THREADS]
@@ -135,6 +136,8 @@ optional arguments:
   -archive-path ARCHIVE_PATH
                         Directory where user data will be archived between two
                         game executions.
+  -services-file		SERVICES_FILE
+						Location of the services file used to override the one found in the configuration.
   -show-window          Show renderer window.
   -no-show-window       Hide renderer window.
   -display-statistics   Display statistics in renderer window. Ineffective if
@@ -152,6 +155,9 @@ optional arguments:
                         The maximum number of queued rendering frames requested
                         before the game starts to block.
 ```
+For more information about the services file see ["Services file" section below](#ServicesFile).
+
+
 The following example starts a game instance for the `ssw_debug` startup configuration in the SSW
 project. The game instance will be executed with user `aeris`, game port 55000 and video port 60000.
 ```
@@ -352,7 +358,8 @@ an example of the content of `Settings.json`.
   "MaxRenderingFrames": 3,
   "ShowWindow": false,
   "OverwriteGameInstall": false,
-  "CleanupOnInstall": false
+  "CleanupOnInstall": false,
+  "ServicesFile": "D:\\Shinra\\Local\\Services.json",
 }
 ```
 
@@ -444,7 +451,22 @@ with one datapack, and one startup configuration.
             "id": "DX3",
             "version": "1"
         }
-    ]
+    ],
+    "Services": [
+      {
+        "Name": "MyVCE",
+        "Type": "vce",
+        "CustomProperties": {
+          "RedisService": "MyRedis"
+        }
+      },
+      {
+        "Name": "MyRedis",
+        "Type": "redis",
+        "CustomProperties": {}
+      }
+    ],
+  "reportConfig": null
 }
 ```
 
@@ -452,12 +474,7 @@ with one datapack, and one startup configuration.
 - **contentId**: (optional) A content id provided by Shinra to identify the content.
 - **apiKey**: (optional) A secret API key provided by Shinra to access Shinra Developer Services.
 - **projectVersion**: Version number only used for tracking purposes.
-- **dataPacks[].id**: Id of the data pack. This Id is used to reference the datapack across the project and must be
-  unique for each datapack. 
-- **dataPacks[].version**: Version of the datapack, Only used for tracking purposes.
-- **dataPacks[].files[].fileSystemPath**: Path to a directory containing the files to be deployed for the game.  Relative
-  paths are always considered relative to the location of the project file.
-- **dataPacks[].files[].aliasPath**: path to append to the existing path on installation.
+
 - **startups[].id** : Id of the startup configuration. This id is used to reference this configuration across the
   project. It will be used to create a GameID for game execution.
 - **startups[].dataPackId** : Id of the datapack containing the files required by this startup configuration.
@@ -474,10 +491,22 @@ with one datapack, and one startup configuration.
 - **startups[].CustomProperties** : List of custom values to be used for properties. See
   ["Custom properties"](#CustomProperties) for more information.
 
+- **dataPacks[].id**: Id of the data pack. This Id is used to reference the datapack across the project and must be
+  unique for each datapack. 
+- **dataPacks[].version**: Version of the datapack, Only used for tracking purposes.
+- **dataPacks[].files[].fileSystemPath**: Path to a directory containing the files to be deployed for the game.  Relative
+  paths are always considered relative to the location of the project file.
+- **dataPacks[].files[].aliasPath**: path to append to the existing path on installation.
+
+- **Services[].Name** : The name of the service. Must match a service name on the platorm you want to deploy.
+- **Services[].Type**: The type of the service. This value is used when deploying on SCC. See [Backend services in ShinraDevelopmentStation](ShinraDevelopmentStation.html#BackendServices).
+- **Services[].CustomProperties** : Custom things that the service may require, presented as "Name": "Value". See [Backend services in ShinraDevelopmentStation](ShinraDevelopmentStation.html#BackendServices).
+
 ## <a name="StartupArgs"></a> Startup arguments
-The arguments field of a startup configuration can contain some special variable that will be automatically replaced
-when running the game instance:
+The arguments field of a startup configuration can contain some special variables that will be
+automatically replaced when running the game instance:
 - `{UserId}` : will be replaced by the id of the user running the game instance.
+
 
 Following is a simple example of command line including `{UserId}`. 
 ```
@@ -488,6 +517,8 @@ is replaced in place just before executing the game instance for this user.
 ```
 --debug --username=aeris --dbhost=192.137.16.50 --rthost=192.137.16.50
 ```
+In addition, if you use a services configuration file, you can also use the variables defined in
+this file as explained in the ["Services file" section](#ServicesFileVariables).
 
 ## <a name="CustomProperties"></a> Custom properties
 The `CustomProperties` field of a startup configuration is used to force some settings in the `CloudProperties.json`
@@ -502,6 +533,62 @@ The following example will overwrite the property `Cloud.Debug.BreakOnStartup` t
   "Local.EncoderThreads": 3,
 }
 ```
+
+## <a name="ServicesFile"></a> Services file
+Services file can be used in case your game is using external services to work, and your game
+also requires some special paramters to be passed in command line to access those services.
+A Services file is a simple json sctructured file containing the information about the configuration
+of those external services. When setting the command line for you application you can access
+the values defined in this settings.
+
+### <a name="ServicesFileFormat"></a> Services files format
+The `Services.json` file is a simple json text file that can easily be manually edited.
+The root property "services" is a dictionary with the name of the service as a Key. The
+value for each server is a dictionary of variables names and values. You can choose any
+name for the service name or the variables names.
+Following is an example of the content of `Services.json`.
+```
+{
+	"services": 
+	{
+		"MyVCE":
+		{
+			"IP":  "192.137.16.40",
+			"RT_PORT":  "22223"
+			"DB_PORT":  "22222"
+		},
+		"MyRedis":
+		{
+			"IP":  "192.100.1.10"
+			"PORT": "6379"
+		}
+    }
+}
+```
+In this example we defined two services names MyVCE and MyRedis.
+MyVCE has three variables: IP, RT_PORT and DB_PORT.
+MyRedis has two variables: IP and PORT.
+
+
+### <a name="ServicesFileVariables"></a> Command line variables
+You can use the variables you defined in the service configuration file in the arguments for
+your game.  The variables must have the form {ServerName:VariableName}. The variables will be replaced
+by the values defined in the services file.
+
+For example the following arguments, using the previous example configuration:
+```
+--debug --username={UserId} --dbhost={MyVCE:IP} --rthost={MyVCE:IP}
+```
+Would be translated to :
+```
+--debug --username=aeris --dbhost=192.137.16.40 --rthost=192.137.16.40
+```
+
+
+### Services available for SCC deployment
+For MCS you are free to setup any service name or value you need. But keep in mind for SCC depoyment
+there are constraints on what variables you can use for each type of service.
+For more informatio nabout SCC deployment using Services see [ShinraDevelopmentStation documentation](ShinraDevelopmentStation.html#BackendServices)
 
 ## <a name="FileHooks"></a> File hooks
 Shinra projects enable to define file hooks for games. These file hooks are used to redirect the file-system access

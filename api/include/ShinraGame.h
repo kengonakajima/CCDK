@@ -165,15 +165,6 @@ SHINRAGAME_API ::DWORD GetPlayerGamepadID(PlayerID playerID);
 SHINRAGAME_API PlayerID GetPlayerIDFromRawInputDevice(HANDLE hRawInputDevice);
 
 /*
-**  GetPlayerAudioDeviceID
-**
-**  Returns the IMMDevice ID for the player device, without instantiating one.
-**  Can be used with the IMMDeviceEnumerator::GetDevice() method.
-*/
-
-SHINRAGAME_API std::wstring GetPlayerAudioDeviceID(PlayerID playerID);
-
-/*
 **  GetPlayerAudioDevice
 **
 **  Returns the IMMDevice associate with the player.  Creates it if it doesn't exist.

@@ -29,6 +29,7 @@ default_settings = {
 	'StorePath': 'C:\\Shinra\\Local',
 	'ArchivePath': 'C:\\Shinra\\UserFiles',
 	'GamesInstallDir': 'C:\\Shinra\\Games',
+	'ServicesFile': '',
 	'DisplayStatistics': False,
 	'EncoderThreads': 2,
 	'MaxEncodingFrames': 5,
@@ -98,6 +99,10 @@ def validateMCSSettings(conf):
 	if 'GamesInstallDir' in conf:
 		if not os.path.isdir(conf['GamesInstallDir']):
 			raise RuntimeError("GamesInstallDir must be an existing directory.")
+	services_path = conf.get('ServicesFile')
+	if services_path:
+		if not os.path.exists(services_path):
+			raise RuntimeError("Services file must be an existing file.")
 	if 'MCSPath' in conf:
 		if not os.path.isdir(conf['MCSPath']):
 			raise RuntimeError("MCSPath must be an existing directory.")
@@ -141,6 +146,19 @@ def validateMCSSettings(conf):
 		if not isinstance(conf['CleanupOnInstall'], bool):
 			raise RuntimeError("CleanupOnInstall must be an boolean value.")
 
+def GetServices(ServicesFile):
+	logger.debug("Loading services configuration %r.", ServicesFile)
+	Services = {}
+	if ServicesFile:
+		if not os.path.exists(ServicesFile):
+			raise RuntimeError("Services file {0} not found .".format(ServicesFile))
+		try:
+			with open(ServicesFile, "r") as f:
+				Services = json.load(f)["services"]
+		except:
+			logger.exception("Failed to parse services file %r.", ServicesFile)
+			raise RuntimeError("Failed not parse services file {0}.".format(ServicesFile))
+	return Services
 
 def getFileHash(f, blockSizeBytes = 1024 * 1024 * 4):
 	h = hashlib.sha1()
@@ -297,6 +315,70 @@ def remove_dir(path):
 				
 	raise Exception("Failed to delete {0}.".format(path))
 
+def validate_vce_service(vce_conf, services):
+	redisname = None
+	vce_name = vce_conf.get("Name")
+	if not vce_name:
+		logger.error("VCE service has no name set.")
+		return False
+	prop = vce_conf.get('CustomProperties')
+	if prop:
+		redisname = prop.get('RedisService')
+	if not redisname:
+		logger.error("VCE service %r require custom property named 'RedisService' containing the name of a defined redis service.", vce_name)
+		return False
+	matching_services = [s for s in services if s.get('Name') == redisname ]
+	if len(matching_services) == 0:
+		logger.error("VCE service %r refers to unkown redis RedisService %r.", vce_name, redisname)
+		return False
+	if len(matching_services) > 1:
+		logger.error("VCE service %r refers to RedisService %r, matching several services.", vce_name, redisname)
+		return False
+	redis_conf = matching_services[0]
+	redis_type = redis_conf.get('Type')
+	if redis_type != 'redis':
+		logger.error("VCE service %r point to RedisService %r with wrong type %r. Type should be redis.", vce_name, redisname, redis_type)
+		return False
+	return True
+
+def validate_redis_service(redis_conf, services):
+	redis_name = redis_conf.get('Name')
+	if not redis_name:
+		logger.error("Redis service has no name set.")
+		return False
+	return True
+
+def validate_scc_services(services):
+	"""Validate the services configurations against the existing services available on SCC."""
+	isValid = True
+	scc_services_types = {
+		"vce": validate_vce_service,
+		"redis": validate_redis_service
+	}
+	all_names = {}
+	for srv_conf in services:
+		name = srv_conf.get('Name')
+		if not name:
+			logger.error("Service defined without a Name.")
+			isValid = False
+			continue
+		if name in all_names:
+			logger.error("Service name %r used by several services.", name)
+			isValid = False
+			continue
+		all_names[name] = True
+		type = srv_conf.get('Type')
+		type_valid_fct = scc_services_types.get(type)
+		if not type_valid_fct:
+			logger.error("Service %r has unkown type %r.", name, type)
+			isValid = False
+			continue
+		
+		if not type_valid_fct(srv_conf, services):
+			isValid = False
+			continue
+	return isValid
+
 class progressreport:
 	def progressInit(self, totalSize):
 		self.increment = totalSize//100
@@ -420,6 +502,9 @@ class project:
 		datapacks = {}
 		startup, datapack = self.getstartup(startupId)
 		return _getDataPackSize(self.projectdir, datapack)
+	
+	def getServices(self):
+		return self.conf.get('Services')
 
 class package(progressreport):
 	"""Manages a ShinraPackage"""
@@ -432,7 +517,7 @@ class package(progressreport):
 	def compress(self, project):
 		datapacks = {}
 		projectId = project.projectId()
-		conf = { 'id': projectId, 'version': project.version() , 'startups' : [], 'server_packs' : [] }
+		conf = { 'id': projectId, 'version': project.version() , 'startups' : [], 'server_packs' : [], 'services': [] }
 		for startup in project._startups():
 			id = startup.get('id')
 			if not id:
@@ -443,6 +528,7 @@ class package(progressreport):
 		for dpid, datapack in datapacks.items():
 			srvPack = { 'id': dpid, 'version': datapack['version'] }
 			conf['server_packs'].append(srvPack)
+		conf['services'] = project.getServices()
 		manifest = {}
 		with zipfile.ZipFile(self.archive, 'w', allowZip64=True) as z:
 			manifest[CONF_FILE_NAME] = zipHashJson(z, conf, CONF_FILE_NAME)
@@ -486,6 +572,16 @@ class package(progressreport):
 				else:
 					logger.debug("Hash OK for %s. Expected %s got %s", file, hash, h)
 				self.progressUpdate(finfo.file_size)
+		if isValid:
+			try:
+				conf = self.getConf()
+				services = conf.get('services')
+				logger.debug("Checking services: %r", services)
+				if services and not validate_scc_services(services):
+					isValid = False
+			except:
+				logger.exception("Failed to validate package configuration. Mark it as invalid.")
+				isValid = False
 		return isValid
 	
 	def uncompress(self, path):
@@ -568,8 +664,15 @@ class package(progressreport):
 		max = 0
 		with zipfile.ZipFile(self.archive, "r") as z:
 			for zinfo in z.infolist():
-				max += zinfo.file_size;
+				max += zinfo.file_size
 		return max
+	
+	def getFileList(self):
+		list = []
+		with zipfile.ZipFile(self.archive, "r") as z:
+			for zinfo in z.infolist():
+				list.append(zinfo.filename)
+		return list
 
 def MachineTypeToArchitectureSize(type):
 	# List available from:
@@ -869,11 +972,26 @@ class game(progressreport):
 		env["FLARE_CONFIG"] = cloudPropertiesFilePath
 		cwd = os.path.join(self.projectDir, startup['dataDir'], workDir)
 		args = startup.get('arguments')
+
+		# PhM : get the the services from the file
+		Services = GetServices(mcsConf['ServicesFile'])
+
+		# PhM : build the replacement table
+		Replacements = { "{UserId}" : userid }
+		for service in Services.keys():
+			for var,val in Services.get(service).items():
+				Replacements['{' + service + ':' + var + '}'] = val
+
 		if args:
-			args = args.replace("{UserId}", userid)
+			# PhM : replace whatever is found according to the table
+			for k,v in Replacements.items():
+				args = args.replace(k, str(v))
+
 			# escape backslash to preserve windows path when shlex is parsing.
 			args = args.replace("\\", "\\\\")
+
 		cmdline = "\"{0}\" {1}".format(exe, args)
+
 		try:
 			cmd = shlex.split(cmdline)
 			logger.debug("Starting %s with cwd=%s, env=%s", cmd, cwd, env)
@@ -969,6 +1087,9 @@ def add_store_path_opt(parser, defConf):
 def add_archive_path_opt(parser, defConf):
 	parser.add_argument('-archive-path', help="Directory where user data will be archived between two game executions.", default=defConf['ArchivePath'])
 
+def add_services_file_opt(parser, defConf):
+	parser.add_argument('-services-file', help="Location of the services file used to override the one found in the configuration.", default=defConf['ServicesFile'])
+
 def add_show_window_opt(parser, defConf):
 	parser.add_argument('-show-window', dest='show_window', help="Show renderer window.", action='store_true')
 	parser.add_argument('-no-show-window', dest='show_window', help="Hide renderer window.", action='store_false')
@@ -988,6 +1109,15 @@ def add_max_encoding_frames_opt(paser, defConf):
 def add_max_rendering_frames_opt(parser, defConf):
 	parser.add_argument('-max-rendering-frames', help="The maximum number of queued rendering frame requested before the game start to block.", type=int, default=defConf['MaxRenderingFrames'])
 
+def initlogger(rootLogger):
+	"""Set the logger to output all levels to stdout, and WARNING:ERROR:CRITICAL on stderr."""
+	stdout = logging.StreamHandler(sys.stdout)
+	rootLogger.addHandler(stdout)
+	stderr = logging.StreamHandler(sys.stderr)
+	stderr.setLevel(logging.WARN)
+	rootLogger.addHandler(stderr)
+
+
 def main():
 	conf = getMCSSettings()
 	
@@ -996,6 +1126,7 @@ def main():
 	parser_pkg = subparsers.add_parser('package', help='Create a Shinra package from a project.')
 	parser_pkg.add_argument('project', help="Shinra project to use.")
 	parser_pkg.add_argument('archive', help="Shinra package to create.")
+	parser_pkg.add_argument('-scc-validation', help="Perform validation for SCC deployment.", action='store_true')
 	
 	parser_instgame = subparsers.add_parser('install', help='Install a game from a project.')
 	parser_instgame.add_argument('project', help="Shinra project to install.")
@@ -1018,6 +1149,7 @@ def main():
 	add_gamesInstall_path_opt(parser_rungame, conf)
 	add_store_path_opt(parser_rungame, conf)
 	add_archive_path_opt(parser_rungame, conf)
+	add_services_file_opt(parser_rungame, conf)
 	add_show_window_opt(parser_rungame, conf)
 	add_display_statistics_opt(parser_rungame, conf)
 	add_encoder_threads_opt(parser_rungame, conf)
@@ -1067,20 +1199,23 @@ def main():
 	
 	args = parser.parse_args()
 	
+	rootLogger = logging.getLogger()
+	initlogger(rootLogger)
 	logLevel = logging.DEBUG
 	if args.log_level:
 		logLevel = getattr(logging, args.log_level, None)
+	rootLogger.setLevel(logLevel)
 	if args.log_file:
 		ch = logging.FileHandler(args.log_file)
-	else:
-		ch = logging.StreamHandler(sys.stdout)
-	rootLogger = logging.getLogger()
-	rootLogger.setLevel(logLevel)
-	rootLogger.addHandler(ch)
+		rootLogger.addHandler(ch)
 	
 	if args.command == 'package':
 		p = project(args.project)
 		a = package(args.archive)
+		if args.scc_validation:
+			services = p.getServices()
+			if services and not validate_scc_services(services):
+				raise RuntimeError("Services configuration invalid for SCC deployment.")
 		totalsize = p.getTotalFilesSize()
 		a.progressInit(totalsize)
 		a.compress(p)
@@ -1106,6 +1241,7 @@ def main():
 		conf['MaxEncodingFrames'] = args.max_encoding_frames
 		conf['MaxRenderingFrames'] = args.max_rendering_frames
 		conf['ShowWindow'] = args.show_window
+		conf['ServicesFile'] = args.services_file
 		validateMCSSettings(conf)
 		logger.debug("args.gameid=%r, args.userid=%r, args.gameport=%r, args.videoport=%r, conf=%r", args.gameid, args.userid, args.gameport, args.videoport, conf)
 		g.run(args.gameid, args.userid, args.gameport, args.videoport, conf)
@@ -1169,4 +1305,7 @@ if __name__ == "__main__":
 		logger.exception("Uncatch exception when running")
 		error = True
 	logger.info("Script terminated")
+	# Log file is cut when exit directly, and we miss the exception message.
+	# Flushing the log handlers did not solved the problem. Only sleep seems to work.
+	time.sleep(0.1)
 	exit(-1 if error else 0)
