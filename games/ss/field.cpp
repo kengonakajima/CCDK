@@ -4490,6 +4490,31 @@ Environment *Field::getEnvironment( Pos2 at ) {
     return out;
 }
 
+void Field::checkCleanFortressLeftOver( Pos2 center, int dia ) {
+    int eye_count = 0;
+    int mgn = 2; // to find eyes wider
+    for(int y=center.y-dia-mgn;y<=center.y+dia+mgn;y++) {
+        for(int x=center.x-dia-mgn;x<=center.x+dia+mgn;x++) {
+            Cell *c = get(x,y);
+            if( c && c->isEnemyEye() ) {
+                eye_count ++;
+            }
+        }
+    }
+    if( eye_count == 0 ) {
+        for(int y=center.y-dia;y<=center.y+dia;y++) {
+            for(int x=center.x-dia;x<=center.x+dia;x++) {
+                Cell *c = get(x,y);
+                if( c && c->bt == BT_ENEMY_FRAME ) {
+                    c->bt = BT_AIR;
+                    c->st = ST_GROUNDWORK;
+                    notifyChanged(c);
+                }
+            }
+        }
+    }
+}
+
 /////////////////////
 
 void ResourceDeposit::dump( ResourceDepositDump *dump ) {

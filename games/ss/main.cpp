@@ -722,7 +722,7 @@ void GLFWCALL keyCallback( int key, int action ) {
         if(g_enable_debug_menu){
             Cell *c = g_fld->get( g_pc->loc + Vec2(PPC*3,0) );
             if(c) {
-                c->bt = BT_GRAY_GOO;
+                c->bt = BT_ENEMY_FRAME;
                 g_fld->notifyChanged(c);
             }
         }        

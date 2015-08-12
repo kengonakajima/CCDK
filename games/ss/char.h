@@ -122,6 +122,7 @@ public:
 class Flag : public Char {
 public:
     bool all_cleared;
+    double check_fortress_at;
     Flag();
     virtual bool charPoll( double dt);
     void warpToNextLocation();

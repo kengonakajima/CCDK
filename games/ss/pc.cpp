@@ -452,7 +452,7 @@ bool PC::charPoll( double dt ) {
     if( loc.y > g_fld->loc_max.y - mgn ) loc.y = g_fld->loc_max.y - mgn;
 
     // Auto HP recover
-    if( hp <= maxhp - PC_MAXHP/2 ) {
+    if( hp <= maxhp - PC_MAXHP/2 && died_at == 0 ) {
         ITEMTYPE use_item = ITT_ERROR;
         if( countItem( ITT_APPLE ) >= 1 ) {
             use_item = ITT_APPLE;
