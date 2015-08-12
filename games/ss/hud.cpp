@@ -674,6 +674,7 @@ void Inventory::toggle( bool visibility ) {
     } else {
         g_belt->update();
         g_suit->update();
+        selected_at = -1;
     }
     itemname_caption->setVisible(visibility);
 }
@@ -4442,7 +4443,8 @@ void DebugWindow::onEntrySelected(int ind) {
         g_pc->incItem( ITT_BRICK_PANEL, 50, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_BRICK_PANEL, 50, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_BRICK_PANEL, 50, PC_SUIT_NUM, false );
-        g_pc->incItem( ITT_BRICK_PANEL, 50, PC_SUIT_NUM, false );                        
+        //        g_pc->incItem( ITT_BRICK_PANEL, 50, PC_SUIT_NUM, false );
+        g_pc->incItem( ITT_APPLE, 20, PC_SUIT_NUM, false );
         
 #if 0
         g_pc->incItem( ITT_APPLE,10, PC_SUIT_NUM, false );        
