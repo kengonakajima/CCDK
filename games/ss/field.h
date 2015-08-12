@@ -924,6 +924,7 @@ public:
     int wipeFortress( Pos2 center, int dia, bool mad );
     int hitFortress( Pos2 lbpos, int w, int h );
     void appendBuildFortressLog(Pos2 at);
+    void checkCleanFortressLeftOver( Pos2 center, int dia );
     
     // deposit/exchange
     void setExchange( Cell *c );

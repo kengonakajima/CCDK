@@ -523,16 +523,18 @@ void Blaster::land(){
 
 
 ////////////////////////////
-Flag::Flag() : Char( CAT_FLAG, Vec2(0,0), g_base_deck, g_char_layer ), all_cleared(false) {
+Flag::Flag() : Char( CAT_FLAG, Vec2(0,0), g_base_deck, g_char_layer ), all_cleared(false), check_fortress_at(0) {
     warpToNextLocation();
 }
 
 bool Flag::charPoll( double dt) {
     setIndex( B_ATLAS_FLAG_BASE + (int)(accum_time*4)%2 ) ;
+
+    Pos2 flag_pos(loc.x/PPC,loc.y/PPC);
     if(loc.len(g_pc->loc) < PPC && all_cleared == false ){
         stopEffect();
         soundPlayAt(g_getflag_sound,loc,1);
-        Pos2 flag_pos(loc.x/PPC,loc.y/PPC);
+        
         g_fld->clearFlag(flag_pos);
         
         warpToNextLocation();
@@ -546,8 +548,14 @@ bool Flag::charPoll( double dt) {
         dbSaveMilestoneProgressLog( g_current_project_id );
         if( cnt == MILESTONE_MAX ) hudCongratulateProjectIsOver();
     }
+
+    if( check_fortress_at < accum_time - 2 ) {
+        g_fld->checkCleanFortressLeftOver( flag_pos, 5 );
+        check_fortress_at = accum_time;
+    }
     return true;
 }
+
 void Flag::warpToNextLocation() {
     Pos2 rp = g_fld->getRespawnPoint();
     FlagCandidate *fc = g_fld->findNearestFlagCand(rp);
