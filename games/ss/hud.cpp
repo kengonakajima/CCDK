@@ -2358,9 +2358,8 @@ void ProjectTypeWindow::selectAtCursor() {
         g_projlistwin->show();
     } else if( p == back_tb ) {
         g_titlewin->show();
+        g_runstate = RS_MAIN_MENU;
     }
-
-    
 }
 
 ////////////////////////////
