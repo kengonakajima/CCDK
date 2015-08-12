@@ -29,8 +29,8 @@ $(BENCHOUT) : $(BENCHOBJS) $(VCELIB)
 %.o : %.cpp
 	g++ -c $(CFLAGS) $< -o $@
 
-ssproto_sv.cpp ssproto_cli.cpp: ssproto.txt
-	ruby -Ku $(GEN) ssproto.txt 
+ssproto_sv.cpp ssproto_cli.cpp: ssproto_en.txt
+	ruby -Ku $(GEN) ssproto_en.txt 
 
 
 clean:
