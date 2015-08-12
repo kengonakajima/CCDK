@@ -270,7 +270,7 @@ PowerNode *PowerSystem::findNode( Pos2 p) {
 
 
 void PowerSystem::mergeGrid( PowerGrid *remain, PowerGrid *remove ) {
-    print("mergeGrid");
+    //    print("mergeGrid ------------------------------------ remain:%d remove:%d", remain->id, remove->id );
     // add all nodes of a pwgrid to remaining pwgrid and delete.
     PowerNode *cur = remove->node_top;
     while(cur) {
@@ -281,6 +281,9 @@ void PowerSystem::mergeGrid( PowerGrid *remain, PowerGrid *remove ) {
         cur = cur->next;
     }
 
+    remain->ene += remove->ene;
+    if( remain->ene > PowerGrid::MAXENE ) remain->ene = PowerGrid::MAXENE;
+    
     // delete a grid from list
     deleteGrid(remove);
 
