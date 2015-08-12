@@ -4492,9 +4492,9 @@ Environment *Field::getEnvironment( Pos2 at ) {
 
 void Field::checkCleanFortressLeftOver( Pos2 center, int dia ) {
     int eye_count = 0;
-    
-    for(int y=center.y-dia;y<=center.y+dia;y++) {
-        for(int x=center.x-dia;x<=center.x+dia;x++) {
+    int mgn = 2; // to find eyes wider
+    for(int y=center.y-dia-mgn;y<=center.y+dia+mgn;y++) {
+        for(int x=center.x-dia-mgn;x<=center.x+dia+mgn;x++) {
             Cell *c = get(x,y);
             if( c && c->isEnemyEye() ) {
                 eye_count ++;
