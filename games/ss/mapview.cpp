@@ -79,6 +79,7 @@ Chunk::~Chunk() {
     fprop->to_clean = true;    
     gprop->to_clean = true;
     iprop->to_clean = true;
+    eprop->to_clean = true;
 }
 
 int calcConnectedBlockIndex( int x, int y, BLOCKTYPE bt ) {
