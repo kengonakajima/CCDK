@@ -3,10 +3,16 @@
 //
 
 #include "pch.h"
+
+#include "DDSTextureLoader.h"
+#include "CommonStates.h"
+
+
 #include "Game.h"
 
 
-using  Microsoft::WRL::ComPtr;
+
+
 
 
 
@@ -37,6 +43,17 @@ void Game::Initialize(HWND window)
     */
 	m_spriteBatch = new SpriteBatch(m_d3dContext.Get());
 	m_spriteFont = new SpriteFont( m_d3dDevice.Get(), L"assets\\tahoma32.spritefont");
+
+    //
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> cell;
+    enum DDS_ALPHA_MODE alphamode = DDS_ALPHA_MODE_STRAIGHT;
+    HRESULT hr = CreateDDSTextureFromFile( m_d3dDevice.Get(), L"assets\\basic_cell.dds", nullptr, cell.GetAddressOf(), alphamode );
+    DX::ThrowIfFailed(hr);
+
+    // Create an AnimatedTexture helper class instance and set it to use our texture
+    // which is assumed to have 4 frames of animation with a FPS of 2 seconds
+    m_cellAnimTex = new AnimatedTexture( XMFLOAT2(0,0), 0.f, 2.f, 0.5f );
+    m_cellAnimTex->Load( cell.Get(), 4, 2 );
 
 	// This is only needed in Win32 desktop apps
 	CoInitializeEx(nullptr, COINIT_MULTITHREADED);
@@ -72,6 +89,7 @@ void Game::Update(DX::StepTimer const& timer)
 	if (m_audioEngine->IsCriticalError()) {
 		OutputDebugString(L"AudioEngine error!");
 	}
+    m_cellAnimTex->Update(elapsedTime);
 }
 
 // Draws the scene
@@ -85,7 +103,8 @@ void Game::Render()
     Clear();
 
     // TODO: Add your rendering code here
-	m_spriteBatch->Begin();
+    CommonStates states(m_d3dDevice.Get());
+	m_spriteBatch->Begin( SpriteSortMode_Deferred, states.NonPremultiplied() );
 
 	TCHAR statmsg[100];
 	wsprintf(statmsg, L"Frame: %d", m_framecnt);
@@ -94,6 +113,11 @@ void Game::Render()
 	m_spriteFont->DrawString(m_spriteBatch, L"Skeleton code for 1:1 games", XMFLOAT2(100, 100));
 	m_spriteFont->DrawString(m_spriteBatch, L"Press P to play sound effect", XMFLOAT2(130, 160));
 	m_spriteFont->DrawString(m_spriteBatch, L"Press Q to quit", XMFLOAT2(130, 200));
+
+
+    XMFLOAT2 pos(100,100);
+    m_cellAnimTex->Draw( m_spriteBatch, pos );
+
 
 	m_spriteBatch->End();
 
