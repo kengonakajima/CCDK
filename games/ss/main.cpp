@@ -662,6 +662,7 @@ int windowCloseCallback(void) {
     return 0;
 }
 
+
 void GLFWCALL keyCallback( int key, int action ) {
     
     // Enterだけオート連射
@@ -1067,10 +1068,13 @@ void updateGame(void) {
         }
         break;
     case RS_IN_PROJECT:
-        if( g_private_project && isIngameWindowVisible() ) {
-            g_game_paused = true;
-        } else {
-            g_game_paused = false;
+        {
+            bool os_window_active =  glfwGetWindowParam( GLFW_ACTIVE );
+            if( g_private_project && (isIngameWindowVisible() || os_window_active == false ) ) {
+                g_game_paused = true;
+            } else {
+                g_game_paused = false;
+            }
         }
         if( g_total_frame_count % 50 == 0 ) { 
             realtimeUpdateNearcastPositionSend( g_pc->loc.x / PPC, g_pc->loc.y / PPC );
