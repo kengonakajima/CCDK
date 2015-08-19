@@ -188,14 +188,14 @@ bool Enemy::applyDamage( int dmg ) {
         if(enable_durbar) DurBar::clear(this);
         switch( reward_itt ) {
         case ITT_ARTIFACT:
-            new Debri( loc, B_ATLAS_ITEM_ARTIFACT );
+            new Debris( loc, B_ATLAS_ITEM_ARTIFACT );
             break;
         default:
             break;
         }
         if( machine && maxhp > 5 ) {
             if( range(0,100) < 10 ) {
-                new Debri(loc, B_ATLAS_ITEM_ENERGY_PARTICLE );
+                new Debris(loc, B_ATLAS_ITEM_ENERGY_PARTICLE );
             }
         }
         onKill();
@@ -523,8 +523,8 @@ Bullet::Bullet( BULLETTYPE blt, Vec2 at, Vec2 to, int client_id, int internal_id
         hit_wall_damage = 2 * hyper2x;
         bt_can_enter = BT_SNOW; // Goes over the snow
         break;
-    case BLT_SHRIMP_DEBRI:
-        setIndex( B_ATLAS_SHRIMP_DEBRI );
+    case BLT_SHRIMP_DEBRIS:
+        setIndex( B_ATLAS_SHRIMP_DEBRIS );
         vel = PPC * 10;
         timeout = 1;
         setScl(PPC);
@@ -1385,7 +1385,7 @@ bool Shrimp::enemyPoll( double dt ) {
 
     if( enable_move == false && prev_enable_move == true ) {
         if( loc.len(target) < PPC*4*hyrate*hyrate ) {
-            if( isLocal() ) Bullet::shootAt( BLT_SHRIMP_DEBRI, loc, target);
+            if( isLocal() ) Bullet::shootAt( BLT_SHRIMP_DEBRIS, loc, target);
         }
 
     }
@@ -1432,7 +1432,7 @@ void Shrimp::onTimeout() {
 void Shrimp::blast( bool is_local ) {
     Vec2 tgt;
     if( g_fld->findEnemyAttackTarget(loc, &tgt, SHRIMP_SEEK_DISTANCE ) ) {
-        if( is_local ) Bullet::shootFanAt( BLT_SHRIMP_DEBRI, loc, tgt, 2, M_PI/8.0 ); 
+        if( is_local ) Bullet::shootFanAt( BLT_SHRIMP_DEBRIS, loc, tgt, 2, M_PI/8.0 ); 
     }
 }
     

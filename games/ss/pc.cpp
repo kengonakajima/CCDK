@@ -574,7 +574,7 @@ void PC::calcEnhancement( int *battery_capacity, int *cur_armor, int *max_armor 
 }
 
 
-bool PC::addItemByDebri( Debri *d ) {
+bool PC::addItemByDebris( Debris *d ) {
     if( d->index == B_ATLAS_HP_PARTICLE ) {
         recoverHP(HEAL_BLASTER_HP_UNIT);
         return true;
@@ -616,7 +616,7 @@ void PC::addInitialItems() {
     //    g_pc->incItem( ITT_MICROBE, 50, PC_SUIT_NUM, false );
 
     //    ResearchState::unlock( ITT_BRICK_PANEL );
-    g_pc->incItem( ITT_DEBRI_SOIL, 30, PC_SUIT_NUM, false );        
+    g_pc->incItem( ITT_DEBRIS_SOIL, 30, PC_SUIT_NUM, false );        
     
     //g_pc->incItem( ITT_HP_POTION, 2, PC_SUIT_NUM, false );
     //    g_pc->incItem( ITT_APPLE, 5, PC_SUIT_NUM, false );
@@ -1154,36 +1154,36 @@ bool LocalPC::tryAction( Vec2 direction ) {
         if(c && c->isBlockPuttable() ) {
             bool put_block = false, removed_water = false;
             switch(itc->itt) {
-            case ITT_DEBRI_SOIL:
-            case ITT_DEBRI_ROCK:
-            case ITT_DEBRI_HARDROCK:
-                if( c->st == ST_NONE && c->gt == GT_ROCK && itc->itt == ITT_DEBRI_SOIL ) {
+            case ITT_DEBRIS_SOIL:
+            case ITT_DEBRIS_ROCK:
+            case ITT_DEBRIS_HARDROCK:
+                if( c->st == ST_NONE && c->gt == GT_ROCK && itc->itt == ITT_DEBRIS_SOIL ) {
                     // To fix burned ground
                     c->gt = GT_SOIL;
-                    last_put_debri_at = toCellCenter(lc);
+                    last_put_debris_at = toCellCenter(lc);
                 } else if( c->st == ST_NONE ) {
                     // Put as a block
-                    if( can_put_block_as_wall && toCellCenter(lc) != last_put_debri_at ) {
-                        if(itc->itt == ITT_DEBRI_SOIL ) c->bt = BT_SOIL;
-                        if(itc->itt == ITT_DEBRI_ROCK ) c->bt = BT_ROCK;
-                        if(itc->itt == ITT_DEBRI_HARDROCK ) c->bt = BT_HARDROCK;
+                    if( can_put_block_as_wall && toCellCenter(lc) != last_put_debris_at ) {
+                        if(itc->itt == ITT_DEBRIS_SOIL ) c->bt = BT_SOIL;
+                        if(itc->itt == ITT_DEBRIS_ROCK ) c->bt = BT_ROCK;
+                        if(itc->itt == ITT_DEBRIS_HARDROCK ) c->bt = BT_HARDROCK;
                         put_block = true;
-                        last_put_debri_at = toCellCenter(lc);
+                        last_put_debris_at = toCellCenter(lc);
                     } else {
                         return false;
                     }
                 } else if( c->isWater() ) {
                     // Fill up a water.
-                    if( can_put_block_to_remove_water && toCellCenter(lc) != last_put_debri_at ) {
+                    if( can_put_block_to_remove_water && toCellCenter(lc) != last_put_debris_at ) {
                         c->st = ST_NONE;                    
-                        if( itc->itt == ITT_DEBRI_SOIL ) {
+                        if( itc->itt == ITT_DEBRIS_SOIL ) {
                             c->gt = GT_SOIL;
-                        } else if( itc->itt == ITT_DEBRI_ROCK ) {
+                        } else if( itc->itt == ITT_DEBRIS_ROCK ) {
                             c->gt = GT_ROCK;
-                        } else if( itc->itt == ITT_DEBRI_HARDROCK ) {
+                        } else if( itc->itt == ITT_DEBRIS_HARDROCK ) {
                             c->gt = GT_ROCK;
                         }
-                        last_put_debri_at = toCellCenter(lc);                        
+                        last_put_debris_at = toCellCenter(lc);                        
                         removed_water = true;
                     } else {
                         return false;
@@ -1281,14 +1281,14 @@ bool LocalPC::tryAction( Vec2 direction ) {
                     return false;
                 }
                 break;
-            case ITT_DEBRI_IRONORE:
+            case ITT_DEBRIS_IRONORE:
                 if( c->st == ST_NONE ) {
                     c->bt = BT_IRONORE;
                 } else {
                     return false;
                 }
                 break;
-            case ITT_DEBRI_RAREMETALORE:
+            case ITT_DEBRIS_RAREMETALORE:
                 if( c->st == ST_NONE ) {
                     c->bt = BT_RAREMETALORE;
                 } else {

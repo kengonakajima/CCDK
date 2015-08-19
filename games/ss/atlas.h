@@ -178,7 +178,7 @@
 
 #define B_ATLAS_BIRDGEN (18*AU+15)
 #define B_ATLAS_SHRIMP (17*AU+5)
-#define B_ATLAS_SHRIMP_DEBRI (17*AU+6)
+#define B_ATLAS_SHRIMP_DEBRIS (17*AU+6)
 
 
 #define B_ATLAS_IVY_LD (39*AU+0)

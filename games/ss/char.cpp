@@ -307,18 +307,18 @@ bool Beam::charPoll( double dt ) {
 }
 
 ///////////////////////
-Debri::Debri( Vec2 lc, Vec2 iniv, int ind, int client_id, int internal_id ) : Char( CAT_DEBRI, lc, g_base_deck, g_char_layer, client_id, internal_id ), v(iniv), falling_to_pit(false), rotate_speed(0) {
+Debris::Debris( Vec2 lc, Vec2 iniv, int ind, int client_id, int internal_id ) : Char( CAT_DEBRI, lc, g_base_deck, g_char_layer, client_id, internal_id ), v(iniv), falling_to_pit(false), rotate_speed(0) {
     init(ind);
-    if( isLocal() ) realtimeNewDebriSend(this);    
+    if( isLocal() ) realtimeNewDebrisSend(this);    
 }
 
-Debri::Debri( Vec2 lc, int ind, int client_id, int internal_id ) : Char( CAT_DEBRI, lc, g_base_deck, g_char_layer, client_id, internal_id ), falling_to_pit(false), rotate_speed(0) {
+Debris::Debris( Vec2 lc, int ind, int client_id, int internal_id ) : Char( CAT_DEBRI, lc, g_base_deck, g_char_layer, client_id, internal_id ), falling_to_pit(false), rotate_speed(0) {
     init(ind);
     float vel = 5;
     v = Vec2( range(-vel*PPC,vel*PPC), range(-vel*PPC,vel*PPC) );
-    if( isLocal() ) realtimeNewDebriSend(this);        
+    if( isLocal() ) realtimeNewDebrisSend(this);        
 }
-void Debri::init( int ind ) {
+void Debris::init( int ind ) {
     tex_epsilon = DEFAULT_TEX_EPS;
     setIndex(ind);
     if( index < 13*16 ) setScl(PPC*0.6); else setScl(PPC);
@@ -328,7 +328,7 @@ void Debri::init( int ind ) {
     }
 }
 
-bool Debri::charPoll( double dt ) {
+bool Debris::charPoll( double dt ) {
     if( falling_to_pit ) {
         if( scl.x < 0.1 ) return false; else return true;
     }
@@ -382,15 +382,15 @@ bool Debri::charPoll( double dt ) {
     if( v.len() < 5 ) v *=0;
 
     // Timeout flickering
-    if( accum_time > DEBRI_WARN_ERASE_SEC ) {
+    if( accum_time > DEBRIS_WARN_ERASE_SEC ) {
         setVisible(  (int)(accum_time * 20) % 2 );
-        if( accum_time > DEBRI_ERASE_SEC ) {
+        if( accum_time > DEBRIS_ERASE_SEC ) {
             return false;
         } 
     }
 
     // Field class implements item gathering by PCs
-    if( g_fld->checkGatherDebri(this) ) {
+    if( g_fld->checkGatherDebris(this) ) {
         realtimeCharDeleteSend(this);
         return false;
     }
@@ -511,7 +511,7 @@ void Blaster::land(){
         Vec2 tov = Vec2::angle(r).normalize(range(100,150) );
         r += M_PI/4.0;
         if( to_heal ) {
-            Debri *d = new Debri( loc, B_ATLAS_HP_PARTICLE );
+            Debris *d = new Debris( loc, B_ATLAS_HP_PARTICLE );
             d->rotate_speed = range(7,10);
             d->setColor( Color(1,1,1,0.7));
             d->setScl( range(0.7,1) *PPC );

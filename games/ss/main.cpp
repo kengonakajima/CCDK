@@ -691,9 +691,9 @@ void GLFWCALL keyCallback( int key, int action ) {
         if( g_enable_debug_menu ) {
             for(int i=0;i<10;i++){
                 g_pc->incItem( ITT_MICROBE, DEFAULT_STACK_MAX, PC_SUIT_NUM, false );
-                g_pc->incItem( ITT_DEBRI_HARDROCK, DEFAULT_STACK_MAX, PC_SUIT_NUM, false );
-                g_pc->incItem( ITT_DEBRI_ROCK, DEFAULT_STACK_MAX, PC_SUIT_NUM, false );
-                g_pc->incItem( ITT_DEBRI_SOIL, DEFAULT_STACK_MAX, PC_SUIT_NUM, false );
+                g_pc->incItem( ITT_DEBRIS_HARDROCK, DEFAULT_STACK_MAX, PC_SUIT_NUM, false );
+                g_pc->incItem( ITT_DEBRIS_ROCK, DEFAULT_STACK_MAX, PC_SUIT_NUM, false );
+                g_pc->incItem( ITT_DEBRIS_SOIL, DEFAULT_STACK_MAX, PC_SUIT_NUM, false );
             }
         }
         break;

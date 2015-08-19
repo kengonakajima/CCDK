@@ -1782,7 +1782,7 @@ bool Field::damage( Vec2 at, int dmg, int *consumed, Char *by ) {
 
     
     if( c->isEarthBlock() ) {
-        bool gen_debri = ( c->bt != BT_FIREGEN && c->bt != BT_SNOW );
+        bool gen_debris = ( c->bt != BT_FIREGEN && c->bt != BT_SNOW );
         int fin_dmg = dmg;
         int last = c->getMaxBlockHP() - c->damage;
         if( last < fin_dmg ) fin_dmg = last;
@@ -1804,8 +1804,8 @@ bool Field::damage( Vec2 at, int dmg, int *consumed, Char *by ) {
                 if( c->untouched == false ) n = 0;      
             }
             
-            // BT_AIR first, because debri hits on wall and stop right away
-            if(gen_debri) for(int i=0;i<n;i++) new Debri( toCellCenter(at), orig_bt );
+            // BT_AIR first, because debris hits on wall and stop right away
+            if(gen_debris) for(int i=0;i<n;i++) new Debris( toCellCenter(at), orig_bt );
             soundPlayAt(g_dig_sound,at,1);
             notifyChanged(c, true );
             notifyChangedAround(getCellPos(c),1);            
@@ -1852,18 +1852,18 @@ bool Field::damage( Vec2 at, int dmg, int *consumed, Char *by ) {
             if( c->bt == BT_TREE && c->content > TREE_CONTENT_RIPE_THRES ) {
                 ChunkStat *cs = getChunkStat( at.x/PPC/CHUNKSZ, at.y/PPC/CHUNKSZ);
                 if(cs && cs->isTundra() == false ) {
-                    new Debri( toCellCenter(at), B_ATLAS_ITEM_APPLE );
+                    new Debris( toCellCenter(at), B_ATLAS_ITEM_APPLE );
                 }
             } else if( c->bt == BT_FLYGEN ){
-                new Debri( toCellCenter(at), B_ATLAS_MICROBE_PARTICLE );
+                new Debris( toCellCenter(at), B_ATLAS_MICROBE_PARTICLE );
             } else if( c->bt == BT_COPTERGEN || c->bt == BT_SLIMEGEN || c->bt == BT_BIRDGEN ) {
                 if(range(0,100)<50) {
-                    new Debri( toCellCenter(at), B_ATLAS_ITEM_RAREMETAL_CRYSTAL );
+                    new Debris( toCellCenter(at), B_ATLAS_ITEM_RAREMETAL_CRYSTAL );
                 } else {
-                    new Debri( toCellCenter(at), B_ATLAS_MICROBE_PARTICLE );
+                    new Debris( toCellCenter(at), B_ATLAS_MICROBE_PARTICLE );
                 }
             } else if( c->bt == BT_BEEHIVE ) {
-                new Debri( toCellCenter(at), B_ATLAS_MICROBE_PARTICLE );                
+                new Debris( toCellCenter(at), B_ATLAS_MICROBE_PARTICLE );                
             }
             if( c->bt == BT_FLYGEN ) {
                 int n = (c->hyper_count > 0) ? 20 : 4;
@@ -1877,8 +1877,8 @@ bool Field::damage( Vec2 at, int dmg, int *consumed, Char *by ) {
             } else if( c->bt == BT_BOMBFLOWER || c->bt == BT_TREE ) {
                 for(int i=0;i<3;i++) createLeafEffect(at);
             } else if( c->bt == BT_WEAK_CRYSTAL ) {
-                new Debri( toCellCenter(at), B_ATLAS_ITEM_IRON_PLATE );
-                if(range(0,100)<50) new Debri( toCellCenter(at), B_ATLAS_ITEM_RAREMETAL_CRYSTAL );
+                new Debris( toCellCenter(at), B_ATLAS_ITEM_IRON_PLATE );
+                if(range(0,100)<50) new Debris( toCellCenter(at), B_ATLAS_ITEM_RAREMETAL_CRYSTAL );
             }
 
             if( c->bt == BT_COPTERGEN || c->bt == BT_TREE || c->bt == BT_WEAK_CRYSTAL ) {
@@ -1934,22 +1934,22 @@ bool Field::damage( Vec2 at, int dmg, int *consumed, Char *by ) {
                         notifyChanged(c,true);
                         saveAt(c);
                     } else {
-                        bool to_make_debri = true;
-                        if( c->bt == BT_GRAY_GOO ) to_make_debri = false;
+                        bool to_make_debris = true;
+                        if( c->bt == BT_GRAY_GOO ) to_make_debris = false;
                         if( c->isCoreCircuit() == false && c->bt != BT_GRAY_GOO ) c->st = ST_GROUNDWORK;
                         if( c->bt == BT_HYPERGEN ) {
                             int n = irange(1,3);
-                            for(int i=0;i<n;i++) new Debri( toCellCenter(at), B_ATLAS_ITEM_HYPER_PARTICLE );
+                            for(int i=0;i<n;i++) new Debris( toCellCenter(at), B_ATLAS_ITEM_HYPER_PARTICLE );
                         } 
                         
                         c->bt = BT_AIR;                                                
-                        if( range(0,100)<50 && to_make_debri ) {
+                        if( range(0,100)<50 && to_make_debris ) {
                             const int cands[] = {
                                 B_ATLAS_ITEM_IRON_PLATE,B_ATLAS_ITEM_IRON_PLATE,B_ATLAS_ITEM_IRON_PLATE,
                                 B_ATLAS_ITEM_ENERGY_PARTICLE,B_ATLAS_ITEM_ENERGY_PARTICLE,B_ATLAS_ITEM_ENERGY_PARTICLE,
                                 B_ATLAS_ITEM_RAREMETAL_CRYSTAL
                             };
-                            new Debri( toCellCenter(at), choose(cands) );
+                            new Debris( toCellCenter(at), choose(cands) );
                         }
                     }
                 }
@@ -1986,7 +1986,7 @@ bool Field::damage( Vec2 at, int dmg, int *consumed, Char *by ) {
             increaseScore(by,GroundToScore(c->gt));
             c->damage = c->content = 0;
             if( c->gt == GT_ENHANCER || c->gt == GT_NUCLEUS ) {
-                new Debri( toCellCenter(at), B_ATLAS_MICROBE_PARTICLE );
+                new Debris( toCellCenter(at), B_ATLAS_MICROBE_PARTICLE );
                 c->gt = GT_ROCK;
                 notifyChanged(c,true);
             } else if( c->gt == GT_CORE ) {
@@ -2004,9 +2004,9 @@ bool Field::damage( Vec2 at, int dmg, int *consumed, Char *by ) {
 }
 
 // Returns true when success
-bool Field::checkGatherDebri( Debri *d ) {
+bool Field::checkGatherDebris( Debris *d ) {
     if( d->loc.len( g_pc->loc ) < PPC ) {        
-        if( g_pc->addItemByDebri(d) ) {
+        if( g_pc->addItemByDebris(d) ) {
             soundPlayAt(g_pickup_sound,d->loc,1);
             return true;
         }
@@ -2922,13 +2922,13 @@ int Field::wipeFortress( Pos2 center, int dia, bool mad ) {
                     Vec2 at = toCellCenter( Vec2(x*PPC,y*PPC) );
                     createBuildingExplosion( at );
                     if( c->bt == BT_ENEMY_EYE_DESTROYED ) {
-                        new Debri( at, B_ATLAS_ITEM_ARTIFACT ) ;
+                        new Debris( at, B_ATLAS_ITEM_ARTIFACT ) ;
                     }
                     if( range(0,100) < 40 ) {
-                        new Debri( at, B_ATLAS_ITEM_IRON_PLATE );
+                        new Debris( at, B_ATLAS_ITEM_IRON_PLATE );
                     }
                     if( range(0,100) < 20 ) {
-                        new Debri( at, B_ATLAS_ITEM_RAREMETAL_CRYSTAL );
+                        new Debris( at, B_ATLAS_ITEM_RAREMETAL_CRYSTAL );
                     }
                     c->bt = BT_AIR;
                     c->gt = GT_ROCK;
@@ -3706,7 +3706,7 @@ void Field::destroyCore( Cell *c ) {
     get8( Pos2(x,y), cells );
     for(int i=0;i<8;i++) {
         if(cells[i] && cells[i]->gt == GT_CORE ) {
-            new Debri( toCellCenter(x,y), B_ATLAS_ITEM_DARK_MATTER_PARTICLE );
+            new Debris( toCellCenter(x,y), B_ATLAS_ITEM_DARK_MATTER_PARTICLE );
             cells[i]->gt = GT_ROCK;
             int x,y;
             getCellXY( cells[i], &x, &y);

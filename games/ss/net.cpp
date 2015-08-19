@@ -1284,7 +1284,7 @@ typedef enum {
     PACKETTYPE_CHAR_DELETE,
     PACKETTYPE_PLAY_SOUND,
     PACKETTYPE_EFFECT,
-    PACKETTYPE_NEW_DEBRI, // 10
+    PACKETTYPE_NEW_DEBRIS, // 10
     PACKETTYPE_NEW_BULLET,
     PACKETTYPE_NEW_ENEMY,
     PACKETTYPE_ENEMY_MOVE, // 13
@@ -1488,16 +1488,16 @@ void realtimeEffectSend( EFFECTTYPE et, Vec2 at, float opt0, float opt1 ) {
     ssproto_nearcast_send( g_rtconn, at.x/PPC, at.y/PPC, SYNC_EFFECT_DIA, PACKETTYPE_EFFECT, (const char *)&pkt, sizeof(pkt) );
 }
 
-class NewDebriPacket : public CharSyncPacket {
+class NewDebrisPacket : public CharSyncPacket {
 public:
     Vec2 iniv;
     int index;
-    NewDebriPacket( Debri *d ) : CharSyncPacket(d), iniv(d->v), index(d->index) {}
+    NewDebrisPacket( Debris *d ) : CharSyncPacket(d), iniv(d->v), index(d->index) {}
 };
 
-void realtimeNewDebriSend( Debri *d ) {
-    NewDebriPacket pkt(d);
-    NEARCAST_SEND( d, SYNC_CHAR_DIA, PACKETTYPE_NEW_DEBRI, pkt, 'r' );
+void realtimeNewDebrisSend( Debris *d ) {
+    NewDebrisPacket pkt(d);
+    NEARCAST_SEND( d, SYNC_CHAR_DIA, PACKETTYPE_NEW_DEBRIS, pkt, 'r' );
 }
 class NewBulletPacket : public CharSyncPacket {
 public:
@@ -2029,10 +2029,10 @@ int ssproto_nearcast_notify_recv( conn_t _c, int channel_id, int sender_cli_id, 
         default:
             assertmsg(false, "invalid effect type:%d",pkt->type);
         }
-    } else if( type_id == PACKETTYPE_NEW_DEBRI ) {
-        assert( data_len == sizeof(NewDebriPacket) );
-        NewDebriPacket *pkt = (NewDebriPacket*) data;
-        new Debri( pkt->loc, pkt->iniv, pkt->index, pkt->client_id, pkt->internal_id );
+    } else if( type_id == PACKETTYPE_NEW_DEBRIS ) {
+        assert( data_len == sizeof(NewDebrisPacket) );
+        NewDebrisPacket *pkt = (NewDebrisPacket*) data;
+        new Debris( pkt->loc, pkt->iniv, pkt->index, pkt->client_id, pkt->internal_id );
     } else if( type_id == PACKETTYPE_NEW_BULLET ) {
         assert( data_len == sizeof(NewBulletPacket) );
         NewBulletPacket *pkt = (NewBulletPacket*) data;

@@ -1,7 +1,7 @@
 ﻿#ifndef _PC_H_
 #define _PC_H_
 
-class Debri;
+class Debris;
 class Enemy;
 
 class PCDump {
@@ -90,7 +90,7 @@ public:
 
 
     void refreshStatus();
-    bool addItemByDebri( Debri *d );
+    bool addItemByDebris( Debris *d );
     virtual void onItemUpdated( int index ) {print("pc:onitemupdated:%d",index); }; // -1:reduced number. Update GUI only on LocalChar.
     virtual void onStatusUpdated() {}; 
     virtual void onTouchWall( Vec2 nextloc, int hitbits, bool nxok, bool nyok ) {};
@@ -149,7 +149,7 @@ public:
     Vec2 last_touch_wall_at;
     bool can_put_block_as_wall;
     bool can_put_block_to_remove_water;
-    Vec2 last_put_debri_at;
+    Vec2 last_put_debris_at;
     LocalPC( Vec2 lc );
     bool tryAction( Vec2 direction );
 
@@ -161,7 +161,7 @@ public:
     virtual void onTooHot();
     virtual bool pcPoll( double dt );
 
-    void resetPutBlockFlags() { can_put_block_as_wall = can_put_block_to_remove_water = true; last_put_debri_at = Vec2(0,0); }
+    void resetPutBlockFlags() { can_put_block_as_wall = can_put_block_to_remove_water = true; last_put_debris_at = Vec2(0,0); }
     void modScore( int score );
 };
 

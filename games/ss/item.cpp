@@ -94,11 +94,11 @@ void setupItemConf(){
     item_confs[ind++] = ItemConf( ITT_MICROBE, 0, "MICROBE PARTICLE", g_base_deck, B_ATLAS_MICROBE_PARTICLE, DEFAULT_STACK_MAX, false );
 
     item_confs[ind] = ItemConf( ITT_WEED_SEED, 1, "WEED SEED", g_base_deck, B_ATLAS_WEED_SEED, DEFAULT_STACK_MAX, true );
-    item_confs[ind].addIngredient( ITT_DEBRI_SOIL, 1 );
+    item_confs[ind].addIngredient( ITT_DEBRIS_SOIL, 1 );
     item_confs[ind].addIngredient( ITT_MICROBE, 1 );
     item_confs[ind].required_ene = 10;
     item_confs[ind].addResearchIngredient( ITT_MICROBE, 20 );
-    item_confs[ind].addResearchIngredient( ITT_DEBRI_SOIL, 20 );
+    item_confs[ind].addResearchIngredient( ITT_DEBRIS_SOIL, 20 );
     item_confs[ind].addResearchIngredient( ITT_ARTIFACT, 5 );        
     ind++;
 
@@ -116,12 +116,12 @@ void setupItemConf(){
         
     
     item_confs[ind] = ItemConf( ITT_TREE_SEED, 1, "TREE SEED", g_base_deck, B_ATLAS_TREE_SEED, DEFAULT_STACK_MAX, true );
-    item_confs[ind].addIngredient( ITT_DEBRI_SOIL, 10 );
-    item_confs[ind].addIngredient( ITT_DEBRI_ROCK, 1 );    
+    item_confs[ind].addIngredient( ITT_DEBRIS_SOIL, 10 );
+    item_confs[ind].addIngredient( ITT_DEBRIS_ROCK, 1 );    
     item_confs[ind].addIngredient( ITT_MICROBE, 1 );
     item_confs[ind].required_ene = 100;
-    item_confs[ind].addResearchIngredient( ITT_DEBRI_SOIL, 50 );
-    item_confs[ind].addResearchIngredient( ITT_DEBRI_ROCK, 10 );
+    item_confs[ind].addResearchIngredient( ITT_DEBRIS_SOIL, 50 );
+    item_confs[ind].addResearchIngredient( ITT_DEBRIS_ROCK, 10 );
     item_confs[ind].addResearchIngredient( ITT_MICROBE, 30 );
     item_confs[ind].addResearchIngredient( ITT_ARTIFACT, 3 );
     ind++;
@@ -131,15 +131,15 @@ void setupItemConf(){
     item_confs[ind++] = ItemConf( ITT_DARK_MATTER_PARTICLE, 0, "DARK MATTER PARTICLE", g_base_deck, B_ATLAS_ITEM_DARK_MATTER_PARTICLE, DEFAULT_STACK_MAX, false );    
     
     item_confs[ind] = ItemConf( ITT_IRON_PLATE, 0, "IRON PLATE", g_base_deck, B_ATLAS_ITEM_IRON_PLATE, DEFAULT_STACK_MAX, false );
-    item_confs[ind].addIngredient( ITT_DEBRI_IRONORE, 1 );
+    item_confs[ind].addIngredient( ITT_DEBRIS_IRONORE, 1 );
     item_confs[ind].required_ene = 50;
-    item_confs[ind].addResearchIngredient( ITT_DEBRI_IRONORE, 10 );
+    item_confs[ind].addResearchIngredient( ITT_DEBRIS_IRONORE, 10 );
     ind++;
     
     item_confs[ind] = ItemConf( ITT_RAREMETAL_CRYSTAL, 0, "RARE METAL CRYSTAL", g_base_deck, B_ATLAS_ITEM_RAREMETAL_CRYSTAL, DEFAULT_STACK_MAX, false );
-    item_confs[ind].addIngredient( ITT_DEBRI_RAREMETALORE, 1 );
+    item_confs[ind].addIngredient( ITT_DEBRIS_RAREMETALORE, 1 );
     item_confs[ind].required_ene = 100;
-    item_confs[ind].addResearchIngredient( ITT_DEBRI_RAREMETALORE, 10 );
+    item_confs[ind].addResearchIngredient( ITT_DEBRIS_RAREMETALORE, 10 );
     ind++;
     
     item_confs[ind] = ItemConf( ITT_BATTERY1, 1, "BATTERY LV1", g_base_deck, B_ATLAS_ITEM_BATTERY1, 1, false );
@@ -204,17 +204,17 @@ void setupItemConf(){
 
     
     // debris
-    item_confs[ind++] = ItemConf( ITT_DEBRI_SOIL, 0, "SOIL DEBRI", g_base_deck, BT_SOIL, DEFAULT_STACK_MAX, true );
-    item_confs[ind++] = ItemConf( ITT_DEBRI_ROCK, 0, "ROCK DEBRI", g_base_deck, BT_ROCK, DEFAULT_STACK_MAX, true );
-    item_confs[ind++] = ItemConf( ITT_DEBRI_IRONORE, 0, "IRON ORE", g_base_deck, BT_IRONORE, DEFAULT_STACK_MAX, true );
-    item_confs[ind++] = ItemConf( ITT_DEBRI_RAREMETALORE, 0, "RARE METAL ORE", g_base_deck, BT_RAREMETALORE, DEFAULT_STACK_MAX, true );
-    item_confs[ind++] = ItemConf( ITT_DEBRI_HARDROCK, 0, "HARD ROCK DEBRI", g_base_deck, BT_HARDROCK, DEFAULT_STACK_MAX, true );
+    item_confs[ind++] = ItemConf( ITT_DEBRIS_SOIL, 0, "SOIL DEBRIS", g_base_deck, BT_SOIL, DEFAULT_STACK_MAX, true );
+    item_confs[ind++] = ItemConf( ITT_DEBRIS_ROCK, 0, "ROCK DEBRIS", g_base_deck, BT_ROCK, DEFAULT_STACK_MAX, true );
+    item_confs[ind++] = ItemConf( ITT_DEBRIS_IRONORE, 0, "IRON ORE", g_base_deck, BT_IRONORE, DEFAULT_STACK_MAX, true );
+    item_confs[ind++] = ItemConf( ITT_DEBRIS_RAREMETALORE, 0, "RARE METAL ORE", g_base_deck, BT_RAREMETALORE, DEFAULT_STACK_MAX, true );
+    item_confs[ind++] = ItemConf( ITT_DEBRIS_HARDROCK, 0, "HARD ROCK DEBRIS", g_base_deck, BT_HARDROCK, DEFAULT_STACK_MAX, true );
     
     // put to use
     item_confs[ind] = ItemConf( ITT_BRICK_PANEL, 0, "BRICK PANEL", g_base_deck, B_ATLAS_ITEM_BRICK_PANEL, DEFAULT_STACK_MAX, true );
-    item_confs[ind].addIngredient( ITT_DEBRI_SOIL, 2 );
+    item_confs[ind].addIngredient( ITT_DEBRIS_SOIL, 2 );
     item_confs[ind].required_ene = 25;
-    item_confs[ind].addResearchIngredient( ITT_DEBRI_SOIL, 30 );
+    item_confs[ind].addResearchIngredient( ITT_DEBRIS_SOIL, 30 );
     ind++;;
 
     item_confs[ind] = ItemConf( ITT_REACTOR, 1, "ENERGY REACTOR", g_base_deck, BT_REACTOR_ACTIVE, DEFAULT_STACK_MAX, true );

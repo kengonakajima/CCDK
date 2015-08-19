@@ -62,13 +62,13 @@ public:
     void createSparkEffect();
 };
 
-class Debri : public Char {
+class Debris : public Char {
 public:
     Vec2 v;
     bool falling_to_pit;
     float rotate_speed;
-    Debri( Vec2 lc, Vec2 iniv, int index, int client_id=0, int internal_id=0 );
-    Debri( Vec2 lc, int index, int client_id=0, int internal_id=0 );
+    Debris( Vec2 lc, Vec2 iniv, int index, int client_id=0, int internal_id=0 );
+    Debris( Vec2 lc, int index, int client_id=0, int internal_id=0 );
     void init(int ind);
     virtual bool charPoll( double dt );
 };

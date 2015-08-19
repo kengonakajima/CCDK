@@ -210,8 +210,8 @@ typedef enum {
 } EFFECTTYPE;
 
 void realtimeEffectSend( EFFECTTYPE et, Vec2 at, float opt0=0, float opt1=0 );
-class Debri;
-void realtimeNewDebriSend( Debri *d ) ;
+class Debris;
+void realtimeNewDebrisSend( Debris *d ) ;
 class Bullet;
 void realtimeNewBulletSend( Bullet *b );
 

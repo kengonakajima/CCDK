@@ -620,7 +620,7 @@ typedef enum {
     SIMDIR_XPYN = 3,
 } SIMDIR;
 
-class Debri;
+class Debris;
 
 typedef enum {
     LOCKSTATE_INIT = 0,
@@ -835,7 +835,7 @@ public:
     
     int getEnterableBits( Vec2 at, float sz, bool enemy, bool flying, bool swimming, BLOCKTYPE bt_can_enter);
     bool damage( Vec2 at, int dmg, int *consumed, Char *by ); 
-    bool checkGatherDebri( Debri *d );
+    bool checkGatherDebris( Debris *d );
 
     bool setToSim( int chx, int chy, int cnt );
     ToSim *getToSim( int chx, int chy );

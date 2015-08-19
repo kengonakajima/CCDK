@@ -4437,7 +4437,7 @@ void DebugWindow::onEntrySelected(int ind) {
 
         g_pc->incItem( ITT_BEAMGUN4, 1, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_HEAL_BLASTER, 50, PC_SUIT_NUM, false );
-        g_pc->incItem( ITT_DEBRI_SOIL, 50, PC_SUIT_NUM, false );
+        g_pc->incItem( ITT_DEBRIS_SOIL, 50, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_BRICK_PANEL, 50, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_BRICK_PANEL, 50, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_BRICK_PANEL, 50, PC_SUIT_NUM, false );
@@ -4450,7 +4450,7 @@ void DebugWindow::onEntrySelected(int ind) {
     
         g_pc->incItem( ITT_BLASTER, 50, PC_SUIT_NUM, false );
 
-        g_pc->incItem( ITT_DEBRI_ROCK, 10, PC_SUIT_NUM, false );
+        g_pc->incItem( ITT_DEBRIS_ROCK, 10, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_POLE, 50, PC_SUIT_NUM, false  );
 
 #endif
@@ -4487,20 +4487,20 @@ void DebugWindow::onEntrySelected(int ind) {
 
         g_pc->incItem( ITT_EXCHANGE, 5 );
         g_pc->incItem( ITT_CABLE, 20 );
-        g_pc->incItem( ITT_DEBRI_ROCK, 20 );
+        g_pc->incItem( ITT_DEBRIS_ROCK, 20 );
 #endif
 
 #if 0
         g_pc->incItem( ITT_CABLE, 50, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_FENCE, 50, PC_SUIT_NUM, false );    
-        g_pc->incItem( ITT_DEBRI_SOIL, 50, PC_SUIT_NUM, false );
+        g_pc->incItem( ITT_DEBRIS_SOIL, 50, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_BEAMGUN2, 1, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_BEAMGUN3, 1, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_BEAMGUN4, 1, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_ARTIFACT, 50, PC_SUIT_NUM, false );
-        g_pc->incItem( ITT_DEBRI_SOIL, 50, PC_SUIT_NUM, false );
-        g_pc->incItem( ITT_DEBRI_RAREMETALORE, 50, PC_SUIT_NUM, false );
-        g_pc->incItem( ITT_DEBRI_IRONORE, 50, PC_SUIT_NUM, false );
+        g_pc->incItem( ITT_DEBRIS_SOIL, 50, PC_SUIT_NUM, false );
+        g_pc->incItem( ITT_DEBRIS_RAREMETALORE, 50, PC_SUIT_NUM, false );
+        g_pc->incItem( ITT_DEBRIS_IRONORE, 50, PC_SUIT_NUM, false );
 #endif
         break;
     case 4:
