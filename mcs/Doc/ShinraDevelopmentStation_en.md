@@ -5,6 +5,7 @@ The Shinra Development Station (SDS) is a graphical interface tool intended to e
 - Project deployment and execution with the Shinra Command Center (SCC).
 
 ## SDS
+![](../../docs/images/sds_gui.png)
 The interface is composed of three main elements:
 - **The menu bar** on the top gives access to most of the important actions like project loading and
   saving, or configuration settings of SDS, MCS and SCC connection.
@@ -19,6 +20,8 @@ The interface is composed of three main elements:
 SDS is mostly a front end for different underlying tools, but the application itself
 requires some settings to access these tools. You can edit the SDS settings by clicking *Settings*
 and *SDS Configuration* in the main menu bar.
+
+![](../../docs/images/sds_mcs_configuration.png)
 
 **Python executable** is the path to `python.exe` used to execute the MCS Shinra script.
 Python 3 is required.
@@ -60,6 +63,9 @@ You can create a new Data pack by three different means:
 - Drag and drop a directory containing the data on the project tree.
 
 Once you have your Data pack created, you can configure the different properties:
+
+![](../../docs/images/sds_add_datapack.png)
+
 - **Id** is string used to identify this data pack from the others. It can be configured to your 
   liking.
 - **Version** is a string used only for tracking purpose.
@@ -77,6 +83,8 @@ You can create a new Startup configuration by three different means:
 - Click *Add Startup configuration* in the Project menu.
 - Right click on the *Startup configurations* section in the project tree and select *Add Startup configuration*.
 - For a given Data pack, right click on an executable file you want to start and select *Add startup configuration*.
+
+![](../../docs/images/sds_add_startup.png)
 
 Once you have your Startup configuration created, you can configure the different properties:
 - **Id** is a string used to identify this startup configuration form the others.
@@ -254,6 +262,9 @@ When starting a game, the game data will be deployed in the directory specified 
 
 ### Game running window
 When running a game you are presented with a window enabling to start several instances of the game. Each instance is composed of:
+
+![](../../docs/images/sds_two_instances.png)
+
 - **User id** to be used for this particular instance of the game. Note we cannot have multiple instances of the same game with the same user id. Each instance has to have a specific user id.
 - **Game port** to be used for this particular instance of the game. The port must be available and not conflict with the other ports of other game instances.
 - **Video port** to be used for this particular instance of the game. The same restrictions than for the Game port applies here.

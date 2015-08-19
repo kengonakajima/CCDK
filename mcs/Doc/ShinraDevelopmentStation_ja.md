@@ -78,7 +78,7 @@ SDSツールそのものの設定は、メニューバーのSettingsから MCS c
 
 以下の3つの方法でスタートアップ設定を作成できます。
 
-- ```Proejct```メニューで、 ```Add Startup configuration```をクリックする。
+- ```Project```メニューで、 ```Add Startup configuration```をクリックする。
 - プロジェクトツリーで```Startup configurations``` を右クリックし、```Add Startup configuration```を選択する
 - 各データパックのファイルリストで、実行可能ファイルで右クリックし、```Add startup configuration```を選択する
 
