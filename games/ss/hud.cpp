@@ -816,7 +816,9 @@ void Inventory::selectAtCursor() {
                 selected_at = cursor_at;            
             } else {
                 if( g_pc->isSwappable( selected_at, cursor_at ) ) {
-                    g_pc->swapItem( selected_at, cursor_at );
+                    if( g_pc->stackItem( selected_at, cursor_at ) == false ) {
+                        g_pc->swapItem( selected_at, cursor_at );
+                    }
                     g_pc->onItemUpdated(selected_at);
                     g_pc->onItemUpdated(cursor_at);
                     g_craft_sound->play();
@@ -4455,7 +4457,8 @@ void DebugWindow::onEntrySelected(int ind) {
 
 #endif
 #if 1
-        g_pc->incItem( ITT_SHOVEL, 1, PC_SUIT_NUM, false );    
+        g_pc->incItem( ITT_SHOVEL, 1, PC_SUIT_NUM, false );
+        g_pc->incItem( ITT_SHOVEL, 1, PC_SUIT_NUM, false );            
         g_pc->incItem( ITT_BLASTER, 50, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_REACTOR, 5, PC_SUIT_NUM, false );
         g_pc->incItem( ITT_POLE, 50, PC_SUIT_NUM, false  );

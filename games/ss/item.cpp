@@ -545,6 +545,24 @@ bool ItemOwner::incItemIndex( int ind, ITEMTYPE itt, int n ) {
 
 
 
+bool ItemOwner::stackItem( int from_index, int to_index ){
+    items[from_index].dump();    
+    assert(items[from_index].validate());
+    assert(items[to_index].validate());
+
+    Item *from = &items[from_index], *to = &items[to_index];
+    
+    if( from->itt != to->itt ) return false;
+    if( to->num == to->conf->stack_max ) return false;
+
+    int room = to->conf->stack_max - to->num;
+    int to_move = from->num;
+    if( to_move > room ) to_move = room;
+    bool incret = incItemIndex( to_index, to->itt, to_move );
+    assert(incret);
+    decItemIndex( from_index, to_move );
+    return true;
+}
 
 void ItemOwner::swapItem( int from_index, int to_index ){
     items[from_index].dump();    

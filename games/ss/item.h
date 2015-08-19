@@ -214,6 +214,7 @@ public:
     void clearItemID(ITEMTYPE id);
     void clearItems();
     void swapItem( int from_index, int to_index );
+    bool stackItem( int from_index, int to_index );
     bool  merge( ItemOwner *to_merge );
 
     virtual void onItemUpdated( int index ) {};
