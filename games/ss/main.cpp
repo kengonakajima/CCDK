@@ -665,7 +665,7 @@ int windowCloseCallback(void) {
 
 void GLFWCALL keyCallback( int key, int action ) {
     
-    // Enterだけオート連射
+    // Auto repeat only Enter key
     if(key ==GLFW_KEY_ENTER ) {
         if(action) {
             g_enter_key_down_at = now();
@@ -748,7 +748,7 @@ void GLFWCALL keyCallback( int key, int action ) {
 #ifdef __APPLE__
             realtimeDebugCommandBroadcast( "exit_program" );
 #endif
-            networkLoop(0.2); // 確実に残りを送信する
+            networkLoop(0.2); // Confirm to flush data to network
         }        
         break;
     case GLFW_KEY_TAB:
@@ -774,7 +774,7 @@ void GLFWCALL keyCallback( int key, int action ) {
     case GLFW_KEY_ENTER:
         onEnterKey();
         break;
-    case GLFW_KEY_ESC: // パッドだとキャンセルボタンか
+    case GLFW_KEY_ESC: // Cancel button on gamepad
         onEscapeKey();
         break;
     default:
@@ -783,14 +783,14 @@ void GLFWCALL keyCallback( int key, int action ) {
 }
 
 
-// 0行が真っ赤(0....0)、だんだん緑になって、31行が全部緑(1....1).
-// uvなので、左下が(0,0)
-// 0000
+// (0....0):Red(row 0), 31(1....1):Green(row 31)
+// Left-bottom is(0,0) as it's uv
+// 0000 
 // 0001
 // 0011
 // 0111
-// 1111
-// 横が31だったら、縦は32個まで必要.
+// 1111 
+// Total 32 rows required.
 void setupDurBarImage( TileDeck *target, Color col_for_damage, Color col_for_health ) {
     Image *img = new Image();
     img->setSize( 32, 64 );
@@ -810,7 +810,7 @@ void setupDurBarImage( TileDeck *target, Color col_for_damage, Color col_for_hea
 
 
 ////////////////
-// 常にローカルキャラを起点にして距離計算
+// Calculate distance always from local player character
 void soundPlayAt( Sound *snd, Vec2 at, float distance_rate, bool to_distribute ) {
     float l = g_pc->loc.to(at).len() * distance_rate;
     float vol=0;
@@ -827,7 +827,7 @@ void soundPlayAt( Sound *snd, Vec2 at, float distance_rate, bool to_distribute )
 
 ////////////////
 
-// インゲームから出るときは、特別なキャラ以外全部消す
+// clear every characters when getting out of in-game state
 void clearNormalCharacters() {
     Char *cur = (Char*) g_char_layer->prop_top;
     while(cur) {
@@ -927,7 +927,7 @@ void updateSituationBGM() {
 
 void setTitleScreenVisible( bool imgvis, bool logovis ) ;
 
-// 方向キーの連打をシミュレートする
+// Simulate direction key auto repeat
 void checkPadRepeat( Vec2 v ) {
     bool stick_on = ( v.len() > JOYSTICK_CURSOR_THRES );
     static double last_stick_on = 0;
@@ -988,7 +988,7 @@ void updateGame(void) {
 
             ret = ensureUserID( g_user_name );
             if(!ret) {
-                // useridを取得できないようだと、これ以降何もできないので終了
+                // userid is absolutely necessary to continue program
                 print("ensureUserID failed");
                 exit(1);
             }
@@ -1031,21 +1031,21 @@ void updateGame(void) {
         break;
     case RS_SELECTED_PROJECT:
         {
-            g_runstate = RS_IN_PROJECT; // ゲーム開始
+            g_runstate = RS_IN_PROJECT; // start game
             g_gamestart_sound->play();
             
             dbUpdatePresenceSend();
 
             g_private_project = !(dbCheckProjectIsShared( g_current_project_id, g_user_id ) || dbCheckProjectIsPublished( g_current_project_id ));
             
-            // 電源システムを全部ロードする
+            // Load project state
             reloadPowerSystem();
             dbLoadResearchState( g_current_project_id );
             
-            // ゲーム始めるときに旗のリストをロードして反映する
+            // Load flags
             ProjectInfo pinfo;
             bool res = dbLoadProjectInfo( g_current_project_id, &pinfo );
-            assert(res); // ここまできてるのにファイルが無いのはおかしい。
+            assert(res); 
             g_fld->applyFlagCands( &pinfo );
             dbLoadFieldRevealSync( g_current_project_id );
             dbLoadFieldEnvSync( g_current_project_id );
@@ -1059,7 +1059,7 @@ void updateGame(void) {
             g_pc->onStatusUpdated();
             g_log->printf( WHITE, "LOGGED IN TO PROJECT ID:%d", g_current_project_id );
 
-            dbEnsureImage( g_current_project_id ); // 長い時間projectinfoを表示してることがあるので。。
+            dbEnsureImage( g_current_project_id );
 
             realtimeEventSend( EVT_LOGIN, g_pc->nickname, 0, 0 );
             updateToSim();
@@ -1122,7 +1122,7 @@ void updateGame(void) {
     
 
     // 
-    Vec2 ctl_move, ctl_shoot; // 一定以上傾けると、その方角に撃つ。
+    Vec2 ctl_move, ctl_shoot; 
     float ctl_zoom=0;
 
     bool is_iconified = glfwGetWindowParam( GLFW_ICONIFIED );
@@ -1170,7 +1170,7 @@ void updateGame(void) {
         g_pc->ideal_v = ctl_move;
 
         bool to_auto_repeat = true;
-        if( g_pc->isItemSelected( ITT_BLASTER ) || g_pc->isItemSelected( ITT_HEAL_BLASTER ) ) to_auto_repeat = false; // 連打するとマズいアイテム
+        if( g_pc->isItemSelected( ITT_BLASTER ) || g_pc->isItemSelected( ITT_HEAL_BLASTER ) ) to_auto_repeat = false; // no auto repeat for blasters
         
         static double last_shoot_at=0;
         if( ctl_shoot.len() > 0.98 ) {
@@ -1192,11 +1192,11 @@ void updateGame(void) {
 
     updateGridCursor( ctl_shoot );
     
-    // Enterキー連打
+    // Enter key auto repeat
     if( g_enter_key_down_at > 0 ) {
         double elt = g_now_time - g_enter_key_down_at;
         if( elt < 0.3 ) {
-            // 待ち時間
+            // fixed wait before repeating
         } else {
             if( (g_frame_count%2)==0){
                 onEnterKey();
@@ -1299,7 +1299,6 @@ void updateGame(void) {
             hudUpdatePCStatus();
             if( g_ps ) g_ps->poll(elt_sec);
         }
-        // pauseしていてもやるよ
         g_fld->sim( g_game_paused );
         updateToSim();
         if( isDBNetworkActive() ) g_fld->pollNetworkCache();
@@ -1331,7 +1330,7 @@ void updateGame(void) {
         //        print( "jsbtn: %d %d %d %d  %d %d %d %d  %d %d %d %d",btn[0], btn[1], btn[2], btn[3],btn[4], btn[5], btn[6], btn[7],btn[8], btn[9], btn[10], btn[11] );
 
         static int last_js_rb=0, last_js_lb=0, last_js_y=0, last_js_a=0,last_js_b=0, last_js_back=0,last_js_start=0;
-        // 360を基本とする
+        // Based on XBox360 pad
         int js_a = btn[0]; 
         int js_b = btn[1];
         //        int js_x = btn[2];
@@ -1399,7 +1398,7 @@ void updateGame(void) {
     
     g_world_viewport->setScale2D(SCRW/g_zoom_rate,SCRH/g_zoom_rate);
 
-    // 色
+    // dynamic color change 
     {
         const unsigned int eye_colors[] = { 0xff0000,  0xff00ba, 0xae00ff, 0x3c00ff, 0x0084ff, 0x00fff0,
                                             0x00ff72, 0x00ff00, 0xa8ff00, 0xfff600, 0xff9600, 0xff3000 };
@@ -1416,7 +1415,7 @@ void updateGame(void) {
 	}
 }
 
-// マルチプレイのデバッグでウインドウの位置を変更するのが面倒なので。
+// For make it easy to debug multiplayer 
 #ifdef __APPLE__
 void tryDebugToggleWindowPos() {
     char buf[100];
@@ -1540,7 +1539,7 @@ int moaiMain( int argc, char **argv ){
 
     glfwSetWindowTitle( "SpaceSweeper" );
     glfwEnable( GLFW_STICKY_KEYS );
-    //glfwSwapInterval( WAIT_FOR_VSYNC ); // vsyncを待つが、環境によっては機能しないので、fpsが高いようなら vsyncが使えないフラグを立てて使う
+    //glfwSwapInterval( WAIT_FOR_VSYNC ); // vsync, depends on operating systems
     glfwSwapInterval( 0); // for shinra
 
     
@@ -1681,7 +1680,7 @@ int moaiMain( int argc, char **argv ){
     g_wm_layer->setViewport(g_hud_viewport);
     g_debug_layer->setViewport(g_hud_viewport);
 
-    // 描画順を決定
+    // Drawing order
     g_moyai_client->insertLayer(g_ground_layer);
     g_moyai_client->insertLayer(g_electricity_layer);    
     g_moyai_client->insertLayer(g_fluid_layer);
@@ -1767,7 +1766,7 @@ int moaiMain( int argc, char **argv ){
     ANIMSET3( g_cellbubble_curve, 0.2, true, B_ATLAS_CELL_BUBBLE_BASE, B_ATLAS_CELL_BUBBLE_BASE+1, B_ATLAS_CELL_BUBBLE_BASE+2 );
 
 
-    // アイの色
+    // Eye colors
     g_eye_col_replacer = new ColorReplacerShader();
     if(!g_eye_col_replacer->init()) {
         print("can't initialize shader");
