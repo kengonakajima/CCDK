@@ -68,6 +68,7 @@ The tools listed here refer to the tool versions used on Windows. The tool versi
 * Python 3.4 (3.4.1)
 * Ruby 2.1 (2.1.5p273)
 * VisualStudio 2013
+* DirectX SDK June 2010
 * Redis (MSOpenTech Version)
 
 All of the tools listed above should be compatible with CCDK regardless of their minor version numbers. However, the CCDK development team has only confirmed compatibility with the tools listed here.
@@ -99,7 +100,16 @@ Visual Studio 2013 Professional was used for the development of CCDK.
 Community 2013 can be downloaded directly from Microsoft's website: [https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx](https://www.visualstudio.com/en-us/news/vs2013-community-vs.aspx)
 
 
-A Visual Studio compatible version of Redis has been ported from the official project site.
+<B>Note: Make sure DirectX SDK June 2010 is installed</B>
+
+Currently, you must also install DirectX SDK June 2010 edition. Sometimes you need to uninstall other 2010-dated versions of the Visual C++ Redistributable in order to successfully install this version of the SDK. You can find this version of the SDK [here](https://www.microsoft.com/en-us/download/details.aspx?id=6812).
+
+On some Windows 8 machines, .NET Framework 3.5 is not automatically enabled. Open the Start menu, then find the "Turn Windows features on or off" Settings menu to trigger the download. Or download it directly: 
+
+If your computer belongs to a group network using Windows Server Update Services (WSUS), follow [these](https://support.microsoft.com/en-us/kb/2734782) steps to force an update or ask your sysadmin to enable .NET Framework 3.5 updates for you.
+
+
+Finally, a Visual Studio compatible version of Redis has been ported from the official project site.
 Compiling the MSOpenTech version of Redis generates libraries that will be referenced when using Redis in Visual Studio.
 
 If you have cloned the CCDK repository using 'GitHub for Windows', the Redis source code will be automatically checked out to the directory below.
@@ -151,16 +161,6 @@ The Visual Studio solution file for the CCDK library can be opened from its loca
 
 A complete build can be made by pressing the [build] button. This will compile the entire project.
 
-<B>Note: Make sure DirectX SDK June 2010 is installed</B>
-
-During the build process, the DirectX SDK package should be automatically downloaded and installed by NuGet. Sometimes this automatic process fails. 
-
-In order to fix it, you must install DirectX SDK June 2010 edition. Sometimes you need to uninstall other 2010-dated versions of the Visual C++ Redistributable in order to successfully install this version of the SDK. You can find this version of the SDK [here](https://www.microsoft.com/en-us/download/details.aspx?id=6812).
-
-On some Windows 8 machines, .NET Framework 3.5 is not automatically enabled. Open the Start menu, then find the "Turn Windows features on or off" Settings menu to trigger the download. Or download it directly: 
-
-If your computer belongs to a group network using Windows Server Update Services (WSUS), follow [these](https://support.microsoft.com/en-us/kb/2734782) steps to force an update or ask your sysadmin to enable .NET Framework 3.5 updates for you.
-
 <B>Step 2 - Perform validation tests on the one-to-one skeleton program with video streaming disabled</B>
 
 To test the one-to-one skeleton program, set the "one_to_one" project as the startup project for the solution and run the program in debug mode.
@@ -208,6 +208,12 @@ By launching even more many_to_many programs in addition to what is currently be
 
 
 <B>Step 4 - Perform validation tests on the one-to-one skeleton program with video streaming enabled</B>
+
+Before starting this process, you currently must create a "C:\Shinra" directory yourself, along with three folders:
+
+1) C:\Shinra\Games
+2) C:\Shinra\Local
+3) C:\Shinra\UserFiles
 
 The MCS package, located in the CCDK/mcs directory, is required to test video streaming.
 The MCS package can be extracted to a location of your choosing.

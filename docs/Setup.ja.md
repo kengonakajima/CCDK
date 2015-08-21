@@ -110,6 +110,16 @@ CCDKの開発では、　Professional 2013を利用しています。
 
 [https://www.visualstudio.com/downloads/](https://www.visualstudio.com/downloads/)
 
+
+<B>Note: Make sure DirectX SDK June 2010 is installed</B>
+
+Currently, you must also install DirectX SDK June 2010 edition. Sometimes you need to uninstall other 2010-dated versions of the Visual C++ Redistributable in order to successfully install this version of the SDK. You can find this version of the SDK [here](https://www.microsoft.com/en-us/download/details.aspx?id=6812).
+
+On some Windows 8 machines, .NET Framework 3.5 is not automatically enabled. Open the Start menu, then find the "Turn Windows features on or off" Settings menu to trigger the download. Or download it directly: 
+
+If your computer belongs to a group network using Windows Server Update Services (WSUS), follow [these](https://support.microsoft.com/en-us/kb/2734782) steps to force an update or ask your sysadmin to enable .NET Framework 3.5 updates for you.
+
+
 Redisは、Redis公式プロジェクトから派生した、
 マイクロソフト社のオープンソース版をVisualStudioでコンパイルすると、
 Redis用のライブラリファイルも生成されるので、それを使います。
@@ -221,6 +231,12 @@ many_to_manyを、さらにいくつか起動して、パケットの受信速�
 
 
 <B>手順4, 1:1スケルトンをビデオストリーミングありで確認</B>
+
+Before starting this process, you currently must create a "C:\Shinra" directory yourself, along with three folders:
+
+1) C:\Shinra\Games
+2) C:\Shinra\Local
+3) C:\Shinra\UserFiles
 
 ビデオストリーミングを試すには、CCDK/mcsディレクトリに配置されている、
 MCSのツール群が必要です。 このツール群は、新しいMCSがリリースされるごとに定期的に更新されます。
