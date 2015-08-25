@@ -69,12 +69,31 @@ CCDKは、以下の外部ツールを利用しています。
 * Python 3.4 (3.4.1)
 * Ruby 2.1 (2.1.5p273)
 * VisualStudio 2013
+* DirectX SDK June 2010
 * Redis (MSOpenTech版)
     
 
 それぞれ、バージョン番号の末尾の番号(マイナーバージョン)が一致していなくても動作するはずですが、開発チームでテストしているのは以上のバージョンのみです。
 もし、動かなかったり、どうしてもほかのバージョンで検証する必要がある場合は、
 開発チームのメンバーにご相談ください。
+
+<B>注意事項: DirectX SDK June 2010 バージョンが必要です</B>
+
+現在はサンプルプログラムを動作させるために、DirectX SDKのJune 2010バージョンが必要です。
+場合によってはこのSDKをインストールするために、2010年の日付をもつVisual C++再頒布ライブラリを
+アンインストールする必要があります。
+このバージョンのDirectX SDKは、[ここ](https://www.microsoft.com/en-us/download/details.aspx?id=6812)　から取得できます。
+
+また、Windows 8 では、.NET Framework バージョン3.5が自動的に有効化されていない場合があります。
+その場合は、スタートメニューからコントロールパネルを開き、
+"Windows機能の有効化または無効化"を選択してダウンロードを開始するか、
+[ここ](https://www.microsoft.com/en-us/download/details.aspx?id=21)から直接ダウンロードしてください。
+
+もしコンピュータが Windows Server Update Services(WSUS)を使ってグループネットワークに参加しているなら、
+マイクロソフトのサポートページで紹介されている[手順](https://support.microsoft.com/en-us/kb/2734782)
+に従って、システム管理担当者に .NET Framework 3.5の更新をお願いしてください。
+
+
 
 Python 3.4は、以下のURLのものをご利用ください。 
 
