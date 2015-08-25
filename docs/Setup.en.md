@@ -104,7 +104,7 @@ Community 2013 can be downloaded directly from Microsoft's website: [https://www
 
 Currently, you must also install DirectX SDK June 2010 edition. Sometimes you need to uninstall other 2010-dated versions of the Visual C++ Redistributable in order to successfully install this version of the SDK. You can find this version of the SDK [here](https://www.microsoft.com/en-us/download/details.aspx?id=6812).
 
-On some Windows 8 machines, .NET Framework 3.5 is not automatically enabled. Open the Start menu, then find the "Turn Windows features on or off" Settings menu to trigger the download. Or download it directly: 
+On some Windows 8 machines, .NET Framework 3.5 is not automatically enabled. Open the Control panel, then find the "Turn Windows features on or off" Settings menu to trigger the download. Or download it [directly here](https://www.microsoft.com/en-us/download/details.aspx?id=21). 
 
 If your computer belongs to a group network using Windows Server Update Services (WSUS), follow [these](https://support.microsoft.com/en-us/kb/2734782) steps to force an update or ask your sysadmin to enable .NET Framework 3.5 updates for you.
 
