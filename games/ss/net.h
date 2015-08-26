@@ -261,7 +261,7 @@ typedef enum {
     EVT_LOGIN = 3,
     EVT_LOGOUT = 4,
     EVT_CLEAR_FLAG = 5,
-    EVT_RESEARCH_DONE = 6,    
+    EVT_RESEARCH_DONE = 6,
 } EVENTTYPE;
 void realtimeEventSend( EVENTTYPE t, const char *msg="", int opt0=0, int opt1=0 );
 

@@ -1650,6 +1650,8 @@ int ssproto_broadcast_notify_recv( conn_t _c, int cli_serial, int type_id, const
             DebugCommandPacket *pkt = (DebugCommandPacket*)data;
             if( strcmp(pkt->command, "exit_program" ) == 0 ) {
                 g_program_finished = true;
+            } else if( strcmp(pkt->command, "togglelab" ) == 0 ) {
+                toggleWindow("lab");
             }
         }
         break;
@@ -1675,9 +1677,12 @@ void realtimePowerNodeSend( int powergrid_id, Pos2 at ) {
 
 int ssproto_channelcast_notify_recv( conn_t _c, int channel_id, int sender_cli_id, int type_id, const char *data, int data_len ) {
     if( type_id == PACKETTYPE_EVENT ) {
+        
         if( g_game_paused ) return 0;        
         assert( data_len == sizeof(EventPacket) );
         EventPacket *pkt = (EventPacket*) data;
+        print("ssproto_channelcast_notify_recv: event. t:%d", pkt->type);
+        
         switch(pkt->type) {
         case EVT_MILESTONE:
             hudMilestoneMessage( pkt->message, pkt->opts[0], false );

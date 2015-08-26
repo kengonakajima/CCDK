@@ -740,14 +740,23 @@ void GLFWCALL keyCallback( int key, int action ) {
         if( isIngameWindowTogglable() ) toggleWindow("inventory");
         break;
     case '0':
+        
         if( g_enable_debug_menu ) {
+#if 0            
             g_program_finished = true;
             if( g_current_project_id > 0 )  g_fld->checkSaveAllUnsaved(0.2);
-            realtimeEventSend( EVT_LOGOUT, g_pc->nickname, 0, 0 );
-            
+#endif
+
+#if 1
+            toggleWindow("lab");
+            realtimeDebugCommandBroadcast( "togglelab" );
+#endif            
+
+#if 0            
 #ifdef __APPLE__
             realtimeDebugCommandBroadcast( "exit_program" );
 #endif
+#endif            
             networkLoop(0.2); // Confirm to flush data to network
         }        
         break;

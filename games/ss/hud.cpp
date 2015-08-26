@@ -1141,7 +1141,7 @@ void LabWindow::toggle(bool vis) {
     
     if(!vis) {
         // Save PC when closing
-        if( g_current_project_id > 0 ) {
+        if( g_current_project_id > 0 && research_lock_obtained_at > 0 ) {
             dbSavePC();
             dbSaveResearchState(g_current_project_id);
             realtimeUnlockProjectSend( g_current_project_id, LOCK_RESEARCH );
@@ -1348,9 +1348,13 @@ void LabWindow::selectAtCursor() {
 void LabWindow::poll() {
     if( visible ) {
         if( research_lock_obtained_at == 0 ) {
-            realtimeLockProjectSend( g_current_project_id, LOCK_RESEARCH );
-        } else if( research_lock_obtained_at < now() - 0.5 ) {
-            if( updateInterval( 0, 1 ) ) realtimeLockKeepProjectSend( g_current_project_id, LOCK_RESEARCH );
+            if(updateInterval(0,1) ) {
+                realtimeLockProjectSend( g_current_project_id, LOCK_RESEARCH );
+            }
+        } else if( research_lock_obtained_at > 0 && research_lock_obtained_at < now() - 0.5 ) {
+            if( updateInterval( 0, 1 ) ) {
+                realtimeLockKeepProjectSend( g_current_project_id, LOCK_RESEARCH );
+            }                
         }
         updateCaption();
     }
