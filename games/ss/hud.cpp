@@ -1696,7 +1696,7 @@ void ExchangeWindow::toggle( bool vis ) {
         }
     }
     if(!vis) {
-        if( g_current_project_id > 0 ) {
+        if( g_current_project_id > 0 && depo_lock_obtained_at > 0 ) {
             dbSavePC();
             dbSaveResourceDeposit( g_current_project_id );
             realtimeUnlockProjectSend( g_current_project_id, LOCK_RESOURCEDEPO );
