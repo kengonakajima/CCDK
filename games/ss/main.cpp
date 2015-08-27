@@ -1242,14 +1242,12 @@ void updateGame(void) {
         extern int g_last_sendbuf_len, g_last_recvbuf_len;
         extern int g_realtime_client_id;
         char tmp[200];
-        int world_lock_sec;
         int pgid=0, ftid=0;
         Cell *c = g_fld->get( g_pc->loc );
         if(c) {
             pgid = c->powergrid_id;
             ftid = c->fortress_id;
         }
-        if( g_powersystem_lock_obtained_at == 0 ) world_lock_sec = 0; else world_lock_sec = (int)( now() - g_powersystem_lock_obtained_at );
 
         int rt_rb = 0, rt_wb = 0;
         static int last_rt_rb = 0, last_rt_wb = 0;
@@ -1271,7 +1269,7 @@ void updateGame(void) {
         
         
         snprintf( tmp, sizeof(tmp),
-                  "FPS:%d st:%d ping:%dms prp:%d(%d) sim:%d pf:%d chg:%d tosim:%d(lk:%d) wl:%d z:%.1f pc(%.1f,%.1f) ch:%d cid:%d SR:%d/%d GID:%d ft:%d rt:%d/%d db:%d/%d rb:%d",
+                  "FPS:%d st:%d ping:%dms prp:%d(%d) sim:%d pf:%d chg:%d tosim:%d(lk:%d) z:%.1f pc(%.1f,%.1f) ch:%d cid:%d SR:%d/%d GID:%d ft:%d rt:%d/%d db:%d/%d rb:%d",
                   g_frame_count,
                   g_runstate,
                   (int)(g_last_ping_rtt_usec / 1000),
@@ -1280,7 +1278,6 @@ void updateGame(void) {
                   g_fld->simchunk_per_poll,
                   g_fld->last_chunk_change_cnt,
                   to_sim_n, lock_n,
-                  world_lock_sec,
                   g_zoom_rate,
                   g_pc->loc.x/PPC, g_pc->loc.y/PPC,
                   g_last_join_channel_id,
@@ -1308,7 +1305,7 @@ void updateGame(void) {
     if( g_runstate == RS_IN_PROJECT ) {
         if(  g_game_paused == false ) {
             hudUpdatePCStatus();
-            if( g_ps ) g_ps->poll(elt_sec);
+            if( g_ps && havePowerSystemLock(g_now_time)) g_ps->poll(elt_sec);
         }
         g_fld->sim( g_game_paused );
         updateToSim();

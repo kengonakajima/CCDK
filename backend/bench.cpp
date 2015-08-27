@@ -357,3 +357,6 @@ int ssproto_unlock_project_result_recv( conn_t _c, int project_id, int category,
 int ssproto_broadcast_notify_recv( conn_t _c, int type_id, int sender_cli_id, const char *data, int data_len ) {return 0;}
 int ssproto_channelcast_notify_recv( conn_t _c, int channel_id, int sender_cli_id, int type_id, const char *data, int data_len ) {return 0;}
 int ssproto_leave_channel_result_recv( conn_t _c, int retcode ) {return 0;}
+int ssproto_lock_keep_grid_result_recv( conn_t _c, int grid_id, int x, int y, int retcode ) { return 0; }
+int ssproto_lock_keep_project_result_recv( conn_t _c, int project_id, int category, int retcode ) { return 0; }
+

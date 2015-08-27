@@ -35,6 +35,8 @@
 #define SSPROTO_E_IMAGE_CANNOT_CONVERT -45
 #undef SSPROTO_E_PROJECT_NOT_SHARED
 #define SSPROTO_E_PROJECT_NOT_SHARED -46
+#undef SSPROTO_E_CANT_EXTEND_LOCK
+#define SSPROTO_E_CANT_EXTEND_LOCK -47
 #undef SSPROTO_FILE_PATH_MAX
 #define SSPROTO_FILE_PATH_MAX 64
 #undef SSPROTO_FILE_SIZE_MAX
@@ -186,8 +188,10 @@ typedef enum _SSPROTO_FUNCID{
   SSPROTO_S2C_COUNT_PRESENCE_RESULT=207,
   SSPROTO_S2C_LOCK_GRID_RESULT=211,
   SSPROTO_S2C_UNLOCK_GRID_RESULT=213,
+  SSPROTO_S2C_LOCK_KEEP_GRID_RESULT=215,
   SSPROTO_S2C_LOCK_PROJECT_RESULT=217,
   SSPROTO_S2C_UNLOCK_PROJECT_RESULT=219,
+  SSPROTO_S2C_LOCK_KEEP_PROJECT_RESULT=221,
   SSPROTO_S2C_BROADCAST_NOTIFY=231,
   SSPROTO_S2C_CHANNELCAST_NOTIFY=233,
   SSPROTO_S2C_JOIN_CHANNEL_RESULT=235,
@@ -296,8 +300,10 @@ double ssproto_get_list_presence_result_send_count( void );
 double ssproto_get_count_presence_result_send_count( void );
 double ssproto_get_lock_grid_result_send_count( void );
 double ssproto_get_unlock_grid_result_send_count( void );
+double ssproto_get_lock_keep_grid_result_send_count( void );
 double ssproto_get_lock_project_result_send_count( void );
 double ssproto_get_unlock_project_result_send_count( void );
+double ssproto_get_lock_keep_project_result_send_count( void );
 double ssproto_get_broadcast_notify_send_count( void );
 double ssproto_get_channelcast_notify_send_count( void );
 double ssproto_get_join_channel_result_send_count( void );
@@ -384,8 +390,10 @@ void ssproto_list_presence_result_send_debugprint(int on_off);
 void ssproto_count_presence_result_send_debugprint(int on_off);
 void ssproto_lock_grid_result_send_debugprint(int on_off);
 void ssproto_unlock_grid_result_send_debugprint(int on_off);
+void ssproto_lock_keep_grid_result_send_debugprint(int on_off);
 void ssproto_lock_project_result_send_debugprint(int on_off);
 void ssproto_unlock_project_result_send_debugprint(int on_off);
+void ssproto_lock_keep_project_result_send_debugprint(int on_off);
 void ssproto_broadcast_notify_send_debugprint(int on_off);
 void ssproto_channelcast_notify_send_debugprint(int on_off);
 void ssproto_join_channel_result_send_debugprint(int on_off);
@@ -475,8 +483,10 @@ int ssproto_list_presence_result_send( conn_t _c, int project_id, const int *use
 int ssproto_count_presence_result_send( conn_t _c, int project_id, int user_num );
 int ssproto_lock_grid_result_send( conn_t _c, int grid_id, int x, int y, int retcode );
 int ssproto_unlock_grid_result_send( conn_t _c, int grid_id, int x, int y, int retcode );
+int ssproto_lock_keep_grid_result_send( conn_t _c, int grid_id, int x, int y, int retcode );
 int ssproto_lock_project_result_send( conn_t _c, int project_id, int category, int retcode );
 int ssproto_unlock_project_result_send( conn_t _c, int project_id, int category, int retcode );
+int ssproto_lock_keep_project_result_send( conn_t _c, int project_id, int category, int retcode );
 int ssproto_broadcast_notify_send( conn_t _c, int type_id, int sender_cli_id, const char *data, int data_len );
 int ssproto_channelcast_notify_send( conn_t _c, int channel_id, int sender_cli_id, int type_id, const char *data, int data_len );
 int ssproto_join_channel_result_send( conn_t _c, int channel_id, int retcode );

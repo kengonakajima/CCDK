@@ -97,7 +97,7 @@ If at all possible, it’s preferable to define this function first and not modi
 =define E_IMAGE_NOT_FOUND (-44) 			# Couldn’t find an image with the specified ID
 =define E_IMAGE_CANNOT_CONVERT (-45) 		# Couldn’t convert image into a PNG
 =define E_PROJECT_NOT_SHARED (-46) 			# The specified project hasn’t been shared
-
+=define E_CANT_EXTEND_LOCK (-47)       # Can't extend a lock.
 ###########
 
 # Commands related to basic information
@@ -458,6 +458,7 @@ Space Sweeper sends this at the end of a simulation after a character has moved 
 ‘retcode’ will either be SSPROTO_OK or SSPROTO_E_CANT_UNLOCK.
 
 =c2s 214 lock_keep_grid( int grid_id, int x, int y )
+=s2c 215 lock_keep_grid_result( int grid_id, int x, int y, int retcode )
 Extend a chunk’s lock.
 Space Sweeper issues this command on every chunk every other second.
 If a lock is not extended for five seconds,
@@ -487,7 +488,9 @@ Release a lock on a category.
 ‘retcode’ will either be SSPROTO_OK or SSPROTO_E_CANT_UNLOCK.
 
 =c2s 220 lock_keep_project( int project_id, int category )
+=s2c 221 lock_keep_project_result( int project_id, int category, int retcode )
 Extend a category’s lock.
+
 
 
 

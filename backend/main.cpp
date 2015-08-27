@@ -211,7 +211,6 @@ public:
         return lock_cnt;
     }
     int pollLockTimeout() {
-        print("pollLockTimeout: id:%d",id);
         int unlocked = 0;
         time_t thres = time(NULL) - LOCK_TIMEOUT;
         //        print("thr:%u t:%u", (unsigned int) thres, (unsigned int )time(NULL) );
@@ -548,7 +547,7 @@ int main( int argc, char **argv ) {
         }
         
         static double last_stat_print = 0;        
-        if( nt > last_stat_print + 30 ) {
+        if( nt > last_stat_print + 10 ) {
             printStat();
             last_stat_print = nt;
         }
@@ -1328,9 +1327,13 @@ int ssproto_lock_keep_grid_recv( conn_t _c, int grid_id, int x, int y ) {
     CHECK_REALTIME("lock_keep_grid");    
     //print("ssproto_lock_keep_grid_recv: g:%d xy:%d,%d",grid_id,x,y);
     LockGrid *lg = findLockGrid(grid_id);
+    int retcode = SSPROTO_E_CANT_EXTEND_LOCK;
     if(lg) {
-        lg->keepLock( x,y, _c.serial );
-    }
+        bool res = lg->keepLock( x,y, _c.serial );
+        if(res) retcode = SSPROTO_OK;
+    } 
+    ssproto_lock_keep_grid_result_send( _c, grid_id, x, y, retcode );
+
     return 0;
 }
 
@@ -1360,15 +1363,16 @@ bool unlockProject( int id, int cat, unsigned int by_conn_id ) {
     }
     return false;
 }
-void lockKeepProject( int id, int cat, unsigned int by_conn_id ) {
+bool lockKeepProject( int id, int cat, unsigned int by_conn_id ) {
     for(int i=0;i<elementof(g_lockprojects);i++) {
         if( g_lockprojects[i].id == id &&
             g_lockprojects[i].category == cat && 
             g_lockprojects[i].by_conn_id == by_conn_id ) {
             g_lockprojects[i].lock_at = time(NULL);
-            return;
+            return true;
         }
     }
+    return false;
 }
 void pollAllLockProject() {
     time_t nowt = time(NULL);
@@ -1400,7 +1404,9 @@ int ssproto_unlock_project_recv( conn_t _c, int project_id, int category ) {
 int ssproto_lock_keep_project_recv( conn_t _c, int project_id, int category ) {
     CHECK_REALTIME("lock_keep_project");    
     //    print( "keepProject pjid:%d cat:%d", project_id, category );
-    lockKeepProject( project_id, category, _c.serial );
+    bool res = lockKeepProject( project_id, category, _c.serial );
+    int retcode = res ? SSPROTO_OK : SSPROTO_E_CANT_EXTEND_LOCK;
+    ssproto_lock_keep_project_result_send( _c, project_id, category, retcode );
     return 0;
 }
 int ssproto_clean_all_recv( conn_t _c ) {
@@ -1486,6 +1492,13 @@ bool loadAllSharedProjects() {
     return ret;
 }
 
+int countLockProjectsActive() {
+    int n=0;
+    for(int i=0;i<elementof(g_lockprojects);i++) {
+        if( g_lockprojects[i].id) n++;
+    }
+    return n;
+}
 int countLockGridsActive() {
     int n=0;
     for(int i=0;i<elementof(g_lockgrids);i++) {
@@ -2063,11 +2076,18 @@ void printStat() {
             if( g_sharedpjs[i].project_id) g_sharedpjs[i].dump();
         }
     }
-    print("locks alive: %d projects", countLockGridsActive() );
+    print("grid-locks alive: %d projects", countLockGridsActive() );
     for(int i=0;i<elementof(g_lockgrids);i++) {
         if( g_lockgrids[i].id ) {
-            prt( "%d:%d ", g_lockgrids[i].id, g_lockgrids[i].lock_cnt );
+            prt( "[id:%d,count:%d] ", g_lockgrids[i].id, g_lockgrids[i].lock_cnt );
         }        
+    }
+    print("");    
+    print("project-locks alive: %d projects", countLockProjectsActive() );
+    for(int i=0;i<elementof(g_lockprojects);i++) {
+        if( g_lockprojects[i].id ) {
+            prt( "[id:%d,category:%d,by:%d] ", g_lockprojects[i].id, g_lockprojects[i].category, g_lockprojects[i].by_conn_id );
+        }
     }
     print("");
     print("====");

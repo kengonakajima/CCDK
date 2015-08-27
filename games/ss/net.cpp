@@ -1742,6 +1742,7 @@ int ssproto_channelcast_notify_recv( conn_t _c, int channel_id, int sender_cli_i
         PowerGridPacket *pkt = (PowerGridPacket*) data;
         PowerGrid *pg = g_ps->findGridById( pkt->powergrid_id );
         if(pg) {
+            print("packettype_powergrid diff:%d", pkt->ene_diff );
             pg->modEne( pkt->ene_diff, false );
         }
     } else if( type_id == PACKETTYPE_PARTY ) {
@@ -2164,6 +2165,10 @@ int ssproto_unlock_grid_result_recv( conn_t _c, int grid_id, int x, int y, int r
     } 
     return 0;
 }
+int ssproto_lock_keep_grid_result_recv( conn_t _c, int grid_id, int x, int y, int retcode ) {
+    print("ssproto_lock_keep_grid_result_recv. gid:%d x:%d y:%d ret:%d", grid_id, x, y, retcode );
+    return 0;
+}
 
 int ssproto_conn_serial_result_recv( conn_t _c, int serial ) {
     print("ssproto_conn_serial_result_recv. serial:%d",serial);
@@ -2232,6 +2237,22 @@ int ssproto_unlock_project_result_recv( conn_t _c, int project_id, int category,
     }
     return 0;
 }
+int ssproto_lock_keep_project_result_recv( conn_t _c, int project_id, int category, int retcode ) {
+    print("ssproto_lock_keep_project_result_recv. pjid:%d cat:%d ret:%d", project_id, category, retcode );
+    if( retcode == SSPROTO_OK ) {
+        if( project_id == g_current_project_id ) {
+            switch(category) {
+            case LOCK_POWERSYSTEM:
+                g_powersystem_lock_obtained_at = now();
+                break;
+            }
+        }
+    }
+    return 0;
+}
+
+
+
 
 // Project-wide locks
 void realtimeLockProjectSend( int pjid, LOCKCATEGORY lc ) {
@@ -2249,6 +2270,8 @@ void realtimeCleanAllSend() {
 }
 
 // Try to get project-wide lock every some seconds.
+#define KEEP_POWERSYSTEM_LOCK_INTERVAL 2
+
 void pollPowerSystemLock() {
     static double last_pwgrid_save_at = 0;
     
@@ -2257,7 +2280,7 @@ void pollPowerSystemLock() {
         if( g_powersystem_lock_obtained_at == 0 ) {
             realtimeLockProjectSend( g_current_project_id, LOCK_POWERSYSTEM );
         } else {
-            if( g_powersystem_lock_obtained_at < nt - 2 ) {
+            if( g_powersystem_lock_obtained_at < nt - KEEP_POWERSYSTEM_LOCK_INTERVAL ) {
                 realtimeLockKeepProjectSend( g_current_project_id, LOCK_POWERSYSTEM );
             }
             if( last_pwgrid_save_at < nt - POWERSYSTEM_SAVE_INTERVAL ) {
@@ -2267,6 +2290,9 @@ void pollPowerSystemLock() {
             }
         }
     }
+}
+bool havePowerSystemLock( double nowtime ) {
+    return ( g_powersystem_lock_obtained_at > nowtime - KEEP_POWERSYSTEM_LOCK_INTERVAL );
 }
 
 void reloadPowerSystem() {

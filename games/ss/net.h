@@ -392,4 +392,6 @@ public:
 void dbAppendSaveUnfriendLog(int unfriended_uid ) ;
 void dbExecuteUnfriendLog() ;
 
+bool havePowerSystemLock( double nowtime );
+    
 #endif

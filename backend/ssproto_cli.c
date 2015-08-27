@@ -81,8 +81,10 @@ static double ssproto_list_presence_result_recv_counter = 0;
 static double ssproto_count_presence_result_recv_counter = 0;
 static double ssproto_lock_grid_result_recv_counter = 0;
 static double ssproto_unlock_grid_result_recv_counter = 0;
+static double ssproto_lock_keep_grid_result_recv_counter = 0;
 static double ssproto_lock_project_result_recv_counter = 0;
 static double ssproto_unlock_project_result_recv_counter = 0;
+static double ssproto_lock_keep_project_result_recv_counter = 0;
 static double ssproto_broadcast_notify_recv_counter = 0;
 static double ssproto_channelcast_notify_recv_counter = 0;
 static double ssproto_join_channel_result_recv_counter = 0;
@@ -168,8 +170,10 @@ static int ssproto_list_presence_result_recv_debugout = 1;
 static int ssproto_count_presence_result_recv_debugout = 1;
 static int ssproto_lock_grid_result_recv_debugout = 1;
 static int ssproto_unlock_grid_result_recv_debugout = 1;
+static int ssproto_lock_keep_grid_result_recv_debugout = 1;
 static int ssproto_lock_project_result_recv_debugout = 1;
 static int ssproto_unlock_project_result_recv_debugout = 1;
+static int ssproto_lock_keep_project_result_recv_debugout = 1;
 static int ssproto_broadcast_notify_recv_debugout = 1;
 static int ssproto_channelcast_notify_recv_debugout = 1;
 static int ssproto_join_channel_result_recv_debugout = 1;
@@ -934,6 +938,29 @@ int ssproto_cli_pcallback( conn_t _c, char *_data, int _len)
     _ret = ssproto_unlock_grid_result_recv( _c, grid_id,x,y,retcode);
     break;
   }
+  case  SSPROTO_S2C_LOCK_KEEP_GRID_RESULT :/* record length : 18 */
+  {
+    int grid_id;
+    int x;
+    int y;
+    int retcode;
+
+    _POP_I4(grid_id);
+    _POP_I4(x);
+    _POP_I4(y);
+    _POP_I4(retcode);
+
+    ssproto_lock_keep_grid_result_recv_counter += 1;
+#ifdef GEN_DEBUG_PRINT
+    if(ssproto_lock_keep_grid_result_recv_debugout)
+    {
+      char _addr[256];
+      vce_errout( "ssproto_lock_keep_grid_result_recv( [%s], grid_id=%d, x=%d, y=%d, retcode=%d )\n", vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) ,grid_id,x,y,retcode );
+    }
+#endif
+    _ret = ssproto_lock_keep_grid_result_recv( _c, grid_id,x,y,retcode);
+    break;
+  }
   case  SSPROTO_S2C_LOCK_PROJECT_RESULT :/* record length : 14 */
   {
     int project_id;
@@ -974,6 +1001,27 @@ int ssproto_cli_pcallback( conn_t _c, char *_data, int _len)
     }
 #endif
     _ret = ssproto_unlock_project_result_recv( _c, project_id,category,retcode);
+    break;
+  }
+  case  SSPROTO_S2C_LOCK_KEEP_PROJECT_RESULT :/* record length : 14 */
+  {
+    int project_id;
+    int category;
+    int retcode;
+
+    _POP_I4(project_id);
+    _POP_I4(category);
+    _POP_I4(retcode);
+
+    ssproto_lock_keep_project_result_recv_counter += 1;
+#ifdef GEN_DEBUG_PRINT
+    if(ssproto_lock_keep_project_result_recv_debugout)
+    {
+      char _addr[256];
+      vce_errout( "ssproto_lock_keep_project_result_recv( [%s], project_id=%d, category=%d, retcode=%d )\n", vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) ,project_id,category,retcode );
+    }
+#endif
+    _ret = ssproto_lock_keep_project_result_recv( _c, project_id,category,retcode);
     break;
   }
   case  SSPROTO_S2C_BROADCAST_NOTIFY :/* record length : 65551 */
@@ -2873,6 +2921,10 @@ double ssproto_get_unlock_grid_result_recv_count( void )
 {
   return ssproto_unlock_grid_result_recv_counter;
 }
+double ssproto_get_lock_keep_grid_result_recv_count( void )
+{
+  return ssproto_lock_keep_grid_result_recv_counter;
+}
 double ssproto_get_lock_project_result_recv_count( void )
 {
   return ssproto_lock_project_result_recv_counter;
@@ -2880,6 +2932,10 @@ double ssproto_get_lock_project_result_recv_count( void )
 double ssproto_get_unlock_project_result_recv_count( void )
 {
   return ssproto_unlock_project_result_recv_counter;
+}
+double ssproto_get_lock_keep_project_result_recv_count( void )
+{
+  return ssproto_lock_keep_project_result_recv_counter;
 }
 double ssproto_get_broadcast_notify_recv_count( void )
 {
@@ -3215,6 +3271,10 @@ void ssproto_unlock_grid_result_recv_debugprint(int on_off)
 {
   ssproto_unlock_grid_result_recv_debugout=on_off;
 }
+void ssproto_lock_keep_grid_result_recv_debugprint(int on_off)
+{
+  ssproto_lock_keep_grid_result_recv_debugout=on_off;
+}
 void ssproto_lock_project_result_recv_debugprint(int on_off)
 {
   ssproto_lock_project_result_recv_debugout=on_off;
@@ -3222,6 +3282,10 @@ void ssproto_lock_project_result_recv_debugprint(int on_off)
 void ssproto_unlock_project_result_recv_debugprint(int on_off)
 {
   ssproto_unlock_project_result_recv_debugout=on_off;
+}
+void ssproto_lock_keep_project_result_recv_debugprint(int on_off)
+{
+  ssproto_lock_keep_project_result_recv_debugout=on_off;
 }
 void ssproto_broadcast_notify_recv_debugprint(int on_off)
 {
@@ -3247,7 +3311,7 @@ void ssproto_get_channel_member_count_result_recv_debugprint(int on_off)
 #endif
 unsigned int ssproto_cli_get_version( unsigned int *subv )
 {
-  if(subv)*subv= 797721273;
+  if(subv)*subv= 586536774;
   return (unsigned int)10003;
 }
 conn_t ssproto_cli_get_current_conn( void )
