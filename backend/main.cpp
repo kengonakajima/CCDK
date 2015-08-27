@@ -409,8 +409,8 @@ int main( int argc, char **argv ) {
         if( strcmp( argv[i], "database" ) == 0 ) g_enable_database = true;
         if( strcmp( argv[i], "--enable-fsync" ) == 0 ) g_enable_fsync = true;
         if( strcmp( argv[i], "--redis-addr" ) == 0 ) strncpy(g_redis_addr, argv[++i], sizeof(g_redis_addr));
-        if( strncmp( argv[i], "--slowloop=", strlen( "--slowloop") ) == 0 ) {
-            g_debug_slow_loop_ms = atoi( argv[i] + strlen( "--slowloop" ) );
+        if( strncmp( argv[i], "--slowloop=", strlen( "--slowloop=") ) == 0 ) {
+            g_debug_slow_loop_ms = atoi( argv[i] + strlen( "--slowloop=" ) );
         }
     }
     if( g_enable_abort_on_parser_error ) {
