@@ -1545,6 +1545,7 @@ public:
 };
 void realtimeNewFlyerSend( Flyer *f ) {
     NewFlyerPacket pkt(f);
+    //    print("realtimeNewFlyerSend: cliid:%d", pkt.client_id );
     NEARCAST_SEND( f, SYNC_CHAR_DIA, PACKETTYPE_NEW_FLYER, pkt, 'f' );
 }
 
@@ -2096,11 +2097,12 @@ int ssproto_nearcast_notify_recv( conn_t _c, int channel_id, int sender_cli_id, 
     } else if( type_id == PACKETTYPE_NEW_FLYER ) {
         assert( data_len == sizeof(NewFlyerPacket) );
         NewFlyerPacket *pkt = (NewFlyerPacket*) data;
+        //        print("receiving pkttype_new_flyer. cliid:%d intid:%d", pkt->client_id, pkt->internal_id );
         
         Flyer *f = NULL;
         switch(pkt->type) {
         case FLT_BLASTER:
-            f = new Blaster( pkt->loc, pkt->loc + pkt->v, 0, pkt->client_id, pkt->internal_id );
+            f = new Blaster( pkt->loc, pkt->loc + pkt->v, 0, -1, pkt->client_id, pkt->internal_id );
             break;
         case FLT_BOMBFLOWERSEED:
             f = new BombFlowerSeed( pkt->loc, pkt->client_id, pkt->internal_id );
