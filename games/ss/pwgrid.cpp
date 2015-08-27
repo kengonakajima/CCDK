@@ -20,7 +20,7 @@ PowerNode::PowerNode( Pos2 at ) : at(at), next(NULL), prev(NULL) {
         dests[i].x = dests[i].y = -1;
     }
 }
-PowerGrid::PowerGrid( int id ) : id(id), ene(0), accum_time(0), decay_at(0), last_usage_at(0), last_gen_at(0), node_top(NULL), next(NULL), equip_top(NULL) {
+PowerGrid::PowerGrid( int id ) : id(id), ene(0), accum_time(0), decay_at(0), last_gen_at(0), last_snapshot_bcast_at(0),  node_top(NULL), next(NULL), equip_top(NULL){
 }
 
 // Release all nodes included in a grid
@@ -346,8 +346,6 @@ void PowerGrid::poll( double dt ) {
             Cell *c = g_fld->get( cur->at );
             assert(c);
             if( c->powergrid_id != 0 && c->powergrid_id != id ) {
-                //                CHUNKLOADSTATE ls = g_fld->getChunkLoadState( cur->at );
-                //                if( ls == CHUNKLOADSTATE_LOADED ) {
                 print("found stray pole at %d,%d gid:%d. convert to gid:%d", cur->at.x, cur->at.y, c->powergrid_id, id );
                 g_fld->setPowerGrid( cur->at, id );
                 // fixed, saving
@@ -378,10 +376,14 @@ void PowerGrid::poll( double dt ) {
             int diff = ene - prevene;
             modEne( diff, true ); // sync
         }
+        if( last_snapshot_bcast_at < accum_time - 2 ) {
+            realtimePowerGridSnapshotSend( id, ene );
+        }
     }
 }
 // Sync realtime on local modificaion
 void PowerGrid::modEne( int diff, bool local ) {
+    print("modEne: diff:%d local:%d", diff, local );
     int prev_ene = ene;
     ene += diff;
     if( ene < 0 ) ene = 0;
@@ -389,7 +391,7 @@ void PowerGrid::modEne( int diff, bool local ) {
     if( ene > prev_ene ) {
         last_gen_at = accum_time;
     }
-    if( local && ene != prev_ene ) realtimePowerGridSend( id, ene - prev_ene );
+    if( local && ene != prev_ene ) realtimePowerGridDiffSend( id, ene - prev_ene );
     //        print("powergrid %d generates %d ene. total:%d", id, gen_ene, ene );
 }
 

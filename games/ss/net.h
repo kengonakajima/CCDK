@@ -281,7 +281,8 @@ void realtimePowerNodeSend( int powergrid_id, Pos2 at );
 
 void reloadPowerSystem();
 void savePowerSystem();
-void realtimePowerGridSend( int powergrid_id, int ene_diff );
+void realtimePowerGridDiffSend( int powergrid_id, int ene_diff );
+void realtimePowerGridSnapshotSend( int powergrid_id, int ene_cur );
 
 bool dbSaveResourceDeposit( int pjid );
 bool dbLoadResourceDeposit( int pjid );

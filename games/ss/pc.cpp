@@ -1117,7 +1117,7 @@ bool LocalPC::pcPoll( double dt ) {
             if(g) {
                 int to_get = maxene - ene;
                 if( g->ene < to_get ) to_get = g->ene;
-                g->use(to_get);
+                g->modEne(to_get*-1,true);
                 charge(to_get);
             } 
         }

@@ -69,8 +69,8 @@ public:
     int id;
     int ene;
     double accum_time, decay_at;
-    double last_usage_at; // accum_time. Last time of using energy.
     double last_gen_at; // accum_time. Last time of generating energy.
+    double last_snapshot_bcast_at;
     static const int MAXENE = 20000;
     static const int ENE_PER_ARM = 2;
     static const int MOTHERSHIP_ENE_PER_POLL = 10;
@@ -84,7 +84,6 @@ public:
     PowerNode *addNode( Pos2 at );
     PowerNode *findNodeById( int id );
     PowerEquipmentNode *findPowerEquipmentNode(Pos2 at);
-    void use(int amount) { ene -= amount; last_usage_at = accum_time; }
     int countNodes();
     int countPowerEquipments();
     void dumpNodes();    
@@ -96,6 +95,7 @@ public:
     PowerEquipmentNode *findEquipment( Pos2 at );
     int getMaxNodeId();
     void modEne( int diff, bool local );
+    void setEne( int e ) { ene = e; }
 };
 
 class PowerSystem {

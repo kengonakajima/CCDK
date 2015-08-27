@@ -1293,7 +1293,8 @@ typedef enum {
     PACKETTYPE_EVENT,
     PACKETTYPE_DEBUG_COMMAND,
     PACKETTYPE_POWERNODE,
-    PACKETTYPE_POWERGRID,
+    PACKETTYPE_POWERGRID_DIFF,
+    PACKETTYPE_POWERGRID_SNAPSHOT,
     PACKETTYPE_ENERGY_CHAIN,
     PACKETTYPE_PARTY,
     PACKETTYPE_REVEAL,
@@ -1601,12 +1602,16 @@ void realtimeEventSend( EVENTTYPE t, const char *msg, int opt0, int opt1 ) {
 class PowerGridPacket {
 public:
     int powergrid_id;
-    int ene_diff;
-    PowerGridPacket( int powergrid_id, int ene_diff ) : powergrid_id(powergrid_id), ene_diff(ene_diff) {}
+    int ene;
+    PowerGridPacket( int powergrid_id, int ene ) : powergrid_id(powergrid_id), ene(ene) {}
 };
-void realtimePowerGridSend( int powergrid_id, int ene_diff ) {
+void realtimePowerGridDiffSend( int powergrid_id, int ene_diff ) {
     PowerGridPacket pkt( powergrid_id, ene_diff );
-    ssproto_channelcast_send( g_rtconn, g_current_project_id, PACKETTYPE_POWERGRID, (const char*)&pkt, sizeof(pkt));
+    ssproto_channelcast_send( g_rtconn, g_current_project_id, PACKETTYPE_POWERGRID_DIFF, (const char*)&pkt, sizeof(pkt));    
+}
+void realtimePowerGridSnapshotSend( int powergrid_id, int ene_cur ) {
+    PowerGridPacket pkt( powergrid_id, ene_cur );
+    ssproto_channelcast_send( g_rtconn, g_current_project_id, PACKETTYPE_POWERGRID_SNAPSHOT, (const char*)&pkt, sizeof(pkt));    
 }
 
 class RevealPacket {
@@ -1736,15 +1741,24 @@ int ssproto_channelcast_notify_recv( conn_t _c, int channel_id, int sender_cli_i
             // No powergrid, it means it's the first power grid.
             g_ps->addNode( pkt->at );
         }
-    } else if( type_id == PACKETTYPE_POWERGRID ) {
+    } else if( type_id == PACKETTYPE_POWERGRID_DIFF ) {
         if( g_game_paused ) return 0;        
         assert( data_len == sizeof(PowerGridPacket) );
         PowerGridPacket *pkt = (PowerGridPacket*) data;
         PowerGrid *pg = g_ps->findGridById( pkt->powergrid_id );
         if(pg) {
-            print("packettype_powergrid diff:%d", pkt->ene_diff );
-            pg->modEne( pkt->ene_diff, false );
+            print("packettype_powergrid diff:%d", pkt->ene );
+            pg->modEne( pkt->ene, false );
         }
+    } else if( type_id == PACKETTYPE_POWERGRID_SNAPSHOT ) {
+        if( g_game_paused ) return 0;        
+        assert( data_len == sizeof(PowerGridPacket) );
+        PowerGridPacket *pkt = (PowerGridPacket*) data;
+        PowerGrid *pg = g_ps->findGridById( pkt->powergrid_id );
+        if(pg) {
+            print("packettype_powergrid diff:%d", pkt->ene );
+            pg->setEne( pkt->ene );
+        }        
     } else if( type_id == PACKETTYPE_PARTY ) {
         assert( data_len == sizeof(PartyPacket) );
         PartyPacket *pkt = (PartyPacket*) data;
