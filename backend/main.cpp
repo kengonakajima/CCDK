@@ -32,6 +32,7 @@ bool g_enable_abort_on_parser_error = false;
 bool g_enable_realtime = false; 
 bool g_enable_database = false;
 int g_emulate_slow_disk_ms = 0;
+int g_debug_slow_loop_ms = 0;
 int g_channel_maxcon = 30;
 int g_tcp_timeout = 10; // 10 for LAN (GbE)
 bool g_enable_fsync = false;
@@ -375,6 +376,7 @@ void printUsage() {
     print("--tcp_timeout=SECONDS : set TCP timeout for database and realtime connections" );
     print("--enable-fsync : Use fsync() when writing a static file (not affect on Redis storage)" );
     print("--redis-addr HOSTNAME : Address of the redis server.  Default is localhost" );
+    print("--slowloop=NUMBER : Milliseconds to enable slow network polling loop. Add short sleep inside mainloop. Default is zero" );    
 }
 
 int main( int argc, char **argv ) {
@@ -407,6 +409,9 @@ int main( int argc, char **argv ) {
         if( strcmp( argv[i], "database" ) == 0 ) g_enable_database = true;
         if( strcmp( argv[i], "--enable-fsync" ) == 0 ) g_enable_fsync = true;
         if( strcmp( argv[i], "--redis-addr" ) == 0 ) strncpy(g_redis_addr, argv[++i], sizeof(g_redis_addr));
+        if( strncmp( argv[i], "--slowloop=", strlen( "--slowloop") ) == 0 ) {
+            g_debug_slow_loop_ms = atoi( argv[i] + strlen( "--slowloop" ) );
+        }
     }
     if( g_enable_abort_on_parser_error ) {
         print("Enabled asserting on protocol error" );
@@ -495,13 +500,16 @@ int main( int argc, char **argv ) {
     //
     unsigned int majv, minv;
     majv = ssproto_sv_get_version( &minv );
-    print("start loop. DB:%d RT:%d DBport:%d RTport:%d version:%d.%d maxcon:%d channel_max:%d slow-disk:%d fsync:%d",
+    print("start loop. DB:%d RT:%d DBport:%d RTport:%d version:%d.%d maxcon:%d channel_max:%d slow-disk:%d fsync:%d slowloop:%d",
           g_enable_database, g_enable_realtime, DBPORT, RTPORT, majv, minv,
-          g_maxcon, g_channel_maxcon, g_emulate_slow_disk_ms, g_enable_fsync );
+          g_maxcon, g_channel_maxcon, g_emulate_slow_disk_ms, g_enable_fsync, g_debug_slow_loop_ms );
 
     while(1) {
         double nt = now();
-        
+
+        if( g_debug_slow_loop_ms > 0 ) {
+            usleep( irange(g_debug_slow_loop_ms/2,g_debug_slow_loop_ms)*1000);
+        }
         vce_heartbeat();
         g_loopcnt++;
         if((g_loopcnt%1000)==0) {
