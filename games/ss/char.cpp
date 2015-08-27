@@ -499,7 +499,7 @@ bool Blaster::flyerPoll( double dt ){
 }
 void Blaster::land(){
     //    print("Blaster::land. client_id:%d internal_id:%d",client_id, internal_id );
-    if( client_id > 0 ) return; // avoid dupe effect from network
+    if( !isLocal() ) return; // avoid dupe effect from network
     
     to_clean = true;
     soundPlayAt(g_blaster_explode_sound,loc,1);
