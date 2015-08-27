@@ -149,6 +149,9 @@ bool Enemy::applyDamage( int dmg ) {
         DurBar *db = DurBar::ensure(this, hp, maxhp, g_durbar_deck );
         db->draw_offset.y = fly_height;
     }
+    
+    if( isRemote() ) return false;
+    
     if( hp<= 0 ) {
         switch(explosion_type) {
         case EXT_NONE: break;

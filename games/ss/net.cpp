@@ -1907,7 +1907,10 @@ int ssproto_nearcast_notify_recv( conn_t _c, int channel_id, int sender_cli_id, 
         Cell *outc = g_fld->get(x,y);
         //        if( outc->bt == BT_POLE ) {
         if(outc) {
-            //            Cell *c = (Cell*)data;
+            Cell *c = (Cell*)data;
+            if(c->bt == BT_SOIL ) {
+                print("Soil. damage: %d", c->damage );
+            }
             //            print("CELL: sync: sync_cell cli:%d ch:%d (%d,%d) r:%d t:%d data_len:%d bt:%d",
             //                  sender_cli_id, channel_id, x,y,range,type_id, data_len, c->bt );
         }
