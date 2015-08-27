@@ -473,6 +473,7 @@ bool Flyer::charPoll( double dt ) {
 ///////////////////////
 
 Blaster::Blaster( Vec2 lc, Vec2 aim, bool heal, int shooter_id, int client_id, int internal_id ) : Flyer( CAT_BLASTER, lc, 0, g_base_deck, heal ? B_ATLAS_ITEM_HEAL_BLASTER : B_ATLAS_ITEM_BLASTER, client_id, internal_id ), shooter_id(shooter_id) {
+    print("BlasteR(): cli:%d int:%d", client_id, internal_id );
     to_heal = heal;
     goal = aim;
     h = PIXEL_PER_CELL/2;
@@ -497,6 +498,9 @@ bool Blaster::flyerPoll( double dt ){
     return true;
 }
 void Blaster::land(){
+    //    print("Blaster::land. client_id:%d internal_id:%d",client_id, internal_id );
+    if( client_id > 0 ) return; // avoid dupe effect from network
+    
     to_clean = true;
     soundPlayAt(g_blaster_explode_sound,loc,1);
 
