@@ -2151,7 +2151,7 @@ bool realtimeLockKeepGridSend( int chx, int chy ) {
     return ssproto_lock_keep_grid_send( g_rtconn, g_current_project_id, chx, chy );
 }
 int ssproto_lock_grid_result_recv( conn_t _c, int grid_id, int x, int y, int retcode ) {
-    //    print("ssproto_lock_grid_result_recv: gid:%d xy:%d,%d rc:%d", grid_id,x,y,retcode);
+    print("ssproto_lock_grid_result_recv: gid:%d xy:%d,%d rc:%d", grid_id,x,y,retcode);
     assertmsg( grid_id == g_current_project_id, "current project id:%d from server:%d", g_current_project_id, grid_id  );
     if( retcode == SSPROTO_OK ) {
         g_fld->setLockGot( x, y );
@@ -2166,7 +2166,7 @@ int ssproto_unlock_grid_result_recv( conn_t _c, int grid_id, int x, int y, int r
     return 0;
 }
 int ssproto_lock_keep_grid_result_recv( conn_t _c, int grid_id, int x, int y, int retcode ) {
-    print("ssproto_lock_keep_grid_result_recv. gid:%d x:%d y:%d ret:%d", grid_id, x, y, retcode );
+    //    print("ssproto_lock_keep_grid_result_recv. error gid:%d x:%d y:%d ret:%d", grid_id, x, y, retcode );
     return 0;
 }
 
@@ -2239,15 +2239,21 @@ int ssproto_unlock_project_result_recv( conn_t _c, int project_id, int category,
 }
 int ssproto_lock_keep_project_result_recv( conn_t _c, int project_id, int category, int retcode ) {
     print("ssproto_lock_keep_project_result_recv. pjid:%d cat:%d ret:%d", project_id, category, retcode );
-    if( retcode == SSPROTO_OK ) {
-        if( project_id == g_current_project_id ) {
-            switch(category) {
-            case LOCK_POWERSYSTEM:
-                g_powersystem_lock_obtained_at = now();
-                break;
-            }
-        }
+    if( project_id != g_current_project_id ) {
+        return 0;
     }
+    
+        
+    switch(category) {
+    case LOCK_POWERSYSTEM:
+        if( retcode == SSPROTO_OK ) {                
+            g_powersystem_lock_obtained_at = now();
+        } else {
+            g_powersystem_lock_obtained_at = 0;
+        }
+        break;
+    }
+
     return 0;
 }
 

@@ -3624,6 +3624,7 @@ void SpecialMenuWindow::update() {
 }
 
 void leaveGameNow() {
+    realtimeUnlockProjectSend( g_current_project_id, LOCK_POWERSYSTEM );
     g_runstate = RS_LEAVING_PROJECT;        
     realtimeEventSend( EVT_LOGOUT, g_pc->nickname, 0, 0 );
     dbSavePC();
