@@ -963,7 +963,8 @@ void refreshExchangeLinks() {
         PowerEquipmentNode *pe = pg->equip_top;
         while(pe) {
             if( pe->type == PEQT_EXCHANGE ) {
-                addExchangeLink( pe->at );
+                Cell *c = g_fld->get(pe->at);
+                if(c->bt == BT_EXCHANGE_ACTIVE) addExchangeLink( pe->at );
             }
             pe = pe->next;
         }
