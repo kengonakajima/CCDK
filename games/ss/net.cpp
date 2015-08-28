@@ -1747,7 +1747,6 @@ int ssproto_channelcast_notify_recv( conn_t _c, int channel_id, int sender_cli_i
         PowerGridPacket *pkt = (PowerGridPacket*) data;
         PowerGrid *pg = g_ps->findGridById( pkt->powergrid_id );
         if(pg) {
-            print("packettype_powergrid diff:%d", pkt->ene );
             pg->modEne( pkt->ene, false );
         }
     } else if( type_id == PACKETTYPE_POWERGRID_SNAPSHOT ) {
@@ -1756,7 +1755,6 @@ int ssproto_channelcast_notify_recv( conn_t _c, int channel_id, int sender_cli_i
         PowerGridPacket *pkt = (PowerGridPacket*) data;
         PowerGrid *pg = g_ps->findGridById( pkt->powergrid_id );
         if(pg) {
-            print("packettype_powergrid diff:%d", pkt->ene );
             pg->setEne( pkt->ene );
         }        
     } else if( type_id == PACKETTYPE_PARTY ) {
@@ -1921,14 +1919,6 @@ int ssproto_nearcast_notify_recv( conn_t _c, int channel_id, int sender_cli_id, 
         assert( data_len == sizeof(Cell));
         Cell *outc = g_fld->get(x,y);
         //        if( outc->bt == BT_POLE ) {
-        if(outc) {
-            Cell *c = (Cell*)data;
-            if(c->bt == BT_SOIL ) {
-                print("Soil. damage: %d", c->damage );
-            }
-            //            print("CELL: sync: sync_cell cli:%d ch:%d (%d,%d) r:%d t:%d data_len:%d bt:%d",
-            //                  sender_cli_id, channel_id, x,y,range,type_id, data_len, c->bt );
-        }
         memcpy( (char*)outc, data, data_len );
         int chx = x/CHUNKSZ, chy = y/CHUNKSZ;
         g_mapview->notifyChanged(chx,chy);
@@ -2154,18 +2144,19 @@ int ssproto_nearcast_notify_recv( conn_t _c, int channel_id, int sender_cli_id, 
 
 ////////
 bool realtimeUnlockGridSend( int chx, int chy ) {
-    //    print("realtimeUnlockSend: %d,%d",chx,chy);
+    //    print("realtimeUnlockGridSend: %d,%d",chx,chy);
     return ssproto_unlock_grid_send( g_rtconn, g_current_project_id, chx, chy );
 }
 bool realtimeLockGridSend( int chx, int chy ) {
-    //    print("realtimeLockSend: %d,%d",chx,chy);    
+    //    print("realtimeLockGridSend: %d,%d",chx,chy);    
     return ssproto_lock_grid_send( g_rtconn, g_current_project_id, chx, chy );
 }
 bool realtimeLockKeepGridSend( int chx, int chy ) {
+    //    print("realtimeLockKeepGridSend %d,%d",chx,chy);
     return ssproto_lock_keep_grid_send( g_rtconn, g_current_project_id, chx, chy );
 }
 int ssproto_lock_grid_result_recv( conn_t _c, int grid_id, int x, int y, int retcode ) {
-    print("ssproto_lock_grid_result_recv: gid:%d xy:%d,%d rc:%d", grid_id,x,y,retcode);
+    //    print("ssproto_lock_grid_result_recv: gid:%d xy:%d,%d rc:%d", grid_id,x,y,retcode);
     assertmsg( grid_id == g_current_project_id, "current project id:%d from server:%d", g_current_project_id, grid_id  );
     if( retcode == SSPROTO_OK ) {
         g_fld->setLockGot( x, y );
@@ -2175,12 +2166,19 @@ int ssproto_lock_grid_result_recv( conn_t _c, int grid_id, int x, int y, int ret
 int ssproto_unlock_grid_result_recv( conn_t _c, int grid_id, int x, int y, int retcode ) {
     //    print("ssproto_unlock_grid_result_recv: gid:%d xy:%d,%d, rc:%d", grid_id, x,y,retcode);
     if( retcode == SSPROTO_OK ) {
-        //        print("UNLOCKED CHUNK %d,%d",x,y);
+        print("UNLOCKED CHUNK %d,%d",x,y);
     } 
     return 0;
 }
 int ssproto_lock_keep_grid_result_recv( conn_t _c, int grid_id, int x, int y, int retcode ) {
-    //    print("ssproto_lock_keep_grid_result_recv. error gid:%d x:%d y:%d ret:%d", grid_id, x, y, retcode );
+    if( retcode == SSPROTO_OK ) {
+        //
+    } else {
+        print("ssproto_lock_keep_grid_result_recv. gid:%d xy:%d,%d ret:%d", grid_id, x, y, retcode );
+        // reset the lock
+        g_fld->clearLockGot(x,y);
+    }
+    
     return 0;
 }
 
@@ -2252,7 +2250,7 @@ int ssproto_unlock_project_result_recv( conn_t _c, int project_id, int category,
     return 0;
 }
 int ssproto_lock_keep_project_result_recv( conn_t _c, int project_id, int category, int retcode ) {
-    print("ssproto_lock_keep_project_result_recv. pjid:%d cat:%d ret:%d", project_id, category, retcode );
+    //    print("ssproto_lock_keep_project_result_recv. pjid:%d cat:%d ret:%d", project_id, category, retcode );
     if( project_id != g_current_project_id ) {
         return 0;
     }

@@ -842,6 +842,7 @@ public:
     inline bool setToSim( Vec2 at, int cnt ) { return setToSim( at.x / PPC / CHUNKSZ, at.y / PPC / CHUNKSZ, cnt ); }
     int countToSim( int *lock_num );
     bool setLockGot( int chx, int chy );
+    bool clearLockGot( int chx, int chy );
 
     void burn( Vec2 at, Char *by );
 

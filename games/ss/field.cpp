@@ -921,6 +921,9 @@ void Field::simStepChunk( bool paused ){
     ToSim *ts = & to_sim[ to_sim_i ];
     if( ts->cnt == 0 ) {
     } else {
+        double hogedt = now() - ts->last_lock_sent_at;
+        if( ts->lock_state == LOCKSTATE_GOT && hogedt > 5.0 )  print("tosim delayed?:%d,%d %.1f", ts->chx, ts->chy, hogedt );
+        
         if( ts->lock_state == LOCKSTATE_GOT || isDBNetworkActive() == false ) { // Perform simulation in offline mode too
             if( paused == false ) { 
                 ts->cnt --;
@@ -947,6 +950,10 @@ void Field::simStepChunk( bool paused ){
             } else {
                 double nt = now();
                 if( ts->last_lock_sent_at < nt - ToSim::LOCK_KEEP_INTERVAL_SEC ) {
+                    assert( ts->lock_state == LOCKSTATE_GOT );
+                    assert( ts->last_lock_sent_at > 0 );
+                    // This can be bigger than server timeout. (to_sim is not regularly scanned)
+                    //                    print("kg: %d,%d dt:%.1f", ts->chx, ts->chy, nt-ts->last_lock_sent_at);
                     ts->last_lock_sent_at = nt;
                     realtimeLockKeepGridSend( ts->chx, ts->chy );
                 }
@@ -4377,12 +4384,23 @@ void Field::setChunkLoadState( Pos2 lb, CHUNKLOADSTATE state ) {
     int ls_ind = calcChunkLoadState(lb);
     load_state[ls_ind] = state;
 }
+bool Field::clearLockGot( int chx, int chy ) {
+    for(int i=0;i<elementof(to_sim);i++) {
+        if( to_sim[i].cnt > 0 && to_sim[i].chx == chx && to_sim[i].chy == chy ) {
+            if( to_sim[i].lock_state == LOCKSTATE_GOT ) {
+                to_sim[i].lock_state = LOCKSTATE_INIT;
+                to_sim[i].last_lock_sent_at = 0;
+                return true;
+            }
+        }
+    }
+    return false;
+}
 bool Field::setLockGot( int chx, int chy ) {
     for(int i=0;i<elementof(to_sim);i++) {
         if( to_sim[i].cnt > 0 && to_sim[i].chx == chx && to_sim[i].chy == chy ) {
             if( to_sim[i].lock_state == LOCKSTATE_SENT ) {
                 to_sim[i].lock_state = LOCKSTATE_GOT;
-                //            print("set to_sim lockstate:%d,%d",chx,chy);
             } else {
                 print("Field::setLockGot(%d,%d): warn: invalid lock state:%d",chx,chy, to_sim[i].lock_state);
             }
