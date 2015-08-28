@@ -383,7 +383,7 @@ void PowerGrid::poll( double dt ) {
 }
 // Sync realtime on local modificaion
 void PowerGrid::modEne( int diff, bool local ) {
-    print("modEne: diff:%d local:%d", diff, local );
+    //    print("modEne: diff:%d local:%d", diff, local );
     int prev_ene = ene;
     ene += diff;
     if( ene < 0 ) ene = 0;
