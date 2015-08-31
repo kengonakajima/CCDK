@@ -66,10 +66,10 @@ C:¥Users¥cloud¥Documents¥GitHub¥CCDK
 CCDKは、以下の外部ツールを利用しています。
 以下では、Windows版のみ説明します。Linux(UNIX)については後述します。
 
+* DirectX SDK June 2010
 * Python 3.4 (3.4.1)
 * Ruby 2.1 (2.1.5p273)
 * VisualStudio 2013
-* DirectX SDK June 2010
 * Redis (MSOpenTech版)
     
 
@@ -128,16 +128,6 @@ CCDKの開発では、　Professional 2013を利用しています。
 無償版のダウンロードは、以下のマイクロソフト社のサイトが利用できます。
 
 [https://www.visualstudio.com/downloads/](https://www.visualstudio.com/downloads/)
-
-
-<B>Note: Make sure DirectX SDK June 2010 is installed</B>
-
-Currently, you must also install DirectX SDK June 2010 edition. Sometimes you need to uninstall other 2010-dated versions of the Visual C++ Redistributable in order to successfully install this version of the SDK. You can find this version of the SDK [here](https://www.microsoft.com/en-us/download/details.aspx?id=6812).
-
-On some Windows 8 machines, .NET Framework 3.5 is not automatically enabled. Open the Start menu, then find the "Turn Windows features on or off" Settings menu to trigger the download. Or download it directly: 
-
-If your computer belongs to a group network using Windows Server Update Services (WSUS), follow [these](https://support.microsoft.com/en-us/kb/2734782) steps to force an update or ask your sysadmin to enable .NET Framework 3.5 updates for you.
-
 
 Redisは、Redis公式プロジェクトから派生した、
 マイクロソフト社のオープンソース版をVisualStudioでコンパイルすると、
