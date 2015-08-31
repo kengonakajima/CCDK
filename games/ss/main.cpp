@@ -190,6 +190,7 @@ CreditWindow *g_creditwin;
 MilestoneDisplay *g_milestone_display;
 
 CharGridTextBox *g_stateline;
+LogText *g_warnline;
 CharGridTextBox *g_nicktb;
 
 CharGridTextBox *g_powergrid_state; 
@@ -239,6 +240,18 @@ double g_powersystem_lock_obtained_at = 0;
 bool g_program_finished = 0;
 
 ////////////////////////////////////
+
+void setWarnLine( Color c, const char *s ) {
+    g_warnline->setVisible(true);
+    g_warnline->setString( c, s );
+    g_warnline->last_updated_at = g_warnline->accum_time;
+}
+void pollWarnLine() {
+    if( g_warnline->last_updated_at < g_warnline->accum_time - 4 ) {
+        g_warnline->setVisible(false);
+    }
+}
+
 void copyToRight( char *out, size_t outsize, const char *in ) {
     int l = strlen(in);
     int margin_left = outsize - 1 - l;
@@ -731,7 +744,8 @@ void GLFWCALL keyCallback( int key, int action ) {
     case 'T':
         //if( g_enable_debug_menu ) for(int i=0;i<10;i++) new Shrimp( g_pc->loc + Vec2(100,100).randomize(50) );
         if( g_enable_debug_menu) {
-            new Girev( g_pc->loc + Vec2(100,100) );
+        //            new Girev( g_pc->loc + Vec2(100,100) );
+            setWarnLine( Color(1,1,1,1), "HOGE" );
         }
 
         break;
@@ -1217,6 +1231,7 @@ void updateGame(void) {
     }
 
     pollNetwork(g_last_now_time);
+    pollWarnLine();
 
     g_log->poll();
     if( g_exwin->visible ) g_exwin->poll();
@@ -1290,7 +1305,8 @@ void updateGame(void) {
                   g_last_recvbuf_len/1024
                 );
         if( rt_rb > 1024*1250 ) {
-            g_log->printf(WHITE, "TOO MANY PACKETS? : %d Kbytes/sec", rt_rb/1024);
+            Format fmt("TOO MANY PACKETS? : %d Kbytes/sec", rt_rb/1024);
+            setWarnLine(WHITE, fmt.buf);
         }
         //        fprintf( stderr, "%s\n",tmp );
         g_stateline->setString( Color(1,1,1,0.5), tmp );
@@ -1907,6 +1923,11 @@ int moaiMain( int argc, char **argv ){
     g_stateline->setScl(8);
     g_stateline->setLoc( Vec2( -SCRW/2+8, SCRH/2-36 ) );
     g_debug_layer->insertProp( g_stateline );
+
+    g_warnline = new LogText();
+    g_warnline->setScl(8);
+    g_warnline->setLoc( Vec2( -SCRW/2+8, SCRH/2-12 ) );
+    g_debug_layer->insertProp( g_warnline );
 
     g_nicktb = new CharGridTextBox(32);
     g_nicktb->setScl(16);

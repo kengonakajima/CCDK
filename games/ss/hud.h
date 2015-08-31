@@ -781,7 +781,6 @@ public:
 };
 
 ///////////////
-
 class LogText : public CharGridTextBox {
 public:
     double last_updated_at;
@@ -824,6 +823,7 @@ Vec2 hudCalcScreenEdge( Vec2 tov, float leftmargin = 80, float rightmargin = 80,
 
 void setupPartyIndicator();
 void ensurePartyIndicator( int client_id, Vec2 wloc, int face_ind, int hair_ind ) ;
+
 
 ///////////////
 

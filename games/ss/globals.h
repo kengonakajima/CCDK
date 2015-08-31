@@ -227,5 +227,6 @@ extern bool g_skip_projectinfowin_worldmap;
 extern bool g_enable_nearcast_log;
 
 void setTitleScreenVisible( bool imgvis, bool logovis );
+void setWarnLine( Color c, const char *s ) ;
 
 #endif
