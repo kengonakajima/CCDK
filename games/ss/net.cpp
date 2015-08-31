@@ -1709,7 +1709,7 @@ int ssproto_channelcast_notify_recv( conn_t _c, int channel_id, int sender_cli_i
         case EVT_CLEAR_FLAG:
             {
                 Pos2 flag_pos( pkt->opts[0], pkt->opts[1] );
-                g_log->printf(WHITE, "EVT_CLEAR_FLAG: %d,%d", flag_pos.x, flag_pos.y );
+                //                g_log->printf(WHITE, "EVT_CLEAR_FLAG: %d,%d", flag_pos.x, flag_pos.y );
                 g_fld->clearFlag(flag_pos);
                 g_flag->warpToNextLocation();
             }
