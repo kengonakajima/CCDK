@@ -567,4 +567,6 @@ int ssproto_unlock_project_result_recv(conn_t _c, int project_id, int category, 
 int ssproto_leave_channel_result_recv(conn_t _c, int retcode){ return 0; }
 int ssproto_nearcast_notify_recv(conn_t _c, int channel_id, int sender_cli_id, int x, int y, int range, int type_id, const char *data, int data_len){ return 0; }
 int ssproto_get_channel_member_count_result_recv(conn_t _c, int channel_id, int maxnum, int curnum){ return 0; }
+int ssproto_lock_keep_grid_result_recv( conn_t _c, int grid_id, int x, int y, int retcode ) { return 0; }
+int ssproto_lock_keep_project_result_recv( conn_t _c, int project_id, int category, int retcode ) { return 0; }
 
