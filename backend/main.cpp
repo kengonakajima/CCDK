@@ -409,7 +409,12 @@ int main( int argc, char **argv ) {
         if( strcmp( argv[i], "--enable-fsync" ) == 0 ) g_enable_fsync = true;
         if( strcmp( argv[i], "--redis-addr" ) == 0 ) strncpy(g_redis_addr, argv[++i], sizeof(g_redis_addr));
         if( strncmp( argv[i], "--slowloop=", strlen( "--slowloop=") ) == 0 ) {
+#ifndef WIN32            
             g_debug_slow_loop_ms = atoi( argv[i] + strlen( "--slowloop=" ) );
+#else
+            print("windows don't support slowloop");
+            return 1;
+#endif            
         }
     }
     if( g_enable_abort_on_parser_error ) {
@@ -505,10 +510,11 @@ int main( int argc, char **argv ) {
 
     while(1) {
         double nt = now();
-
+#ifndef WIN32
         if( g_debug_slow_loop_ms > 0 ) {
             usleep( irange(g_debug_slow_loop_ms/2,g_debug_slow_loop_ms)*1000);
         }
+#endif        
         vce_heartbeat();
         g_loopcnt++;
         if((g_loopcnt%1000)==0) {
