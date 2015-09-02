@@ -1151,7 +1151,7 @@ bool checkCSChannel( ConnectionState *cs) {
 
 int ssproto_get_channel_member_count_recv( conn_t _c, int channel_id ) {
     CHECK_REALTIME( "get_channel_member_count" );
-    print("ssproto_get_channel_member_count_recv. chid:%d", channel_id );
+    //    print("ssproto_get_channel_member_count_recv. chid:%d", channel_id );
     int ret_num = 0;
     Channel *ch = findChannel( channel_id );
     if(ch) ret_num = ch->getMemberCount();
@@ -1446,6 +1446,7 @@ public:
     void setMembers( const int *with, int num ) {
         int to_copy = MIN( elementof(member_uids), num );
         for(int i=0;i<to_copy;i++) {
+            print("SharedProject::setMembers. sharing to:%d", with[i]);
             member_uids[i] = with[i];
         }
         members_num = to_copy;
@@ -1591,6 +1592,8 @@ SharedProject *reuseOldestProject() {
 
 // Make a project public when with==NULL
 void shareProject( int pjid, int uid, const int *with, int num ) {
+    print("shareProject: pjid:%d uid:%d num:%d", pjid, uid, num );
+    for(int i=0;i<num;i++) print("  with:%d", with[i]);
     SharedProject *sp = findSharedProject(pjid );
     if(!sp) {
         sp = findFreeProject();
@@ -1646,7 +1649,6 @@ int getSharedProjects( int *out_ids, int maxn, int user_id ) {
                 out_ids[outnum] = sp->project_id;
                 outnum++;
                 if( outnum == maxn ) return outnum;
-                break;
             }
         }
     }
