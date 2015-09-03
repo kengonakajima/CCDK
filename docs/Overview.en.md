@@ -72,7 +72,7 @@ Think of the MCS as an emulator for Shinra’s remote renderer -- this core syst
 
 The below illustration compares the Shinra core system (for production titles), the MCS, and a game running without the Shinra system.
 
-<img src="without_shinra.png" width=150>
+<img src="images/without_shinra.png" width=150>
 
 In the example running without Shinra, you can see a game process, running under a standard DirectX game server on the same machine. The game uses the CPU and GPU on the client’s machine, while the D3D9.dll that’s being used is the normal Microsoft version.
 
