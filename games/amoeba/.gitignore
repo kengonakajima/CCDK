@@ -1,8 +1,0 @@
-*.sdf
-*.opensdf
-*.psess
-*.vsp
-DebugD3D/*
-Debug
-Release
-Thumbs.db
