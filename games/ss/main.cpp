@@ -744,8 +744,7 @@ void GLFWCALL keyCallback( int key, int action ) {
     case 'T':
         //if( g_enable_debug_menu ) for(int i=0;i<10;i++) new Shrimp( g_pc->loc + Vec2(100,100).randomize(50) );
         if( g_enable_debug_menu) {
-        //            new Girev( g_pc->loc + Vec2(100,100) );
-            setWarnLine( Color(1,1,1,1), "HOGE" );
+            new Girev( g_pc->loc + Vec2(100,100) );
         }
 
         break;
@@ -1061,7 +1060,7 @@ void updateGame(void) {
             
             dbUpdatePresenceSend();
 
-            g_private_project = !(dbCheckProjectIsShared( g_current_project_id, g_user_id ) || dbCheckProjectIsPublished( g_current_project_id ));
+            g_private_project = dbCheckProjectIsPrivate(g_current_project_id,g_user_id);
             
             // Load project state
             reloadPowerSystem();
@@ -1403,8 +1402,6 @@ void updateGame(void) {
         last_js_back = js_back;
         last_js_start = js_start;
     }
-    
-
         
     if( g_mapview ) {
         g_mapview->poll( Vec2(g_world_camera->loc.x, g_world_camera->loc.y), g_zoom_rate );

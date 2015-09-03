@@ -2484,6 +2484,13 @@ bool dbCheckProjectIsJoinable( int pjid, int userid ) {
         return false;
     }
 }
+bool dbCheckProjectIsPrivate( int pjid, int uid ) {
+    if( dbCheckProjectIsPublished(pjid) ) return false;
+    if( dbCheckProjectIsSharedByOwner( pjid, uid ) ) return false;
+    if( dbCheckProjectIsJoinable( pjid, uid ) ) return false;
+    return true;
+}
+
 int ssproto_project_is_joinable_result_recv( conn_t _c, int project_id, int user_id, int result ) {
     g_net_result_code = result;
     g_wait_for_net_result = false;
@@ -2511,10 +2518,10 @@ int ssproto_is_shared_project_result_recv( conn_t _c, int project_id, int shared
     g_wait_for_net_result = false;
     return 0;
 }
-bool dbCheckProjectIsShared( int project_id, int owner_uid ) {
+bool dbCheckProjectIsSharedByOwner( int project_id, int owner_uid ) {
     ssproto_is_shared_project_send( g_dbconn, project_id, owner_uid );
     waitForReply();
-    print("dbCheckProjectIsShared: val:%d", g_net_result_value );
+    print("dbCheckProjectIsSharedByOwner: val:%d", g_net_result_value );
     switch( g_net_result_value ) {
     case SSPROTO_PROJECT_IS_SHARED:
         return true;

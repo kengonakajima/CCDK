@@ -2938,7 +2938,7 @@ void ProjectInfoWindow::update() {
     
     // Button Textboxes
     delete_tb->setString( WHITE, "DELETE" );
-    if( dbCheckProjectIsShared( project_id, g_user_id) == false  ) {
+    if( dbCheckProjectIsSharedByOwner( project_id, g_user_id) == false  ) {
         share_tb->setString( WHITE, Format( "SHARE WITH %d FRIENDS", countFriends() ).buf );
     } else {
         share_tb->setString( WHITE, Format( "STOP SHARING" ).buf );
@@ -2959,7 +2959,7 @@ void ProjectInfoWindow::update() {
 
     if( dbCheckProjectIsPublished( project_id ) ) {
         strcpy( pubstate, "PUBLIC ");
-    } else if( dbCheckProjectIsShared( project_id, g_user_id ) ) {
+    } else if( dbCheckProjectIsSharedByOwner( project_id, g_user_id ) ) {
         strcpy( pubstate, "SHARED " );
     } else {
         strcpy( pubstate, "PRIVATE " );

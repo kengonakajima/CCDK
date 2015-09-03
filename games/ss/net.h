@@ -365,10 +365,11 @@ typedef struct {
 void dbLoadMilestoneProgressRanking( MilestoneProgressRankEntry *out, size_t *sz );
 
 bool dbCheckProjectIsJoinable( int pjid, int userid ) ;
-
+bool dbCheckProjectIsPrivate( int pjid, int uid );
+    
 void networkFatalError( const char *msg ) ;
 
-bool dbCheckProjectIsShared( int project_id, int owner_uid ) ;
+bool dbCheckProjectIsSharedByOwner( int project_id, int owner_uid ) ;
 bool dbCheckProjectIsPublished( int project_id );
 void dbUnshareProjectSend( int project_id );
 void dbUnpublishProjectSend( int project_id );
