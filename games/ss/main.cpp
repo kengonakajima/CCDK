@@ -1121,6 +1121,10 @@ void updateGame(void) {
                 g_pc->items[PC_SUIT_NUM+1].setEmpty();
                 g_pc->incItem( ITT_BRICK_PANEL, 50, PC_SUIT_NUM+1, false );                
             }
+            if(g_pc->items[PC_SUIT_NUM+2].itt != ITT_BLASTER ) {
+                g_pc->items[PC_SUIT_NUM+2].setEmpty();
+                g_pc->incItem( ITT_BLASTER, 50, PC_SUIT_NUM+2, false );
+            }
             if( g_enable_autoplay ) {
                 if( g_pc->items[PC_SUIT_NUM+1].itt == ITT_BRICK_PANEL ) {
                     int orig_si = g_pc->selected_item_index;
@@ -1128,6 +1132,12 @@ void updateGame(void) {
                     g_pc->tryAction(Vec2(range(-1,1),range(-1,1)));
                     g_pc->selected_item_index = orig_si;
                 }
+                if( g_pc->items[PC_SUIT_NUM+2].itt == ITT_BLASTER && range(0,1) < 0.02 ) {
+                    int orig_si = g_pc->selected_item_index;
+                    g_pc->selected_item_index = PC_SUIT_NUM+2;
+                    g_pc->tryAction(Vec2(range(-1,1),range(-1,1)));
+                    g_pc->selected_item_index = orig_si;
+                }                
             }
         }
 
