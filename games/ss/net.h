@@ -86,7 +86,7 @@ bool dbPing();
 bool dbSave( const char *key, const char *field, const char *buf, size_t sz );
 bool dbLoad( const char *key, const char *field, char *buf, size_t *sz );
 
-bool dbSaveFileSync( const char *fn, const char *data, size_t sz );
+bool dbSaveFileSync( const char *fn, const char *data, size_t sz, bool one_way = false );
 bool dbLoadFileSync( const char *fn, char *out, size_t *outsz );
 
 bool dbLoadJSON( const char *key, const char *field, picojson::value *v );

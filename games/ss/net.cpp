@@ -369,7 +369,8 @@ void waitForReply( bool use_db = true ) {
     double dt = et-st;
     
     if( dt > 0.1 ) {
-        print("waitForReply: slow query: %dms", (int) (dt * 1000) );
+		Format fmt("waitForReply: slow query: %dms", (int) (dt * 1000) );
+        print(fmt.buf);
     }
     call_depth--;
 }
@@ -440,8 +441,9 @@ int dbSaveFlagCands() {
 }
 
 bool dbSavePowerSystem( int pjid, PowerSystemDump *psd ) {
+    setWarnLine(WHITE, "dbSavePowerSystem");
     Format f( "powersystem_%d", pjid );
-    return dbSaveFileSync( f.buf, (const char*)psd, sizeof(*psd) );
+    return dbSaveFileSync( f.buf, (const char*)psd, sizeof(*psd), true );
 }
 bool dbLoadPowerSystem( int pjid, PowerSystemDump *out ) {
     Format f( "powersystem_%d", pjid );    
@@ -681,7 +683,10 @@ bool dbPing() {
 
 // Save file in database backend.
 // It is not atmic. Note that it may fail.
-bool dbSaveFileSync( const char *fn, const char *data, size_t sz ) {
+//
+// Use "one_way" flag to avoid blocking. Note that this ignores result code.
+
+bool dbSaveFileSync( const char *fn, const char *data, size_t sz, bool one_way ) {
     if( sz > SSPROTO_FILE_SIZE_ABS_MAX ) {
         print("dbSaveFileSync: data too big for '%s' sz:%u max:%d", fn, sz, SSPROTO_FILE_SIZE_ABS_MAX );
         return false;
@@ -699,14 +704,17 @@ bool dbSaveFileSync( const char *fn, const char *data, size_t sz ) {
         //        print("sending file part: '%s' size:%d total:%d", fmt.buf, partsz, sz );            
         int res = ssproto_put_file_send( g_dbconn, QID_SAVE_FILE_SYNC, fmt.buf, data + ofs, partsz );
         if(res<0) return false;
-        g_wait_for_net_result = true;
-        waitForReply();
-        if( g_net_result_code != SSPROTO_OK ) {
-            return false;
+        if( one_way == false ) {
+            g_wait_for_net_result = true;
+            waitForReply();
+            if( g_net_result_code != SSPROTO_OK ) {
+                return false;
+            }
         }
     }
     return true;
 }
+
 
 bool dbLoadFileSync( const char *fn, char *out, size_t *outsz ) {
     if( *outsz > SSPROTO_FILE_SIZE_ABS_MAX ) {
