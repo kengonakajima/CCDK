@@ -37,6 +37,7 @@ int g_channel_maxcon = 30;
 int g_tcp_timeout = 10; // 10 for LAN (GbE)
 bool g_enable_fsync = false;
 char g_redis_addr[1024] = "localhost";
+int g_disk_latency_log_ms = 0; // 0 for disable, milliseconds.
 
 char g_topdir[1024] = "./datadir";
 redisContext *g_redis;
@@ -136,8 +137,25 @@ const char *getConnectionType( conn_t c ) {
 /////////
 
 
+bool writeFileWithLog( const char *path, const char *data, size_t sz, bool to_sync = false ) {
+    double st = now();
+    bool res = writeFile( path, data, sz, to_sync );
+    double et = now();
+    int ms = (et-st)*1000;
+    if( ms > g_disk_latency_log_ms ) print("writeFile: %dms for '%s'", ms, path );        
+    return res;
+}
+bool readFileWithLog( const char *path, char *data, size_t *sz ) {
+    double st = now();
+    bool res = readFile( path, data, sz );
+    double et = now();
+    int ms = (et-st)*1000;
+    if( ms > g_disk_latency_log_ms ) print("readFile: %dms for '%s'", ms, path );            
+    return res;
+}
 
 
+//////////
 
 typedef struct {
 public:
@@ -354,7 +372,7 @@ int getCurrentConnNum() {
 bool checkDataTopDir( const char *dirname ) {
     Format f( "%s/00/00/_startup_test", dirname );
     char data[4] = "abc";
-    if( writeFile(f.buf, data, sizeof(data), true ) == false ) {
+    if( writeFileWithLog(f.buf, data, sizeof(data), true ) == false ) {
         print("checkDataTopDir: can't write data in '%s'", f.buf );
         return false;
     }
@@ -415,6 +433,9 @@ int main( int argc, char **argv ) {
             print("windows don't support slowloop");
             return 1;
 #endif            
+        }
+        if( strncmp( argv[i], "--disk_latency_log=", strlen( "--disk_latency_log=") ) == 0 ) {
+            g_disk_latency_log_ms = atoi( argv[i] + strlen( "--disk_latency_log=") );
         }
     }
     if( g_enable_abort_on_parser_error ) {
@@ -504,9 +525,9 @@ int main( int argc, char **argv ) {
     //
     unsigned int majv, minv;
     majv = ssproto_sv_get_version( &minv );
-    print("start loop. DB:%d RT:%d DBport:%d RTport:%d version:%d.%d maxcon:%d channel_max:%d slow-disk:%d fsync:%d slowloop:%d",
+    print("start loop. DB:%d RT:%d DBport:%d RTport:%d version:%d.%d maxcon:%d channel_max:%d slow-disk:%d fsync:%d slowloop:%d disklatencylog:%d",
           g_enable_database, g_enable_realtime, DBPORT, RTPORT, majv, minv,
-          g_maxcon, g_channel_maxcon, g_emulate_slow_disk_ms, g_enable_fsync, g_debug_slow_loop_ms );
+          g_maxcon, g_channel_maxcon, g_emulate_slow_disk_ms, g_enable_fsync, g_debug_slow_loop_ms, g_disk_latency_log_ms  );
 
     while(1) {
         double nt = now();
@@ -629,9 +650,11 @@ int ssproto_put_file_recv( conn_t _c, int query_id, const char *filename, const 
     CHECK_DATABASE("put_file");
     char fullpath[1024];
     int err = makeFullPath( fullpath, sizeof(fullpath), filename );
-    bool ret = writeFile( fullpath, data, data_len, g_enable_fsync );
-    if(ret==false) err = SSPROTO_E_FILE_ACCESS;
-    emulateSlowDisk();
+    if(err==0) {
+        bool ret = writeFileWithLog( fullpath, data, data_len, g_enable_fsync );
+        if(ret==false) err = SSPROTO_E_FILE_ACCESS;
+        emulateSlowDisk();
+    }
     //        print("ssproto_put_file_recv: fullpath: '%s' err:%d data_len:%d", fullpath, err, data_len );
     //    prt("[putfile %s]", fullpath);
     ssproto_put_file_result_send( _c, query_id, err, filename );
@@ -645,7 +668,11 @@ int ssproto_get_file_recv( conn_t _c, int query_id, const char *filename ) {
     size_t sz=0;
     if(err==0) {
         sz = sizeof(buf);
-        bool ret = readFile( fullpath, buf, &sz );
+        double st = now();
+        bool ret = readFileWithLog( fullpath, buf, &sz );
+        double et = now();
+        int ms = (et-st)*1000;
+        if(ms>g_disk_latency_log_ms) print("readFile: %dms for '%s'", ms, fullpath);
         if(ret==false) {
             err = SSPROTO_E_FILE_ACCESS;
             sz = 0;
@@ -664,7 +691,7 @@ int ssproto_check_file_recv( conn_t _c, int query_id, const char *filename ) {
     if( res == 0 ) { 
         char buf[1];
         size_t sz = 1;
-        bool ret = readFile( fullpath, buf, &sz );
+        bool ret = readFileWithLog( fullpath, buf, &sz );
         if(ret) {
             res = SSPROTO_FILE_EXIST;
         } else {
@@ -1466,7 +1493,7 @@ bool saveAllSharedProjects() {
     static char fullpath[1024];
     makeFullPath( fullpath, sizeof(fullpath), g_sharedproj_filename );
     double st = now();
-    bool ret = writeFile(fullpath, (char*)g_sharedpjs, sizeof(g_sharedpjs), g_enable_fsync );
+    bool ret = writeFileWithLog(fullpath, (char*)g_sharedpjs, sizeof(g_sharedpjs), g_enable_fsync );
     double et = now();
     print("saveAllSharedProjects: time:%f result:%d", et-st,ret);
     return ret;
@@ -1483,7 +1510,7 @@ bool loadAllSharedProjects() {
     assert(buf);
     
     double st = now();
-    bool ret = readFile(fullpath, buf, &sz );
+    bool ret = readFileWithLog(fullpath, buf, &sz );
     double et = now();
     if(!ret) {
         print("loadAllSharedProjects: file '%s' not found.", fullpath );
@@ -1975,7 +2002,7 @@ int getCounterValue( int cat, int id, int *out ) {
     if(r<0) return r;
     char buf[128];
     size_t sz = sizeof(buf);
-    bool ret = readFile(fullpath, buf, &sz );
+    bool ret = readFileWithLog(fullpath, buf, &sz );
     if(!ret) return SSPROTO_E_FILE_ACCESS;
     *out = atol(buf);
     return SSPROTO_OK;
@@ -1988,7 +2015,7 @@ int setCounterValue( int cat, int id, int value ) {
     if(r<0) return r;
     char str[128];
     snprintf( str, sizeof(str), "%d", value );
-    bool ret = writeFile( fullpath, str, strlen(str), g_enable_fsync );
+    bool ret = writeFileWithLog( fullpath, str, strlen(str), g_enable_fsync );
     if(!ret) return SSPROTO_E_FILE_ACCESS;
     return SSPROTO_OK;
 }
