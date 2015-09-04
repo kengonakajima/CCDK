@@ -142,7 +142,7 @@ bool writeFileWithLog( const char *path, const char *data, size_t sz, bool to_sy
     bool res = writeFile( path, data, sz, to_sync );
     double et = now();
     int ms = (et-st)*1000;
-    if( ms > g_disk_latency_log_ms ) print("writeFile: %dms for '%s'", ms, path );        
+    if( g_disk_latency_log_ms > 0 && ms > g_disk_latency_log_ms ) print("writeFile: %dms for '%s'", ms, path );        
     return res;
 }
 bool readFileWithLog( const char *path, char *data, size_t *sz ) {
@@ -150,7 +150,7 @@ bool readFileWithLog( const char *path, char *data, size_t *sz ) {
     bool res = readFile( path, data, sz );
     double et = now();
     int ms = (et-st)*1000;
-    if( ms > g_disk_latency_log_ms ) print("readFile: %dms for '%s'", ms, path );            
+    if( g_disk_latency_log_ms > 0 && ms > g_disk_latency_log_ms ) print("readFile: %dms for '%s'", ms, path );            
     return res;
 }
 
