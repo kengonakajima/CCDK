@@ -393,7 +393,8 @@ void printUsage() {
     print("--tcp_timeout=SECONDS : set TCP timeout for database and realtime connections" );
     print("--enable-fsync : Use fsync() when writing a static file (not affect on Redis storage)" );
     print("--redis-addr HOSTNAME : Address of the redis server.  Default is localhost" );
-    print("--slowloop=NUMBER : Milliseconds to enable slow network polling loop. Add short sleep inside mainloop. Default is zero" );    
+    print("--slowloop=NUMBER : Milliseconds to enable slow network polling loop. Add short sleep inside mainloop. Default is zero" );
+    print("--disk_latency_log=NUMBER : Milliseconds to enable disk read/write latency logging" );
 }
 
 int main( int argc, char **argv ) {
