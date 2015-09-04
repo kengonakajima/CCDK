@@ -1152,7 +1152,7 @@ void updateGame(void) {
     bool is_iconified = glfwGetWindowParam( GLFW_ICONIFIED );
     if( is_iconified == false ) getPadState( &ctl_move, &ctl_shoot, &ctl_zoom );
 
-    if( g_enable_autoplay ) {
+    if( g_enable_autoplay && g_runstate == RS_IN_PROJECT ) {
         static double last_turn_at = 0;
         static Vec2 auto_ctl_move, auto_ctl_shoot;
         if( g_pc->accum_time > last_turn_at + 0.2 ) {
