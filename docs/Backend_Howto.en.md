@@ -168,12 +168,59 @@ The distribution of characters on a map is completely dependent on the settings 
 
 
 
+### Maximum disk performance check
 
+You can perform maximum disk performance test with ssbench program.
 
+Setup:
 
+1. Start redis-server 
+2. Start ssv with proper --maxcon setting. Ex: ```./ssv database --maxcon=100```
+3. Start ssbench with proper --maxcon setting. Ex: ```./ssbench database --maxcon=100```
 
+--maxcon means that you have typical actively playing players' backend load per connection,
+it's about 1.2Mbps per connection.
 
+After starting, you will see bandwidth and error count like below:
+~~~
+stat: send:789802/3106MB/50.3Mbps recv:394901/3085MB/50.0Mbps Error:0
+stat: send:791402/3112MB/50.3Mbps recv:395701/3091MB/50.0Mbps Error:0
+stat: send:793002/3119MB/50.3Mbps recv:396501/3097MB/50.0Mbps Error:0
+stat: send:794602/3125MB/50.3Mbps recv:397301/3103MB/50.0Mbps Error:0
+stat: send:796202/3131MB/50.3Mbps recv:398101/3110MB/50.0Mbps Error:0
+stat: send:797802/3138MB/50.3Mbps recv:398901/3116MB/50.0Mbps Error:0
+stat: send:799402/3144MB/50.3Mbps recv:399701/3122MB/50.0Mbps Error:0
+~~~
 
+But if the target backend server is getting slower with disk accesses,
+you will have "ping slow" logs like:
 
+~~~
+[ping slow dt:689ms id:40][ping slow dt:739ms id:39][ping slow dt:790ms id:38][ping slow dt:841ms id:37][ping slow dt:892ms id:36][ping slow dt:943ms id:35][ping slow dt:401ms id:26][ping slow dt:451ms id:25][ping slow dt:502ms id:24][ping slow dt:553ms id:23][ping slow dt:603ms id:22][ping slow dt:654ms id:21]
+~~~
 
+You can stop your load test here, but you can leave it running. Then you probably have connection closed error messsages caused by buffer full.
+
+You can increase maxcon setting step by step, and when you get slow ping,
+you can say that it is the maximum disk performance in your environment.
+So, if you want to have 100 concurrent players in your system,
+you have to confirm ```--maxcon=100``` runs without errors, that requires 120Mbps bandwidth.
+(Please note that you probably won't have 100 actively playing players. Many players are just standing or out of projects)
+
+You can also look at "iostat" command during the test to have more information about disk usage.
+
+Here is an example of Linux "iostat" command:
+
+~~~
+avg-cpu:  %user   %nice %system %iowait  %steal   %idle
+           0.79    0.00    1.85    8.45    0.13   88.77
+
+Device:            tps   Blk_read/s   Blk_wrtn/s   Blk_read   Blk_wrtn
+xvda            645.00      1104.00     13456.00       1104      13456
+xvdb            155.00       408.00      5888.00        408       5888
+~~~
+
+You basically see increasing Blk_read and Blk_wrtn count when --maxcon is increasing.
+But at some point this I/O count starts to saturate.
+After the point, you won't be able to increase --maxcon.
 
