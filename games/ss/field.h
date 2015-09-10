@@ -728,6 +728,7 @@ public:
     unsigned int load_poll_count;
 
     int generate_step, generate_counter;
+    unsigned int generate_seed;
     
     int fortress_id_generator;
     
@@ -737,7 +738,7 @@ public:
 
     Pos2 build_fortress_log[2000];
     int build_fortress_log_num;
-    
+
     //    
     Field( int w, int h );
     size_t getRevealBufferSize();
@@ -783,9 +784,9 @@ public:
 
 
     // Generation takes more than 10 seconds, so make it asynchronous.
-    void startGenerate();
+    void startGenerate( unsigned int seed );
     bool asyncGenerate();
-    void generateSync();
+    void generateSync( unsigned int seed );
     bool isGenerateStarted();
     
     void statistics();

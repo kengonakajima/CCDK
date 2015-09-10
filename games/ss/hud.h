@@ -454,6 +454,9 @@ public:
     virtual bool windowPoll(double dt);
 };
 
+
+
+
 /////////////
 class ProjectTypeWindow : public Window {
 public:
@@ -490,6 +493,10 @@ typedef enum {
     PJLT_PUBLIC = 3,    
 } PROJECTLISTTYPE;
 
+#define MSG_CREATE_RANDOM_PROJECT "CREATE NEW RANDOM PROJECT"
+#define MSG_CREATE_PROJECT_WITH_SEED "CREATE NEW PROJECT WITH A SEED"
+
+
 class ProjectListWindow : public Window {
 public:
     CharGridTextBox *title_tb;
@@ -506,6 +513,7 @@ public:
     
     ProjectListWindow();
     virtual void toggle(bool vis);
+    void resetCursorPos() { cursor_at = 0; }
     void update();
     void updateProjectList();    
     void clear();
@@ -513,7 +521,8 @@ public:
     void cancel();
     virtual void moveCursor( DIR dir );
     virtual void selectAtCursor();
-
+    void startGenerateGame( unsigned int seed );
+    void setCursorAtLine( const char *msg );
 };
 
 
@@ -582,6 +591,16 @@ class CharNameWindow : public SoftwareKeyboardWindow {
 public:
     CharGridTextBox *title_tb;
     CharNameWindow();
+    virtual void toggle(bool vis);
+    void moveCursor( DIR d );
+    void selectAtCursor();
+};
+
+class SeedInputWindow : public SoftwareKeyboardWindow {
+public:
+    CharGridTextBox *title_tb;
+    
+    SeedInputWindow();
     virtual void toggle(bool vis);
     void moveCursor( DIR d );
     void selectAtCursor();

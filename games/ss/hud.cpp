@@ -2428,7 +2428,7 @@ int countMilestoneCleared(ProjectInfo *pinfo ) {
 
 
 
-void ProjectListWindow::toggle(bool vis) {
+void ProjectListWindow::toggle(bool vis ) {
     if(vis==false) {
         // Can't close during saving
         if( g_fsaver->active ) {
@@ -2444,7 +2444,7 @@ void ProjectListWindow::toggle(bool vis) {
     }
     cursor->setVisible(vis);
     if(vis) {
-        cursor_at = 0;
+        resetCursorPos();
         updateProjectList();
         update();
     } 
@@ -2518,7 +2518,8 @@ void ProjectListWindow::updateProjectList() {
             }
         }
         if( project_num < MAX_PRIVATE_PROJECT ) {
-            lines[ project_num ]->setString( WHITE, "CREATE NEW PROJECT" ); // Last button is always CREATE
+            lines[ project_num ]->setString( WHITE, MSG_CREATE_RANDOM_PROJECT );
+            lines[ project_num+1 ]->setString( WHITE, MSG_CREATE_PROJECT_WITH_SEED );
         }
         for(int i=0;i<elementof(lines);i++) {
             if( lines[i]->isEmpty() ) {
@@ -2625,6 +2626,7 @@ void ProjectListWindow::poll() {
                 to_hide_cursor = true;
             }
         } else {
+            print("qaq:%d",cursor_at );
             if( lines[cursor_at]->isEqual( (char*) "CREATE", 6) ||
                 lines[cursor_at]->isEqual( (char*) "GENERATING", 10) ) {
                 char msg[100];
@@ -2680,25 +2682,31 @@ void ProjectListWindow::cancel() {
     hide();
     g_projtypewin->show();
 }
+
+void ProjectListWindow::startGenerateGame( unsigned int seed ) {
+    g_fld->startGenerate( seed );
+    g_mapview->notifyChangedAll();
+    int new_proj_id = dbGetNewProjectId();
+    bool res = dbAppendProjectStatus( new_proj_id, Format("CREATED BY %s", g_pc->nickname).buf );
+    assert(res);
+        
+    //        Cell cc;
+    //        print("creating new project! new id:%d cell_size:%d bool:%d enum:%d",
+    //              new_proj_id, sizeof(Cell), sizeof(cc.untouched), sizeof(cc.bt) );
+    g_fsaver->start( g_user_name, new_proj_id );
+}
+
+
 void ProjectListWindow::selectAtCursor() {
-    if( lines[cursor_at]->isEqual( (char*)"CREATE", 6 ) ) {
+    if( lines[cursor_at]->isEqual( (char*) MSG_CREATE_RANDOM_PROJECT, strlen(MSG_CREATE_RANDOM_PROJECT) ) ) {
         g_craft_sound->play();
-        
-        g_fld->startGenerate();
-        
-        g_mapview->notifyChangedAll();
+        double nt = now();
+        unsigned int time_seed = (int)(nt) & 0xffffffff ;
+        startGenerateGame(time_seed);
 
-        int new_proj_id = dbGetNewProjectId();
-
-        bool res = dbAppendProjectStatus( new_proj_id, Format("CREATED BY %s", g_pc->nickname).buf );
-        assert(res);
-        
-        //        Cell cc;
-        //        print("creating new project! new id:%d cell_size:%d bool:%d enum:%d",
-        //              new_proj_id, sizeof(Cell), sizeof(cc.untouched), sizeof(cc.bt) );
-        g_fsaver->start( g_user_name, new_proj_id );
-        
-        print("started saving field.." )  ;
+    } else if( lines[cursor_at]->isEqual( (char*) MSG_CREATE_PROJECT_WITH_SEED, strlen(MSG_CREATE_PROJECT_WITH_SEED) ) ) {
+        hide();
+        g_seedwin->toggle(true);
     } else if( lines[cursor_at]->isEqual( (char*) "SAVING", 6) ) {
         // no-op
     } else if( lines[cursor_at]->isEqual( (char*) "GENERATING", 10) ) {
@@ -2721,12 +2729,22 @@ void ProjectListWindow::selectAtCursor() {
         g_projinfowin->show();
     }
 }
+void ProjectListWindow::setCursorAtLine( const char *msg ) {
+    for(int i=0;i<elementof(lines);i++) {
+        if( lines[i]->isEqual( msg, strlen(msg) ) ) {
+            cursor_at = i;
+            break;
+        }
+    }
+}
+
+
+//////////////////
 void ProjectTypeWindow::cancel() {
     hide();
     g_runstate = RS_MAIN_MENU;
     g_titlewin->show();    
 }
-
 //////////////////
 
 ProjectInfoWindow::ProjectInfoWindow() : Window( PREPARATION_GRID_WIDTH, PREPARATION_GRID_HEIGHT, B_ATLAS_WINDOW_FRAME_BASE, WINDOW_ALPHA ), project_id(0), previous_window(NULL), last_poll_maxcon_at(0) {
@@ -4632,4 +4650,75 @@ void hudShowConfirmRecoveryMessage( ITEMTYPE itt ) {
     g_msgwin->show();
     g_msgwin->toggleDelay(true);
     g_recovery_item_type = itt;
+}
+
+/////////////////////////////
+SeedInputWindow::SeedInputWindow() : SoftwareKeyboardWindow() {
+    setLoc(PREPARATION_WINDOW_LOC);
+    g_hud_layer->insertProp(this);
+
+    title_tb = new CharGridTextBox(30);
+    title_tb->setString( WHITE, "INPUT SEED VALUE" );
+    title_tb->setLoc( getTitleLoc() );
+    g_hud_layer->insertProp(title_tb);
+
+    setupSoftwareKeyboard(2,10);
+}
+void SeedInputWindow::toggle( bool vis ) {
+    setVisible(vis);
+    title_tb->setVisible(vis);
+    for(int i=0;i<elementof(keys);i++) if(keys[i]) keys[i]->setVisible(vis);
+    input_tb->setVisible(vis);
+    cursor->setVisible(vis);
+    ok_tb->setVisible(vis);
+    del_tb->setVisible(vis);
+}
+void SeedInputWindow::moveCursor( DIR d ) {
+    g_cursormove_sound->play();
+    Prop2D *nextp = group->getNext( cursor_at_id, d );
+    cursor_at_id = nextp->id;
+    update();    
+}
+void SeedInputWindow::selectAtCursor() {
+    assert( cursor_at_id >= 0 );
+    int namelen = strlen(input_tb->get());
+    print("seed len:%d val:%s",namelen, input_tb->get() );
+
+    Prop2D *curp = group->find(cursor_at_id);
+    if(curp == ok_tb ) {
+        if( namelen >= 2 ) {
+            hide();
+            g_projlistwin->show();
+            g_projlistwin->setCursorAtLine( MSG_CREATE_PROJECT_WITH_SEED );
+            g_projlistwin->startGenerateGame( hash_pjw( input_tb->get() ) );
+        } else {
+            g_cant_sound->play();
+        }
+        return;
+    }  else if( curp == del_tb ) {
+        g_craft_sound->play();
+        input_tb->deleteTailChar();
+    }
+    
+    for(int i=0;i<elementof(keys);i++){
+        if(keys[i] == curp ) {
+            print("K:%d ch:%c",i, chars[i]);
+            input_tb->appendChar(chars[i]);
+            g_craft_sound->play();
+            break;
+        }
+    }
+    int slen = strlen(input_tb->get());
+    bool len_ok = (slen >= 2 );
+    if( len_ok ) {
+        ok_tb->setColor(WHITE);
+    } else {
+        ok_tb->setColor(RED);
+    }
+    if( slen == 2 ) {
+        input_tb->show_cursor = false;
+    } else {
+        input_tb->show_cursor = true;
+    }
+    
 }

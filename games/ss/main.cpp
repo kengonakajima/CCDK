@@ -186,6 +186,8 @@ RankingWindow *g_rankwin;
 FriendWindow *g_friendwin;
 DebugWindow *g_debugwin;
 CreditWindow *g_creditwin;
+SeedInputWindow *g_seedwin;
+
 
 MilestoneDisplay *g_milestone_display;
 
@@ -474,7 +476,7 @@ void updateToSim() {
 
 // ゲーム外のウインドウ
 bool isOutgameWindowVisible() {
-    return g_charmakewin->visible || g_projtypewin->visible || g_projlistwin->visible || g_charnamewin->visible || g_projinfowin->visible || g_titlewin->visible || g_ranktypewin->visible || g_rankwin->visible || g_friendwin->visible || g_creditwin->visible;
+    return g_charmakewin->visible || g_projtypewin->visible || g_projlistwin->visible || g_charnamewin->visible || g_projinfowin->visible || g_titlewin->visible || g_ranktypewin->visible || g_rankwin->visible || g_friendwin->visible || g_creditwin->visible || g_seedwin->visible;
 }
 // ゲーム中のウインドウ
 bool isIngameWindowVisible(){
@@ -506,7 +508,8 @@ void toggleWindow( const char *name ) {
         g_projlistwin->hide();
         g_projinfowin->hide();
         g_spmenuwin->hide();
-        g_followwin->hide();        
+        g_followwin->hide();
+        g_seedwin->hide();
         return;
     }
     
@@ -540,6 +543,8 @@ void toggleWindow( const char *name ) {
         g_charmakewin->toggle( ! g_charmakewin->visible );
     } else if( strcmp( name, "charname" ) == 0 ) {
         g_charnamewin->toggle( !g_charnamewin->visible );
+    } else if( strcmp( name, "seed" ) == 0 ) {
+        g_seedwin->toggle( !g_seedwin->visible );
     } else if( strcmp( name, "projtype" ) == 0 ) {
         g_projtypewin->toggle( ! g_projtypewin->visible );
     } else if( strcmp( name, "projlist" ) == 0 ) {
@@ -579,6 +584,8 @@ void onDirectionKey( DIR d ) {
         g_projlistwin->moveCursor(d);
     } else if( g_charnamewin->visible ) {
         g_charnamewin->moveCursor(d);
+    } else if( g_seedwin->visible ) {
+        g_seedwin->moveCursor(d);
     } else if( g_projinfowin->visible ) {
         g_projinfowin->moveCursor(d);
     } else if( g_spmenuwin->visible ) {
@@ -617,6 +624,8 @@ void onEnterKey() {
         g_projlistwin->selectAtCursor();
     } else if( g_charnamewin->visible ) {
         g_charnamewin->selectAtCursor();
+    } else if( g_seedwin->visible ) {
+        g_seedwin->selectAtCursor();
     } else if( g_projinfowin->visible ) {
         g_projinfowin->selectAtCursor();
     } else if( g_spmenuwin->visible ) {
@@ -1032,7 +1041,7 @@ void updateGame(void) {
             }
         } else {
             g_pc->addInitialItems();
-            g_fld->generateSync();
+            g_fld->generateSync(0);
             setTitleScreenVisible(false,false);
             g_runstate = RS_IN_PROJECT;
         }
@@ -1890,7 +1899,10 @@ int moaiMain( int argc, char **argv ){
     g_projtypewin->hide();
 
     g_projlistwin = new ProjectListWindow();
-    g_projlistwin->hide();    
+    g_projlistwin->hide();
+
+    g_seedwin = new SeedInputWindow();
+    g_seedwin->hide();
 
     g_projinfowin = new ProjectInfoWindow();
     g_projinfowin->hide();

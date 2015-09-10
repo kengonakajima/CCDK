@@ -155,6 +155,8 @@ class ProjectTypeWindow;
 extern ProjectTypeWindow *g_projtypewin;
 class CreditWindow;
 extern CreditWindow *g_creditwin;
+class SeedInputWindow;
+extern SeedInputWindow *g_seedwin;
 
 extern int g_current_project_id;
 

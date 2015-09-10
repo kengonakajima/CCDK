@@ -82,7 +82,8 @@ Field::Field( int w, int h ) : width(w), height(h), chw(w/CHUNKSZ), chh(h/CHUNKS
                                saved_chunk_this_sim(0),
                                simchunk_per_poll(200), sim_counter(0), last_simclock_at(0), sim_clock_count(0),
                                cur_chunk_change_cnt(0), last_chunk_change_cnt(0), 
-                               generate_step(0), generate_counter(0), fortress_id_generator(0),
+                               generate_step(0), generate_counter(0), generate_seed(0),
+                               fortress_id_generator(0),
                                build_fortress_log_num(0)
 {
     size_t sz = sizeof(Cell) * w * h;
@@ -189,7 +190,9 @@ void Field::setupFlagCands() {
     flag_cands[FIRST_FLAG_INDEX].pos = getFirstFortressPoint() + Pos2(4,4);
 }
 
-void Field::startGenerate() {
+void Field::startGenerate(unsigned int seed) {
+    print("startGenerate: seed:%d",seed);
+    generate_seed = seed;
     generate_step = 1;
     generate_counter = 0;
 }
@@ -227,7 +230,7 @@ bool Field::asyncGenerate() {
     case 4: // BT
     case 5: // blur BT
         {
-
+            srandom( generate_seed + generate_step );
             int bx = generate_counter % maxbx;
             int by = generate_counter / maxby;
             generate_counter ++;
@@ -276,11 +279,13 @@ bool Field::asyncGenerate() {
             }
         }
         return false;
-    case 6: 
+    case 6:
+        srandom( generate_seed );
         generateCommon();
         generate_step++;
         return false;
     case 7: // clean and finish
+        srandom( generate_seed );
         setupFlagCands();        
         {
             Pos2 rp = getRespawnPoint();
@@ -305,8 +310,8 @@ bool Field::asyncGenerate() {
     }
     return false;
 }
-void Field::generateSync() {
-    startGenerate();
+void Field::generateSync( unsigned int seed ) {
+    startGenerate( 0 );
     while(true) {
         if( asyncGenerate() == true ) break;
     }
