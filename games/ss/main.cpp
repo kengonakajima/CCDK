@@ -240,6 +240,7 @@ FieldSaver *g_fsaver = NULL;
 int g_current_project_id = 0;
 double g_powersystem_lock_obtained_at = 0;
 bool g_program_finished = 0;
+int g_save_max_concurrent = 128; // 128 for SSDs.
 
 ////////////////////////////////////
 
@@ -1557,7 +1558,10 @@ int moaiMain( int argc, char **argv ){
             } else {
                 assertmsg( false, "invalid --host specified : '%s'",p);
             }
+        } else if( strncmp( argv[i], "--save_max_concurrent=", strlen("--save_max_concurrent=") ) == 0 ) {
+            g_save_max_concurrent = atoi( argv[i] + strlen("--save_max_concurrent=" ) );
         }
+
     }
 
     print("username set '%s' dbhost:%s rthost:%s ", g_user_name, g_dbhost, g_rthost );
@@ -1842,7 +1846,7 @@ int moaiMain( int argc, char **argv ){
     g_fld = new Field( FIELD_W, FIELD_H );
     g_fld->clear();
     //    g_fld->generate();
-    g_fsaver = new FieldSaver(g_fld, CHUNKSZ );
+    g_fsaver = new FieldSaver(g_fld, CHUNKSZ, g_save_max_concurrent );
     
 
     g_mapview = new MapView( g_fld->width, g_fld->height );

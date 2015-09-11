@@ -2626,7 +2626,6 @@ void ProjectListWindow::poll() {
                 to_hide_cursor = true;
             }
         } else {
-            print("qaq:%d",cursor_at );
             if( lines[cursor_at]->isEqual( (char*) "CREATE", 6) ||
                 lines[cursor_at]->isEqual( (char*) "GENERATING", 10) ) {
                 char msg[100];

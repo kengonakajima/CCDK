@@ -839,7 +839,8 @@ bool dbAppendIntArrayJSON( char *key, char *field, int val ) {
 
 /////////////
 
-FieldSaver::FieldSaver( Field *f, int savechunksz ) : tgtf(f), num_concurrent(0), savechunksz(savechunksz), active(false) {
+// maxconcurrent: 128 is OK for SSDs, but may be too fast for HDDs. 
+FieldSaver::FieldSaver( Field *f, int savechunksz, int maxconcurrent ) : tgtf(f), max_concurrent(maxconcurrent), num_concurrent(0), savechunksz(savechunksz), active(false) {
     user_name[0] = '\0';
     project_id = 0;
     
@@ -875,7 +876,7 @@ void FieldSaver::poll( bool *finished ) {
     *finished = false;
     
     // TODO: Scanning array could be very slow.
-    if( num_concurrent >= MAX_CONCURRENT ) return;
+    if( num_concurrent >= max_concurrent ) return;
     if( user_name[0] == '\0' || project_id == 0 ) return;
     if( active == false ) return;
 
@@ -894,7 +895,7 @@ void FieldSaver::poll( bool *finished ) {
                     num_concurrent ++;
                     //                    print("dbputfieldfilesend called. num_concurrent:%d xy:%d,%d",num_concurrent,x,y);
                     state[x+y*chw] = FSS_SENT;
-                    if( num_concurrent >= MAX_CONCURRENT ) {
+                    if( num_concurrent >= max_concurrent ) {
                         *finished = false;
                         return;
                     }

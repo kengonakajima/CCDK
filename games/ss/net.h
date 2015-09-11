@@ -42,18 +42,19 @@ public:
     Field *tgtf;
     int chw,chh;
     FIELDSAVESTATE *state;
-    static const int MAX_CONCURRENT = 128;
+    int max_concurrent;
     int num_concurrent;
     int savechunksz;
     char user_name[256];
     bool active;
     int project_id;
-    FieldSaver( Field *f, int savechunksz );
+    FieldSaver( Field *f, int savechunksz, int maxconcurrent );
     ~FieldSaver();
     void start( const char *username, int project_id );
     void poll( bool *finished );
     int countUnsent();
     int countTotalNum() { return chw * chh; }
+    void setMaxConcurrent( int n ) { max_concurrent = n; }
 };
 
 
