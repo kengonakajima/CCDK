@@ -2623,8 +2623,9 @@ void ProjectListWindow::poll() {
                 res = dbSaveIntArrayJSON( g_project_by_owner_ht_key, g_user_name, projids, projids_len );
                 //                print("dbSaveIntArrayJSON: ret:%d len:%d",res, projids_len );
 
-                g_fsaver->active = false; // To stop calling this update function                
+                g_fsaver->active = false; // To stop calling this update function
                 updateProjectList();
+                update();
             } else if( g_fsaver->active ){
                 lines[cursor_at]->setString(WHITE,"");
                 char msg[100];
@@ -2704,6 +2705,9 @@ void ProjectListWindow::startGenerateGame( const char *seedstr, unsigned int see
 
 
 void ProjectListWindow::selectAtCursor() {
+
+    print("ProjectListWindow: selectAtCursor: %d", cursor_at );
+
     if( lines[cursor_at]->isEqual( (char*) MSG_CREATE_RANDOM_PROJECT, strlen(MSG_CREATE_RANDOM_PROJECT) ) ) {
         g_craft_sound->play();
         double nt = now();
@@ -4702,7 +4706,7 @@ void SeedInputWindow::selectAtCursor() {
         if( namelen >= 2 ) {
             hide();
             g_projlistwin->show();
-            g_projlistwin->setCursorAtLine( MSG_CREATE_PROJECT_WITH_SEED );
+            g_projlistwin->setCursorAtLine( MSG_CREATE_PROJECT_WITH_SEED ); // to update progress realtime
             g_projlistwin->startGenerateGame( input_tb->get(), 0 );
         } else {
             g_cant_sound->play();
