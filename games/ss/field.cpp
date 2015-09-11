@@ -955,8 +955,10 @@ void Field::simStepChunk( bool paused ){
             } else {
                 double nt = now();
                 if( ts->last_lock_sent_at < nt - ToSim::LOCK_KEEP_INTERVAL_SEC ) {
-                    assert( ts->lock_state == LOCKSTATE_GOT );
-                    assert( ts->last_lock_sent_at > 0 );
+                    if( isRealtimeNetworkActive() ) {
+                        assert( ts->lock_state == LOCKSTATE_GOT );
+                        assert( ts->last_lock_sent_at > 0 );
+                    }                    
                     // This can be bigger than server timeout. (to_sim is not regularly scanned)
                     //                    print("kg: %d,%d dt:%.1f", ts->chx, ts->chy, nt-ts->last_lock_sent_at);
                     ts->last_lock_sent_at = nt;
