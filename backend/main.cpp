@@ -2058,13 +2058,18 @@ void dumpNetstat() {
     long long loop_diff = g_loopcnt - last_loopcnt;
     long long dt = nt-last_dump_at;
     if(dt==0)dt=1;
-    static long long last_dbrecv_bytes=0, last_dbsend_bytes=0;
-    static long long last_rtrecv_bytes=0, last_rtsend_bytes=0;
-    double dbrecv_mbps = (dbst.recv_byte-last_dbrecv_bytes)/(double)(dt)*8 / 1024.0 / 1024.0;
-    double dbsend_mbps = (dbst.send_byte-last_dbsend_bytes)/(double)(dt)*8 / 1024.0 / 1024.0;
-    double rtrecv_mbps = (rtst.recv_byte-last_rtrecv_bytes)/(double)(dt)*8 / 1024.0 / 1024.0;
-    double rtsend_mbps = (rtst.send_byte-last_rtsend_bytes)/(double)(dt)*8 / 1024.0 / 1024.0;
+    static long long last_dbrecv_accum_bytes=0, last_dbsend_accum_bytes=0;
+    static long long last_rtrecv_accum_bytes=0, last_rtsend_accum_bytes=0;
+    long long last_dbrecv_bytes=dbst.recv_byte-last_dbrecv_accum_bytes, last_dbsend_bytes=dbst.send_byte-last_dbsend_accum_bytes;
+    long long last_rtrecv_bytes=rtst.recv_byte-last_rtrecv_accum_bytes, last_rtsend_bytes=rtst.send_byte-last_rtsend_accum_bytes;
+    
+    double dbrecv_mbps = (double)(last_dbrecv_bytes)/(double)(dt)*8.0 / 1024.0 / 1024.0;
+    double dbsend_mbps = (double)(last_dbsend_bytes)/(double)(dt)*8.0 / 1024.0 / 1024.0;
+    double rtrecv_mbps = (double)(last_rtrecv_bytes)/(double)(dt)*8.0 / 1024.0 / 1024.0;
+    double rtsend_mbps = (double)(last_rtsend_bytes)/(double)(dt)*8.0 / 1024.0 / 1024.0;
 
+
+    print("dbrecv_mbps: %f last_dbrecv_bytes:%lld dt:%f", dbrecv_mbps, last_dbrecv_bytes, dt );
     
     print("Time:%d loop:%lld(d:%lld %lld/sec)", nt, g_loopcnt, loop_diff, loop_diff/dt );
     if( g_enable_database ) {
@@ -2087,10 +2092,10 @@ void dumpNetstat() {
     }
     last_loopcnt = g_loopcnt;
     last_dump_at = nt;
-    last_dbrecv_bytes = dbst.recv_byte;
-    last_dbsend_bytes = dbst.send_byte;
-    last_rtrecv_bytes = rtst.recv_byte;
-    last_rtsend_bytes = rtst.send_byte;
+    last_dbrecv_accum_bytes = dbst.recv_byte;
+    last_dbsend_accum_bytes = dbst.send_byte;
+    last_rtrecv_accum_bytes = rtst.recv_byte;
+    last_rtsend_accum_bytes = rtst.send_byte;
 }
 
 ///////
