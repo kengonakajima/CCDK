@@ -521,7 +521,7 @@ public:
     void cancel();
     virtual void moveCursor( DIR dir );
     virtual void selectAtCursor();
-    void startGenerateGame( unsigned int seed );
+    void startGenerateGame( const char *seedstr, unsigned int seed );
     void setCursorAtLine( const char *msg );
 };
 

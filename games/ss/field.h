@@ -729,6 +729,7 @@ public:
 
     int generate_step, generate_counter;
     unsigned int generate_seed;
+    char orig_seed_string[PROJECTINFO_SEED_LEN];
     
     int fortress_id_generator;
     
@@ -784,7 +785,7 @@ public:
 
 
     // Generation takes more than 10 seconds, so make it asynchronous.
-    void startGenerate( unsigned int seed );
+    void startGenerate( const char *seedstr, unsigned int seed );
     bool asyncGenerate();
     void generateSync( unsigned int seed );
     bool isGenerateStarted();
@@ -909,6 +910,7 @@ public:
     void setEnvironment( Rect r, BIOMETYPE bmt );
     Environment *getEnvironment( Pos2 at );
     bool isFlagPuttableCell( Pos2 p );
+    void applySeed( const char *s, unsigned int i );
     
     // Revealing
     void setChunkRevealed( int chx, int chy, bool flg );

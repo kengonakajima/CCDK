@@ -1079,7 +1079,8 @@ void updateGame(void) {
             // Load flags
             ProjectInfo pinfo;
             bool res = dbLoadProjectInfo( g_current_project_id, &pinfo );
-            assert(res); 
+            assert(res);
+            g_fld->applySeed( pinfo.orig_seed, pinfo.final_seed );
             g_fld->applyFlagCands( &pinfo );
             dbLoadFieldRevealSync( g_current_project_id );
             dbLoadFieldEnvSync( g_current_project_id );
@@ -1090,8 +1091,8 @@ void updateGame(void) {
             g_pc->loc = toCellCenter( g_fld->getRespawnPoint() );
             g_pc->clearHistory( g_pc->loc );
             g_pc->hp = g_pc->maxhp;
-            g_pc->onStatusUpdated();
-            g_log->printf( WHITE, "LOGGED IN TO PROJECT ID:%d", g_current_project_id );
+            g_pc->onStatusUpdated();            
+            g_log->printf( WHITE, "LOGGED IN TO PROJECT ID:%d SEED:%s", g_current_project_id, g_fld->orig_seed_string );            
 
             dbEnsureImage( g_current_project_id );
 

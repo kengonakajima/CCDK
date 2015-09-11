@@ -2381,7 +2381,7 @@ ProjectListWindow::ProjectListWindow() : Window( PREPARATION_GRID_WIDTH, PREPARA
     g_hud_layer->insertProp(title_tb);
 
     header = new CharGridTextBox(64);
-    header->setString( WHITE,       "ID       OWNER        CREATED   MS.  PLAYERS TOT.TIME" );
+    header->setString( WHITE,       "ID       LEVEL       OWNER        CREATED   MS.  PLAYERS TOT.TIME" );
     header->setLoc( getHeaderLoc() );
     g_hud_layer->insertProp(header);
 
@@ -2389,7 +2389,7 @@ ProjectListWindow::ProjectListWindow() : Window( PREPARATION_GRID_WIDTH, PREPARA
     Vec2 base = header->loc + Vec2( 0, -40 );
     for(int i=0;i<elementof(lines);i++) {
         lines[i] = new CharGridTextBox(64);
-        lines[i]->setString( WHITE, "01234567 0123456789AB 012345678 0123 0123    01:23:45" );
+        lines[i]->setString( WHITE, "01234567 0123456789A 0123456789AB 012345678 0123 0123    01:23:45" );
         lines[i]->setLoc( base - Vec2(0, 32 * i));
         g_hud_layer->insertProp(lines[i]);
     }
@@ -2473,13 +2473,15 @@ void makeProjectInfoLineString( char *out, size_t outlen, const char *prefix, Pr
         snprintf( milestone_str, sizeof(milestone_str), "%d", countMilestoneCleared(pi) );
     }
     snprintf( players_str, sizeof(players_str), "%d", players );
-
+    char levelstr[PROJECTINFO_DIFFICULTY_STRING_LEN];
+    pi->getDifficultyString(levelstr,sizeof(levelstr));
+    
     char hmsstr[32];
     makeHourMinSecString( playsec, hmsstr, sizeof(hmsstr) );
     if( progress_mode ) {
-        snprintf( out, outlen, "%s%-8s %-12s %8d/%-5d %-4s", prefix, id_str, owner_str, progress, ms_cleared, players_str );
+        snprintf( out, outlen, "%s%-8s %-11s %-12s %8d/%-5d %-4s", prefix, id_str, levelstr, owner_str, progress, ms_cleared, players_str );
     } else {
-        snprintf( out, outlen, "%s%-8s %-12s %-9s %-4s %-4s    %s", prefix, id_str, owner_str, created_str, milestone_str, players_str, hmsstr );
+        snprintf( out, outlen, "%s%-8s %-11s %-12s %-9s %-4s %-4s    %s", prefix, id_str, levelstr, owner_str, created_str, milestone_str, players_str, hmsstr );
     }
 }
 
@@ -2586,6 +2588,11 @@ void ProjectListWindow::poll() {
                 for(int i=0;i<MILESTONE_MAX;i++){
                     pinfo.flag_cands[i] = g_fsaver->tgtf->flag_cands[i];
                 }
+                if( g_fld->orig_seed_string[0] ) {
+                    pinfo.setSeedString( g_fld->orig_seed_string );
+                } else {
+                    pinfo.final_seed = g_fld->generate_seed;
+                }
                 dbSaveProjectInfo(&pinfo);
                 dbSaveFieldEnvSync(pinfo.project_id);
                 
@@ -2682,8 +2689,8 @@ void ProjectListWindow::cancel() {
     g_projtypewin->show();
 }
 
-void ProjectListWindow::startGenerateGame( unsigned int seed ) {
-    g_fld->startGenerate( seed );
+void ProjectListWindow::startGenerateGame( const char *seedstr, unsigned int seed ) {
+    g_fld->startGenerate( seedstr, seed );
     g_mapview->notifyChangedAll();
     int new_proj_id = dbGetNewProjectId();
     bool res = dbAppendProjectStatus( new_proj_id, Format("CREATED BY %s", g_pc->nickname).buf );
@@ -2701,7 +2708,8 @@ void ProjectListWindow::selectAtCursor() {
         g_craft_sound->play();
         double nt = now();
         unsigned int time_seed = (int)(nt) & 0xffffffff ;
-        startGenerateGame(time_seed);
+        unsigned int easy_seed = ProjectInfo::getNextEasySeed(time_seed);
+        startGenerateGame( "", easy_seed);
 
     } else if( lines[cursor_at]->isEqual( (char*) MSG_CREATE_PROJECT_WITH_SEED, strlen(MSG_CREATE_PROJECT_WITH_SEED) ) ) {
         hide();
@@ -4689,7 +4697,7 @@ void SeedInputWindow::selectAtCursor() {
             hide();
             g_projlistwin->show();
             g_projlistwin->setCursorAtLine( MSG_CREATE_PROJECT_WITH_SEED );
-            g_projlistwin->startGenerateGame( hash_pjw( input_tb->get() ) );
+            g_projlistwin->startGenerateGame( input_tb->get(), 0 );
         } else {
             g_cant_sound->play();
         }

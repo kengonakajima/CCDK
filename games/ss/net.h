@@ -103,7 +103,7 @@ public:
     FlagCandidate() : finished(false) {}
 };
 
-typedef struct {
+class ProjectInfo {
 public:
     int project_id;
     int owner_uid;
@@ -111,8 +111,29 @@ public:
     char owner_nickname[32];
     //    int milestone_cleared;
     unsigned int created_at;
+#define PROJECTINFO_SEED_LEN 8
+#define PROJECTINFO_SEED_STRING_LEN 7
+#define PROJECTINFO_DIFFICULTY_STRING_LEN (PROJECTINFO_SEED_STRING_LEN+1+1+2 +1) // "N:[SEED]" or "N"        
+    char orig_seed[PROJECTINFO_SEED_STRING_LEN+1]; // can be empty
+    unsigned int final_seed; // seed value actually used
     FlagCandidate flag_cands[MILESTONE_MAX];
-} ProjectInfo;
+    ProjectInfo() : project_id(0), owner_uid(0), created_at(0), final_seed(0) {
+        owner_username[0] = '\0';
+        owner_nickname[0] = '\0';
+        orig_seed[0] = '\0';
+    }
+    static int calcDifficulty( int si ) { return si % 8; } // 0:easiest 7:most difficult
+    static int calcDifficulty( const char *s ) { return calcDifficulty( calcHash(s)); }
+    static int calcHash( const char *str ) { return hash_pjw(str); }    
+    int getDifficulty() { return calcDifficulty( final_seed ); }
+    void setSeedString( const char *s ) {
+        strncpy( orig_seed, s, sizeof(orig_seed) );
+        final_seed = calcHash(s);
+    }
+    static int getNextEasySeed( unsigned int start_seed );
+    void getDifficultyString( char *out, size_t outsz );
+
+};
 
 int countMilestoneCleared(ProjectInfo *pinfo );
 

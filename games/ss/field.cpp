@@ -98,6 +98,7 @@ Field::Field( int w, int h ) : width(w), height(h), chw(w/CHUNKSZ), chh(h/CHUNKS
     sz = sizeof(CHUNKLOADSTATE) * chw * chh;
     load_state = (CHUNKLOADSTATE*) MALLOC(sz);
 
+    memset( orig_seed_string, 0, sizeof(orig_seed_string) );
 }
 size_t Field::getRevealBufferSize() {
     return sizeof( revealed[0] ) * chw * chh;
@@ -190,9 +191,15 @@ void Field::setupFlagCands() {
     flag_cands[FIRST_FLAG_INDEX].pos = getFirstFortressPoint() + Pos2(4,4);
 }
 
-void Field::startGenerate(unsigned int seed) {
-    print("startGenerate: seed:%d",seed);
+// seedstr: set empty for random projects
+// seed: set 0 for fixed seed projects
+void Field::startGenerate( const char *seedstr, unsigned int seed) {
     generate_seed = seed;
+    if(seedstr[0]) {
+        generate_seed = ProjectInfo::calcHash(seedstr);
+        strncpy( orig_seed_string, seedstr, sizeof(orig_seed_string) );
+    }
+    print("startGenerate: seedstr:'%s' seed:%d generate_seed:%d", seedstr, seed, generate_seed );    
     generate_step = 1;
     generate_counter = 0;
 }
@@ -311,7 +318,7 @@ bool Field::asyncGenerate() {
     return false;
 }
 void Field::generateSync( unsigned int seed ) {
-    startGenerate( 0 );
+    startGenerate( "", 1 );
     while(true) {
         if( asyncGenerate() == true ) break;
     }
@@ -756,8 +763,16 @@ void Field::appendBuildFortressLog(Pos2 at) {
 }
 
 void Field::generateCommon() {
+    int difficulty = ProjectInfo::calcDifficulty( generate_seed );
+    print("Field::generateCommon: difficulty: %d", difficulty );
+    assert(difficulty>=0 && difficulty<=7);
+    
+    float resource_rate_tbl[8] = {
+        1.0, 0.8, 0.6, 0.4,  0.2, 0.1, 0.0, 0.0
+    };
+    
     // Huge mines
-    int nsite = (width*height) / (256*256);
+    int nsite = (width*height) / (512*512) * resource_rate_tbl[difficulty];
     for(int i = 0; i < nsite; i++ ) {
         Pos2 p( irange(20,width-20), irange(20,height-20) );
         if( p.len(getRespawnPoint()) < 200 ) continue;
@@ -771,7 +786,7 @@ void Field::generateCommon() {
             buildMegaResourceSite(p, BT_RAREMETALORE, sz, range(0,0.5) );
         }
     }
-    int nenesite = (width*height) / (1024*1024/2);
+    int nenesite = (width*height) / (1024*1024/2) * resource_rate_tbl[difficulty];
     for(int i=0;i<nenesite;i++) {
         Pos2 center( irange(20,width-20), irange(20,height-20) );
         if( center.len(getRespawnPoint()) < 200 ) continue;        
@@ -794,7 +809,11 @@ void Field::generateCommon() {
     //    buildDungeon( Pos2(200,200), 32*7 );                
     
     // Hypergen
-    int n_hg = (width*height) / 6400;
+    int hg_rate_table[8] = {
+        8000, 7000, 6000, 5500,  5000, 4500, 4250, 4000
+    };
+    
+    int n_hg = (width*height) / hg_rate_table[difficulty];
     for(int i=0;i<n_hg;i++ ) {
         Pos2 at( irange(20,width-20), irange(20,height-20) );
         if( at.len(getRespawnPoint()) < 300 ) continue;
@@ -876,6 +895,16 @@ void Field::generateCommon() {
     c = get( rp + Pos2(18,-6) );
     c->st = ST_ENERGIUM;                    
 
+    // diffulty mark
+    for(int x=0;x<difficulty+1;x++) {
+        Cell *c = get( Pos2(x,0) );
+        c->bt = BT_SOIL;
+        if(x==difficulty) c->bt = BT_ROCK;
+        c = get( Pos2(x,1) );
+        c->bt = BT_AIR;
+        c = get( Pos2(x+1,0) );
+        c->bt = BT_AIR;
+    }
 }
 
 
@@ -4538,6 +4567,11 @@ void Field::checkCleanFortressLeftOver( Pos2 center, int dia ) {
             }
         }
     }
+}
+void Field::applySeed( const char *s, unsigned int i )  {
+    generate_seed = i;
+    strncpy( orig_seed_string, s, sizeof(orig_seed_string) );
+    print("Field::applySeed: s:'%s' i:%d", s, i );
 }
 
 /////////////////////

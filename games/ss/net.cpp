@@ -413,6 +413,7 @@ unsigned int dbGetTime(int *usec) {
 
 
 bool dbSaveProjectInfo( ProjectInfo *pinfo ) {
+    print("XXXXXXXXXXXXXXXXXXXX: '%s' seed:%d", pinfo->orig_seed, pinfo->final_seed );
     return dbSave( g_project_info_ht_key, Format( "%d", pinfo->project_id ).buf, (const char*) pinfo, sizeof(*pinfo) ) ;
 }
 bool dbLoadProjectInfo( int project_id, ProjectInfo *out ) {
@@ -2946,3 +2947,23 @@ void dbExecuteUnfriendLog() {
         dbSaveUnfriendLog(g_user_id, &ufl);
     }
 }
+
+///////////////////
+
+int ProjectInfo::getNextEasySeed( unsigned int start_seed ) {   
+    for(int i=0;i<=8;i++) {
+        int difficulty = calcDifficulty(start_seed+i);
+        print("difficulty:%d start_seed:%d i:%d", difficulty, start_seed, i );
+        if( difficulty == 0 ) return start_seed+i;
+    }
+    assert(false); // never reached
+}
+void ProjectInfo::getDifficultyString( char *out, size_t outsz ) {
+    int d = getDifficulty();
+    if( orig_seed[0] ) {
+        snprintf( out, outsz, "%d[%s]", d, orig_seed );
+    } else {
+        snprintf( out, outsz, "%d", d );
+    }
+}
+
