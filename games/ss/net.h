@@ -124,7 +124,7 @@ public:
     }
     static int calcDifficulty( int si ) { return si % 8; } // 0:easiest 7:most difficult
     static int calcDifficulty( const char *s ) { return calcDifficulty( calcHash(s)); }
-    static int calcHash( const char *str ) { return hash_pjw(str); }    
+    static int calcHash( const char *str );
     int getDifficulty() { return calcDifficulty( final_seed ); }
     void setSeedString( const char *s ) {
         strncpy( orig_seed, s, sizeof(orig_seed) );

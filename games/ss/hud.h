@@ -599,6 +599,7 @@ public:
 class SeedInputWindow : public SoftwareKeyboardWindow {
 public:
     CharGridTextBox *title_tb;
+    CharGridTextBox *difficulty_tb;
     
     SeedInputWindow();
     virtual void toggle(bool vis);

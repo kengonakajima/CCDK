@@ -2380,7 +2380,7 @@ ProjectListWindow::ProjectListWindow() : Window( PREPARATION_GRID_WIDTH, PREPARA
     title_tb->setLoc( getTitleLoc());
     g_hud_layer->insertProp(title_tb);
 
-    header = new CharGridTextBox(64);
+    header = new CharGridTextBox(80);
     header->setString( WHITE,       "ID       LEVEL       OWNER        CREATED   MS.  PLAYERS TOT.TIME" );
     header->setLoc( getHeaderLoc() );
     g_hud_layer->insertProp(header);
@@ -2388,7 +2388,7 @@ ProjectListWindow::ProjectListWindow() : Window( PREPARATION_GRID_WIDTH, PREPARA
     
     Vec2 base = header->loc + Vec2( 0, -40 );
     for(int i=0;i<elementof(lines);i++) {
-        lines[i] = new CharGridTextBox(64);
+        lines[i] = new CharGridTextBox(80);
         lines[i]->setString( WHITE, "01234567 0123456789A 0123456789AB 012345678 0123 0123    01:23:45" );
         lines[i]->setLoc( base - Vec2(0, 32 * i));
         g_hud_layer->insertProp(lines[i]);
@@ -2490,7 +2490,7 @@ void setupProjectInfoTB( CharGridTextBox *out_tb, const char *prefix, int projid
     if( dbLoadProjectInfo( projid, &pinfo) ) { // TODO: to avoid loop, you have to implement new backend protocol
         int online_num = dbCountOnlinePlayerSync( projid );
         int playsec = dbLoadPlaytime( projid );
-        char msg[100];
+        char msg[128];
         makeProjectInfoLineString( msg, sizeof(msg), prefix, &pinfo, online_num, playsec, progress_mode, progress );
         //                snprintf(msg,sizeof(msg), "ID %d owner:%s", projids[i], pinfo.owner_nickname );
         out_tb->setString(WHITE,msg);
@@ -4669,11 +4669,17 @@ SeedInputWindow::SeedInputWindow() : SoftwareKeyboardWindow() {
     title_tb->setLoc( getTitleLoc() );
     g_hud_layer->insertProp(title_tb);
 
-    setupSoftwareKeyboard(2,10);
+    difficulty_tb = new CharGridTextBox(20);
+    difficulty_tb->setString( WHITE, "DIFFICULTY: -" );
+    difficulty_tb->setLoc( getTitleLoc() + Vec2(30,-100) );
+    g_hud_layer->insertProp(difficulty_tb);
+
+    setupSoftwareKeyboard(2,7);
 }
 void SeedInputWindow::toggle( bool vis ) {
     setVisible(vis);
     title_tb->setVisible(vis);
+    difficulty_tb->setVisible(vis);
     for(int i=0;i<elementof(keys);i++) if(keys[i]) keys[i]->setVisible(vis);
     input_tb->setVisible(vis);
     cursor->setVisible(vis);
@@ -4727,5 +4733,14 @@ void SeedInputWindow::selectAtCursor() {
     } else {
         input_tb->show_cursor = true;
     }
+
+    if( len_ok ) {
+        int difficulty = ProjectInfo::calcDifficulty( input_tb->get() );
+        Format dfmt( "DIFFICULTY: %d", difficulty );
+        difficulty_tb->setString( WHITE, dfmt.buf );
+    } else {
+        difficulty_tb->setString( WHITE, "DIFFICULTY: -" );
+    }
+    
     
 }
