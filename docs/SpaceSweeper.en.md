@@ -162,6 +162,7 @@ Example: "localhost", "192.168.11.2"
 - ```--offline``` Play in single-player mode without the backend server.
 - ```--fps=NUMBER``` Manually set the frame rate.
 - ```--long-db-timeout``` Set the timeout for the database. This is required when playtesting over a slower network, like a wireless LAN.
+- ```--save_max_concurrent=NUMBER``` Adjust maximum number of concurrent database saving request sent to backend server. Default value is 128 and this is suitable for SSD servers. Use 5~20 for HDD servers. This also depens on network speed/latency.
 
 
 ### 7. Stream Space Sweeper on the MCS (Minimum Cloud Set)
