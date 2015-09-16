@@ -248,12 +248,13 @@ void finishRealtimeNetwork() {
 void finishDBNetwork() {
     vce_conn_close( g_dbconn );
 }
+
 void pollRealtimePing( double nt ) {
     static double last_rt_ping_at = 0;
     if( isRealtimeNetworkActive() ) {    
         if( last_rt_ping_at < nt - 1 ) {
             last_rt_ping_at = nt;
-            ssproto_ping_send( g_rtconn, now_usec(), 0 );
+            ssproto_ping_send( g_rtconn, now_usec(), PING_CMDTYPE_REALTIME );
             char *r,*s;
             vce_conn_get_buffer( g_rtconn, &r, &g_last_recvbuf_len, &s, &g_last_sendbuf_len );
         }
@@ -264,7 +265,7 @@ void pollDBPing(double nt) {
     if(isDBNetworkActive() ) {
         if( last_db_ping_at < nt - 2 ) {
             last_db_ping_at = nt;
-            ssproto_ping_send( g_dbconn, now_usec(), 0 );
+            ssproto_ping_send( g_dbconn, now_usec(), PING_CMDTYPE_DATABASE );
         }
     }
 }
@@ -501,12 +502,14 @@ bool dbLoadResearchState( int pjid ) {
 int ssproto_pong_recv( conn_t c, long long t_usec, int cmd ) {
     long long nt = now_usec();
     long long dt = (nt-t_usec);
-    if(dt>200*1000) {
-        Format fmt( "PING: SLOW RTT:%lld ms", dt/1000);
+    long long thres;
+    if( cmd == PING_CMDTYPE_DATABASE ) thres = 1000*1000; else thres = 200*1000;
+    if(dt>thres) {
+        Format fmt( "PING: SLOW RTT:%lld ms [CMD=%d]", dt/1000, cmd );
         print( fmt.buf );
         if( g_runstate == RS_IN_PROJECT ) {
             Color col = WHITE;
-            if( dt > 1000*1000 ) col = RED;
+            if( dt > thres*4 ) col = RED;
             g_log->printf( col, fmt.buf );
         }
     }

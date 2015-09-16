@@ -417,5 +417,10 @@ void dbAppendSaveUnfriendLog(int unfriended_uid ) ;
 void dbExecuteUnfriendLog() ;
 
 bool havePowerSystemLock( double nowtime );
-    
+
+enum {
+    PING_CMDTYPE_REALTIME = 0,
+    PING_CMDTYPE_DATABASE = 1,
+};
+
 #endif
