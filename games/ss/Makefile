@@ -8,7 +8,7 @@ MOYAILIBS=$(MOYAI)/libmoyaicl.a $(MOYAI)/freetype-2.4.10/objs/.libs/libfreetype.
 
 GLFWLIB=$(MOYAI)/glfw-2.7.7/lib/cocoa/libglfw.a
 VCELIB=$(VCE)/libvce.a
-LIBFLAGS=-framework OpenGL -framework Cocoa -framework IOKit  -framework CoreFoundation  $(MOYAILIBS) $(MOYAI)/fmod/api/lib/libfmodex.dylib $(GLFWLIB) -lev -lssl -lcrypto $(VCELIB) -Wl,-stack_size -Wl,1000000
+LIBFLAGS=-framework OpenGL -framework Cocoa -framework IOKit  -framework CoreFoundation  $(MOYAILIBS) $(MOYAI)/fmod/api/lib/libfmodex.dylib $(GLFWLIB) -lev -lssl -lcrypto $(VCELIB) -Wl,-stack_size -Wl,10000000
 
 
 
