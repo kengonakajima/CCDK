@@ -106,7 +106,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>moyai.lib;vce.lib;%(AdditionalDependencies);windeps_debug.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalOptions>/STACK:8000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/STACK:10000000 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugD3D|Win32'">
@@ -127,7 +127,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>moyai.lib;vce.lib;%(AdditionalDependencies);windeps_debug.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalOptions>/STACK:8000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/STACK:10000000 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseOGL|Win32'">
@@ -150,7 +150,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>moyai.lib;vce.lib;%(AdditionalDependencies);windeps_release.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalOptions>/STACK:8000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/STACK:10000000 %(AdditionalOptions)</AdditionalOptions>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -174,7 +174,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>moyai.lib;vce.lib;%(AdditionalDependencies);windeps_release.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalOptions>/STACK:8000000 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/STACK:10000000 %(AdditionalOptions)</AdditionalOptions>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
