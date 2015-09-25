@@ -62,8 +62,8 @@ char *g_db_get_file_store_buffer = NULL;
 size_t g_db_get_file_size = 0;
 
 
-void makeFieldFileFormat( char *out, size_t outsz, int pjid, int w, int h );
-void parseFieldFileName( const char *filename, int *project_id, int *w, int *h );
+void makeFieldFileFormat( char *out, size_t outsz, int pjid, int w, int h, int cellsize );
+void parseFieldFileName( const char *filename, int *project_id, int *w, int *h, int *cellsize );
 
 int g_last_join_channel_id;
 int g_last_sendbuf_len, g_last_recvbuf_len;
@@ -576,8 +576,9 @@ int ssproto_get_file_result_recv( conn_t _c, int query_id, int result, const cha
     //    dump(data, data_len);
 #endif        
     if( query_id == QID_FIELDLOADER ) {
-        int pjid, w,h;
-        parseFieldFileName( filename, &pjid, &w, &h );
+        int pjid, w,h, cellsize;
+        parseFieldFileName( filename, &pjid, &w, &h, &cellsize );
+        assertmsg( cellsize == sizeof(Cell), "invalid cell size: saved:%d expect:%d", cellsize, sizeof(Cell) );
 
         if( w != g_fld->width || h != g_fld->height ) {
             print( "invalid save format: w,h:%d,%d",w,h );
@@ -928,20 +929,22 @@ void FieldSaver::poll( bool *finished ) {
 }
 
 
-void makeFieldFileFormat( char *out, size_t outsz, int pjid, int w, int h ) {
-    snprintf( out, outsz,"field_data_%d_%d_%d", pjid, w,h);
+void makeFieldFileFormat( char *out, size_t outsz, int pjid, int w, int h, int cellsize ) {
+    snprintf( out, outsz,"field_data_%d_%d_%d_%d", pjid, w,h, cellsize );
 }
-void parseFieldFileName( const char *filename, int *project_id, int *w, int *h ) {
+void parseFieldFileName( const char *filename, int *project_id, int *w, int *h, int *cellsize ) {
     strtok( (char*)filename, "_" ); // field
     strtok( NULL, "_" ); // data
     char *tk_pjid = strtok( NULL, "_" );
     char *tk_w = strtok( NULL, "_" );
     char *tk_h = strtok( NULL, "_" );
+    char *tk_cellsize = strtok( NULL, "_" );
 
     assert( tk_h ); // To find application bug earlier
     *project_id = atoi( tk_pjid );
     *w = atoi(tk_w);
     *h = atoi(tk_h);
+    *cellsize = atoi(tk_cellsize);
 }
 
 // Pack field rect to a buffer and send it by put_file().
@@ -963,7 +966,7 @@ bool dbPutFieldFileSend( Field *f, int qid, int project_id, Pos2 lb, int w, int 
     assert( lb.y % CHUNKSZ == 0 );
     
     char fn[256];
-    makeFieldFileFormat(fn, sizeof(fn), project_id, f->width, f->height );
+    makeFieldFileFormat(fn, sizeof(fn), project_id, f->width, f->height, sizeof(Cell) );
     
     static char buf[1024*1024];
     size_t sz = sizeof(Cell) * w * h;
@@ -1001,7 +1004,7 @@ bool dbLoadFieldFileSend( int project_id, Pos2 lb  ) {
     assert( lb.y % CHUNKSZ == 0 );
 
     char fn[256];
-    makeFieldFileFormat(fn, sizeof(fn), project_id, g_fld->width, g_fld->height );
+    makeFieldFileFormat(fn, sizeof(fn), project_id, g_fld->width, g_fld->height, sizeof(Cell) );
 
     size_t chunkbufsize = CHUNKSZ * CHUNKSZ * sizeof(Cell);
     unsigned int chx = lb.x / CHUNKSZ;
