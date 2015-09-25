@@ -4379,7 +4379,7 @@ void Field::pollNetworkCache() {
                 int ls_ind = ls_x  + ls_y * (width/CHUNKSZ);
                 //                                print("to load! pjid:%d %d,%d", g_current_project_id, ls_x, ls_y);
                 Pos2 lb( ls_x * CHUNKSZ, ls_y * CHUNKSZ );
-                dbLoadFieldFileSend( g_current_project_id, lb, CHUNKSZ, CHUNKSZ );
+                dbLoadFieldFileSend( g_current_project_id, lb );
                 load_state[ls_ind] = CHUNKLOADSTATE_LOADING;
                 break;
             }

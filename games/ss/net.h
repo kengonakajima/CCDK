@@ -153,7 +153,7 @@ bool ensureUserID( const char *username );
 class Field;
 void dbSaveFieldSync( const char *user_name, int project_id ) ;
 bool dbPutFieldFileSend( Field *f, int qid, int project_id, Pos2 lb, int w, int h ) ;
-bool dbLoadFieldFileSend( int project_id, Pos2 lb, int w, int h  );
+bool dbLoadFieldFileSend( int project_id, Pos2 lb );
 void dbPutFieldFileSendAt( Field *f, int project_id, Pos2 at, int dia );
 
 

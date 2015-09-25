@@ -143,19 +143,18 @@ These function calls use the _notify suffix to distinguish themselves from _resu
 =define FILE_PATH_MAX 64 # Maximum file path length
 =define FILE_SIZE_MAX (128*1024) # Maximum file size
 =define FILE_SIZE_ABS_MAX (1024*1024) # Maximum total size of any file saved in parts
-=c2s 20 put_file( int query_id, string filename[FILE_PATH_MAX], char data[FILE_SIZE_MAX] )
-=s2c 21 put_file_result( int query_id, int result, string filename[FILE_PATH_MAX] )
+=c2s 20 put_file( int query_id, string filename[FILE_PATH_MAX], char data[FILE_SIZE_MAX], uint offset )
+=s2c 21 put_file_result( int query_id, int result, string filename[FILE_PATH_MAX], uint offset )
 
 Save and persist data in static files. ‘data’ is the binary data.
 The server returns ‘query_id’ and ‘filename’ unchanged; ‘result’ will either be SSPROTO_OK or SSPROTO_E_*.
 
 Rather than being saved at their specified paths, files are spread out in the datadir directory.
 
-
-=c2s 30 get_file( int query_id, string filename[FILE_PATH_MAX] )
-=s2c 31 get_file_result( int query_id, int result, string filename[FILE_PATH_MAX], char data[FILE_SIZE_MAX] )
+=c2s 30 get_file( int query_id, string filename[FILE_PATH_MAX], uint offset, uint maxsize )
+=s2c 31 get_file_result( int query_id, int result, string filename[FILE_PATH_MAX], char data[FILE_SIZE_MAX], uint offset, uint maxsize )
 Load data from a static file.
-
+Set 0 for maxsize to read as much data as possible.
 
 =define FILE_EXIST 1
 =define FILE_NOT_EXIST 0

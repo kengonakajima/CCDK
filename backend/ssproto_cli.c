@@ -284,16 +284,18 @@ int ssproto_cli_pcallback( conn_t _c, char *_data, int _len)
 #endif
     _ret = ssproto_clean_all_result_recv( _c );
     break;
-  case  SSPROTO_S2C_PUT_FILE_RESULT :/* record length : 79 */
+  case  SSPROTO_S2C_PUT_FILE_RESULT :/* record length : 83 */
   {
     int query_id;
     int result;
     char filename[64];
     int filename_len = 64;
+    unsigned int offset;
 
     _POP_I4(query_id);
     _POP_I4(result);
     _POP_IA1(filename,filename_len);
+    _POP_I4(offset);
 
     ssproto_put_file_result_recv_counter += 1;
 #ifdef GEN_DEBUG_PRINT
@@ -302,13 +304,13 @@ int ssproto_cli_pcallback( conn_t _c, char *_data, int _len)
       char _addr[256];
     char _filenamewk[65];
     _make_debug_print_str( _filenamewk, 65, filename, filename_len);
-      vce_errout( "ssproto_put_file_result_recv( [%s], query_id=%d, result=%d, filename[%d]='%s' )\n", vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) ,query_id,result, filename_len, _filenamewk );
+      vce_errout( "ssproto_put_file_result_recv( [%s], query_id=%d, result=%d, filename[%d]='%s', offset=%d )\n", vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) ,query_id,result, filename_len, _filenamewk,offset );
     }
 #endif
-    _ret = ssproto_put_file_result_recv( _c, query_id,result,filename);
+    _ret = ssproto_put_file_result_recv( _c, query_id,result,filename,offset);
     break;
   }
-  case  SSPROTO_S2C_GET_FILE_RESULT :/* record length : 131156 */
+  case  SSPROTO_S2C_GET_FILE_RESULT :/* record length : 131164 */
   {
     int query_id;
     int result;
@@ -316,11 +318,15 @@ int ssproto_cli_pcallback( conn_t _c, char *_data, int _len)
     int filename_len = 64;
     char data[131072];
     int data_len = 131072;
+    unsigned int offset;
+    unsigned int maxsize;
 
     _POP_I4(query_id);
     _POP_I4(result);
     _POP_IA1(filename,filename_len);
     _POP_IA1(data,data_len);
+    _POP_I4(offset);
+    _POP_I4(maxsize);
 
     ssproto_get_file_result_recv_counter += 1;
 #ifdef GEN_DEBUG_PRINT
@@ -331,10 +337,10 @@ int ssproto_cli_pcallback( conn_t _c, char *_data, int _len)
     char _datawk[131073];
     _make_debug_print_str( _filenamewk, 65, filename, filename_len);
     _make_debug_print_str( _datawk, 131073, data, data_len);
-      vce_errout( "ssproto_get_file_result_recv( [%s], query_id=%d, result=%d, filename[%d]='%s', data[%d]='%s' )\n", vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) ,query_id,result, filename_len, _filenamewk, data_len, _datawk );
+      vce_errout( "ssproto_get_file_result_recv( [%s], query_id=%d, result=%d, filename[%d]='%s', data[%d]='%s', offset=%d, maxsize=%d )\n", vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) ,query_id,result, filename_len, _filenamewk, data_len, _datawk,offset,maxsize );
     }
 #endif
-    _ret = ssproto_get_file_result_recv( _c, query_id,result,filename,data,data_len);
+    _ret = ssproto_get_file_result_recv( _c, query_id,result,filename,data,data_len,offset,maxsize);
     break;
   }
   case  SSPROTO_S2C_CHECK_FILE_RESULT :/* record length : 79 */
@@ -1251,10 +1257,10 @@ int ssproto_clean_all_send( conn_t _c )
 #endif
 }
 /****/
-int ssproto_put_file_send( conn_t _c, int query_id, const char *filename, const char *data, int data_len )
+int ssproto_put_file_send( conn_t _c, int query_id, const char *filename, const char *data, int data_len, unsigned int offset )
 {
   /* Make bin_info array */
-  char _work[131152];
+  char _work[131156];
   int _ofs = 0;
   int filename_len = strlen( filename ) + 1;
   ssproto_put_file_send_counter += 1;
@@ -1262,6 +1268,7 @@ int ssproto_put_file_send( conn_t _c, int query_id, const char *filename, const 
   _PUSH_I4(query_id,sizeof(_work));
   _PUSH_IA1(filename,filename_len,64,sizeof(_work));
   _PUSH_IA1(data,data_len,131072,sizeof(_work));
+  _PUSH_I4(offset,sizeof(_work));
 
 #ifdef GEN_DEBUG_PRINT
   if(ssproto_put_file_send_debugout)
@@ -1272,7 +1279,7 @@ int ssproto_put_file_send( conn_t _c, int query_id, const char *filename, const 
     char _datawk[131073];
     _make_debug_print_str( _filenamewk, 65, filename, filename_len);
     _make_debug_print_str( _datawk, 131073, data, data_len);
-    vce_errout( "ssproto_put_file_send( [%s], query_id=%d, filename[%d]='%s', data[%d]='%s' )\n" , vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) , query_id, filename_len, _filenamewk, data_len, _datawk );
+    vce_errout( "ssproto_put_file_send( [%s], query_id=%d, filename[%d]='%s', data[%d]='%s', offset=%d )\n" , vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) , query_id, filename_len, _filenamewk, data_len, _datawk, offset );
     _retsend=ssproto_cli_sender( _c, _work, _ofs);
     if(_retsend<0){
       vce_errout("protocol error : ssproto_put_file_send code : %d\n",_retsend);
@@ -1286,16 +1293,18 @@ int ssproto_put_file_send( conn_t _c, int query_id, const char *filename, const 
 #endif
 }
 /****/
-int ssproto_get_file_send( conn_t _c, int query_id, const char *filename )
+int ssproto_get_file_send( conn_t _c, int query_id, const char *filename, unsigned int offset, unsigned int maxsize )
 {
   /* Make bin_info array */
-  char _work[75];
+  char _work[83];
   int _ofs = 0;
   int filename_len = strlen( filename ) + 1;
   ssproto_get_file_send_counter += 1;
   _PUSH_I2( SSPROTO_C2S_GET_FILE, sizeof( _work));
   _PUSH_I4(query_id,sizeof(_work));
   _PUSH_IA1(filename,filename_len,64,sizeof(_work));
+  _PUSH_I4(offset,sizeof(_work));
+  _PUSH_I4(maxsize,sizeof(_work));
 
 #ifdef GEN_DEBUG_PRINT
   if(ssproto_get_file_send_debugout)
@@ -1304,7 +1313,7 @@ int ssproto_get_file_send( conn_t _c, int query_id, const char *filename )
     int _retsend;
     char _filenamewk[65];
     _make_debug_print_str( _filenamewk, 65, filename, filename_len);
-    vce_errout( "ssproto_get_file_send( [%s], query_id=%d, filename[%d]='%s' )\n" , vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) , query_id, filename_len, _filenamewk );
+    vce_errout( "ssproto_get_file_send( [%s], query_id=%d, filename[%d]='%s', offset=%d, maxsize=%d )\n" , vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) , query_id, filename_len, _filenamewk, offset, maxsize );
     _retsend=ssproto_cli_sender( _c, _work, _ofs);
     if(_retsend<0){
       vce_errout("protocol error : ssproto_get_file_send code : %d\n",_retsend);
@@ -3311,7 +3320,7 @@ void ssproto_get_channel_member_count_result_recv_debugprint(int on_off)
 #endif
 unsigned int ssproto_cli_get_version( unsigned int *subv )
 {
-  if(subv)*subv= 586536774;
+  if(subv)*subv= 855499474;
   return (unsigned int)10003;
 }
 conn_t ssproto_cli_get_current_conn( void )

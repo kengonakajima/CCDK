@@ -62,8 +62,8 @@ char *g_db_get_file_store_buffer = NULL;
 size_t g_db_get_file_size = 0;
 
 
-void makeFieldFileFormat( char *out, size_t outsz, int pjid, int x, int y, int w, int h );
-void parseFieldFileName( const char *filename, int *project_id, int *x, int *y, int *w, int *h );
+void makeFieldFileFormat( char *out, size_t outsz, int pjid, int w, int h );
+void parseFieldFileName( const char *filename, int *project_id, int *w, int *h );
 
 int g_last_join_channel_id;
 int g_last_sendbuf_len, g_last_recvbuf_len;
@@ -554,7 +554,7 @@ typedef enum {
 
 
 
-int ssproto_put_file_result_recv( conn_t _c, int query_id, int result, const char *filename ) {
+int ssproto_put_file_result_recv( conn_t _c, int query_id, int result, const char *filename, unsigned int offset ) {
     //          print("ssproto_put_file_result_recv: qid:%d res:%d filename:'%s'", query_id, result, filename );
     if( query_id == QID_FIELDSAVER ) {
         assert(g_fsaver);
@@ -570,35 +570,41 @@ int ssproto_put_file_result_recv( conn_t _c, int query_id, int result, const cha
     
     return 0;
 }
-int ssproto_get_file_result_recv( conn_t _c, int query_id, int result, const char *filename, const char *data, int data_len ) {
-    //    print("ssproto_get_file_result_recv: qid:%d result:%d filename:'%s' datalen:%d", query_id, result, filename, data_len  );
+int ssproto_get_file_result_recv( conn_t _c, int query_id, int result, const char *filename, const char *data, int data_len, unsigned int offset, unsigned int maxsize ) {
+#if 1    
+    print("ssproto_get_file_result_recv: qid:%d result:%d filename:'%s' datalen:%d offset:%d maxsize:%d", query_id, result, filename, data_len , offset, maxsize );
+    //    dump(data, data_len);
+#endif        
     if( query_id == QID_FIELDLOADER ) {
-        // Async loader
-        static char decompressed[1024*1024];
-        int decomp_len = memDecompressSnappy( decompressed, sizeof(decompressed), (char*)data, data_len );
-        if( decomp_len < 0 ) {
-            print("memDecompress error:%d", decomp_len );
-            return 0;
-        }
+        int pjid, w,h;
+        parseFieldFileName( filename, &pjid, &w, &h );
 
-        int pjid, lb_x,lb_y,w,h;
-        parseFieldFileName( filename, &pjid, &lb_x, &lb_y, &w, &h );
-
-        if( w != CHUNKSZ || h != CHUNKSZ ) {
+        if( w != g_fld->width || h != g_fld->height ) {
             print( "invalid save format: w,h:%d,%d",w,h );
             return 0;
         }
 
-        for(int y=0;y<h;y++) {
-            for(int x=0;x<w;x++) {
-                int ind = x + y * w;
-                char *from_ptr = decompressed + ind * sizeof(Cell);
+        assertmsg( offset % sizeof(Cell) == 0, "invalid cell format? file:'%s' offset:%d mod:%d", filename, offset, offset % sizeof(Cell) );
+
+        unsigned int chunkbufsize = sizeof(Cell) * CHUNKSZ * CHUNKSZ;
+        unsigned int chunk_index = offset / chunkbufsize;
+        unsigned int chw = g_fld->width / CHUNKSZ;
+        unsigned int chx = chunk_index % chw;
+        unsigned int chy = chunk_index / chw;
+        //        print("fieldloader: chx:%d chy:%d chunkbufsize:%d offset:%d", chx, chy, chunkbufsize, offset );
+
+        int lb_x = chx * CHUNKSZ;
+        int lb_y = chy * CHUNKSZ;
+        
+        for(int y=0;y<CHUNKSZ;y++) {
+            for(int x=0;x<CHUNKSZ;x++) {
+                int cell_ind = x + y * CHUNKSZ;
+                const char *from_ptr = data + cell_ind * sizeof(Cell);
                 Cell *toc = g_fld->get(lb_x+x,lb_y+y);
                 assertmsg(toc, "lb:%d,%d x,y:%d,%d",lb_x,lb_y,x,y);
                 memcpy( toc, from_ptr, sizeof(Cell));                                
             }
         }
-        int chx = lb_x / CHUNKSZ, chy = lb_y / CHUNKSZ;
         
         g_fld->notifyChunkChanged( chx, chy );
         g_fld->updateChunkStat( chx, chy );
@@ -607,7 +613,6 @@ int ssproto_get_file_result_recv( conn_t _c, int query_id, int result, const cha
         g_wait_for_net_result = false;
         g_net_result_code = result;
         g_db_file_got_size = data_len;
-        print("ssproto_get_file_result_recv: datalen:%d",data_len);
         assert( data_len <= sizeof( g_db_file_got_data) );
         memcpy( g_db_file_got_data, data, data_len );
     }
@@ -706,7 +711,7 @@ bool dbSaveFileSync( const char *fn, const char *data, size_t sz, bool one_way )
             partsz = SSPROTO_FILE_SIZE_MAX;
         }
         //        print("sending file part: '%s' size:%d total:%d", fmt.buf, partsz, sz );            
-        int res = ssproto_put_file_send( g_dbconn, QID_SAVE_FILE_SYNC, fmt.buf, data + ofs, partsz );
+        int res = ssproto_put_file_send( g_dbconn, QID_SAVE_FILE_SYNC, fmt.buf, data + ofs, partsz, 0 );
         if(res<0) return false;
         if( one_way == false ) {
             g_wait_for_net_result = true;
@@ -729,7 +734,7 @@ bool dbLoadFileSync( const char *fn, char *out, size_t *outsz ) {
     int part_n = outmax / SSPROTO_FILE_SIZE_MAX + (( outmax % SSPROTO_FILE_SIZE_MAX > 0 ) ? 1 : 0);
     for(int i=0;i<part_n;i++) {
         Format fmt( "%s_part_%d", fn, i );
-        int res = ssproto_get_file_send( g_dbconn, QID_LOAD_FILE_SYNC, fmt.buf );
+        int res = ssproto_get_file_send( g_dbconn, QID_LOAD_FILE_SYNC, fmt.buf, 0, 0 );
         if(res<0) return false;
         g_wait_for_net_result = true;
         waitForReply();
@@ -923,22 +928,18 @@ void FieldSaver::poll( bool *finished ) {
 }
 
 
-void makeFieldFileFormat( char *out, size_t outsz, int pjid, int x, int y, int w, int h ) {
-    snprintf( out, outsz,"field_data_%d_%d_%d_%d_%d", pjid, x,y,w,h);
+void makeFieldFileFormat( char *out, size_t outsz, int pjid, int w, int h ) {
+    snprintf( out, outsz,"field_data_%d_%d_%d", pjid, w,h);
 }
-void parseFieldFileName( const char *filename, int *project_id, int *x, int *y, int *w, int *h ) {
+void parseFieldFileName( const char *filename, int *project_id, int *w, int *h ) {
     strtok( (char*)filename, "_" ); // field
     strtok( NULL, "_" ); // data
     char *tk_pjid = strtok( NULL, "_" );
-    char *tk_x = strtok( NULL, "_" );
-    char *tk_y = strtok( NULL, "_" );
     char *tk_w = strtok( NULL, "_" );
     char *tk_h = strtok( NULL, "_" );
 
     assert( tk_h ); // To find application bug earlier
     *project_id = atoi( tk_pjid );
-    *x = atoi(tk_x);
-    *y = atoi(tk_y);
     *w = atoi(tk_w);
     *h = atoi(tk_h);
 }
@@ -962,7 +963,7 @@ bool dbPutFieldFileSend( Field *f, int qid, int project_id, Pos2 lb, int w, int 
     assert( lb.y % CHUNKSZ == 0 );
     
     char fn[256];
-    makeFieldFileFormat(fn, sizeof(fn), project_id, lb.x, lb.y, w,h );
+    makeFieldFileFormat(fn, sizeof(fn), project_id, f->width, f->height );
     
     static char buf[1024*1024];
     size_t sz = sizeof(Cell) * w * h;
@@ -975,15 +976,14 @@ bool dbPutFieldFileSend( Field *f, int qid, int project_id, Pos2 lb, int w, int 
             memcpy( to_ptr, (char*)fromc, sizeof(Cell));
         }
     }
-    static char compressed[1024*1024];
-    size_t origsz = sizeof(Cell)*w*h;
-    int compret = memCompressSnappy( compressed, sizeof(compressed), buf, origsz );
-    //    print("Compress: orig:%d after:%d at:%d,%d %d,%d", origsz, compret, lb.x,lb.y,w,h );
-    if( compret < 0 ) {
-        assertmsg( false, "compress fail: origsz:%d", origsz);
-    }
+    size_t chunkbufsz = sizeof(Cell)*w*h;
+    unsigned int chx = lb.x / CHUNKSZ;
+    unsigned int chy = lb.y / CHUNKSZ;
+    unsigned int chw = f->width/CHUNKSZ;
+    size_t offset = ( chx + chy * chw ) * chunkbufsz;
+    print("dbPutFieldFileSend: offset:%d size:%d", offset, chunkbufsz );
     
-    int r = ssproto_put_file_send( g_dbconn, qid,  fn, compressed, compret );
+    int r = ssproto_put_file_send( g_dbconn, qid,  fn, buf, chunkbufsz, offset );
     if(r<0) {
         print("ssproto_put_file_send failed! r:%d",r);
         return false;
@@ -992,18 +992,26 @@ bool dbPutFieldFileSend( Field *f, int qid, int project_id, Pos2 lb, int w, int 
     char *rb, *wb;
     int rblen, wblen;
     vce_conn_get_buffer( g_dbconn, &rb, &rblen, &wb, &wblen );
-    print("XXXXXXXXXXXX: %d\n", wblen);
+    print("dbPutFieldFileSend: [%d,%d] wb:%d", lb.x, lb.y, wblen);
 #endif    
     return true;
 }
-bool dbLoadFieldFileSend( int project_id, Pos2 lb, int w, int h  ) {
+bool dbLoadFieldFileSend( int project_id, Pos2 lb  ) {
     assert( lb.x % CHUNKSZ == 0 );
     assert( lb.y % CHUNKSZ == 0 );
 
     char fn[256];
-    makeFieldFileFormat(fn, sizeof(fn), project_id, lb.x, lb.y, w,h );
+    makeFieldFileFormat(fn, sizeof(fn), project_id, g_fld->width, g_fld->height );
 
-    int r = ssproto_get_file_send( g_dbconn, QID_FIELDLOADER, fn );
+    size_t chunkbufsize = CHUNKSZ * CHUNKSZ * sizeof(Cell);
+    unsigned int chx = lb.x / CHUNKSZ;
+    unsigned int chy = lb.y / CHUNKSZ;
+    unsigned int chw = g_fld->width / CHUNKSZ;
+    
+    size_t offset = (chx + chy * chw) * chunkbufsize;
+
+    print("dbLoadFieldFileSend: calling ssproto_get_file_send: fn:'%s' offset:%d chunkbufsize:%d", fn, offset, chunkbufsize );
+    int r = ssproto_get_file_send( g_dbconn, QID_FIELDLOADER, fn, offset, chunkbufsize );
     //    print("ssproto_get_file_send: %d bytes", r );
     return r > 0;
 }
@@ -2751,6 +2759,7 @@ void dbLoadRawImageSync( int imgid, int x, int y, int w, int h, unsigned char *o
 
 int ssproto_get_image_raw_result_recv( conn_t _c, int query_id, int result, int image_id, int x0, int y0, int w, int h, const char *raw_data, int raw_data_len ) {
     if( query_id == QID_RAWIMAGELOAD ) {
+        assert( g_wait_for_net_result );
         g_net_result_code = result;
         g_wait_for_net_result = false;
         assertmsg( raw_data_len <= g_db_get_file_size, "buffer too large! gotsize:%d expect:%d", raw_data_len, g_db_get_file_size );

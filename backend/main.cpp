@@ -136,18 +136,17 @@ const char *getConnectionType( conn_t c ) {
 
 /////////
 
-
-bool writeFileWithLog( const char *path, const char *data, size_t sz, bool to_sync = false ) {
+bool writeFileWithLog( const char *path, const char *data, size_t sz, size_t offset, bool to_sync = false ) {
     double st = now();
-    bool res = writeFile( path, data, sz, to_sync );
+    bool res = writeFileOffset( path, data, sz, offset, to_sync );
     double et = now();
     int ms = (et-st)*1000;
     if( g_disk_latency_log_ms > 0 && ms > g_disk_latency_log_ms ) print("writeFile: %dms for '%s'", ms, path );        
     return res;
 }
-bool readFileWithLog( const char *path, char *data, size_t *sz ) {
+bool readFileWithLog( const char *path, char *data, size_t *sz, size_t offset ) {
     double st = now();
-    bool res = readFile( path, data, sz );
+    bool res = readFileOffset( path, data, sz, offset );
     double et = now();
     int ms = (et-st)*1000;
     if( g_disk_latency_log_ms > 0 && ms > g_disk_latency_log_ms ) print("readFile: %dms for '%s'", ms, path );            
@@ -647,21 +646,22 @@ void emulateSlowDisk() {
 #endif
 	}
 }
-int ssproto_put_file_recv( conn_t _c, int query_id, const char *filename, const char *data, int data_len ) {
+int ssproto_put_file_recv( conn_t _c, int query_id, const char *filename, const char *data, int data_len, unsigned int offset ) {
     CHECK_DATABASE("put_file");
     char fullpath[1024];
     int err = makeFullPath( fullpath, sizeof(fullpath), filename );
     if(err==0) {
-        bool ret = writeFileWithLog( fullpath, data, data_len, g_enable_fsync );
+        bool ret = writeFileWithLog( fullpath, data, data_len, offset, g_enable_fsync );
         if(ret==false) err = SSPROTO_E_FILE_ACCESS;
         emulateSlowDisk();
     }
     //        print("ssproto_put_file_recv: fullpath: '%s' err:%d data_len:%d", fullpath, err, data_len );
     //    prt("[putfile %s]", fullpath);
-    ssproto_put_file_result_send( _c, query_id, err, filename );
+    ssproto_put_file_result_send( _c, query_id, err, filename, offset );
     return 0;
 }
-int ssproto_get_file_recv( conn_t _c, int query_id, const char *filename ) {
+
+int ssproto_get_file_recv( conn_t _c, int query_id, const char *filename, unsigned int offset, unsigned int maxsize ) {
     CHECK_DATABASE("get_file");    
     char fullpath[1024];
     int err = makeFullPath( fullpath, sizeof(fullpath), filename );
@@ -670,7 +670,8 @@ int ssproto_get_file_recv( conn_t _c, int query_id, const char *filename ) {
     if(err==0) {
         sz = sizeof(buf);
         double st = now();
-        bool ret = readFileWithLog( fullpath, buf, &sz );
+        if( maxsize != 0 ) sz = maxsize;
+        bool ret = readFileWithLog( fullpath, buf, &sz, offset );
         double et = now();
         int ms = (et-st)*1000;
         if(ms>g_disk_latency_log_ms) print("readFile: %dms for '%s'", ms, fullpath);
@@ -682,9 +683,11 @@ int ssproto_get_file_recv( conn_t _c, int query_id, const char *filename ) {
     prt("f");
     //    print("ssproto_get_file_recv: fullpath: '%s' err:%d read len:%d", fullpath, err, sz );        
     emulateSlowDisk();
-    ssproto_get_file_result_send( _c, query_id, err, filename, buf, sz );
+    ssproto_get_file_result_send( _c, query_id, err, filename, buf, sz, offset, maxsize );
     return 0;
 }
+
+
 int ssproto_check_file_recv( conn_t _c, int query_id, const char *filename ) {
     CHECK_DATABASE("check_file");    
     char fullpath[1024];
@@ -692,7 +695,7 @@ int ssproto_check_file_recv( conn_t _c, int query_id, const char *filename ) {
     if( res == 0 ) { 
         char buf[1];
         size_t sz = 1;
-        bool ret = readFileWithLog( fullpath, buf, &sz );
+        bool ret = readFileWithLog( fullpath, buf, &sz, 0 );
         if(ret) {
             res = SSPROTO_FILE_EXIST;
         } else {
@@ -1511,7 +1514,7 @@ bool loadAllSharedProjects() {
     assert(buf);
     
     double st = now();
-    bool ret = readFileWithLog(fullpath, buf, &sz );
+    bool ret = readFileWithLog(fullpath, buf, &sz, 0 );
     double et = now();
     if(!ret) {
         print("loadAllSharedProjects: file '%s' not found.", fullpath );
@@ -2003,7 +2006,7 @@ int getCounterValue( int cat, int id, int *out ) {
     if(r<0) return r;
     char buf[128];
     size_t sz = sizeof(buf);
-    bool ret = readFileWithLog(fullpath, buf, &sz );
+    bool ret = readFileWithLog(fullpath, buf, &sz, 0 );
     if(!ret) return SSPROTO_E_FILE_ACCESS;
     *out = atol(buf);
     return SSPROTO_OK;
