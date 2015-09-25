@@ -432,10 +432,13 @@ bool dbLoadProjectInfo( int project_id, ProjectInfo *out ) {
         memcpy( &old, tmpbuf, sz );
         print("dbLoadProjectInfo: found v0.2.5 data. converting. size:%d id:%d owner:%d", sz, old.project_id, old.owner_uid );
         out->applyOldData( &old );
-    } else if( sz != sizeof(*out) ) {
+    } else if( sz == sizeof(*out) ) {
         // Size differs, old data! Ignore such a old projects.
         print("dbLoadProjectInfo: found latest version. size:%d expect size:%d", sz, sizeof(*out) );
         memcpy( out, tmpbuf, sz );
+    } else {
+        print("dbLoadProjectInfo: invalid struct size:%d latest:%d v0.2.5:%d", sz, sizeof(*out), sizeof(ProjectInfo_v_0_2_5) );
+        assert(false);
         return false;
     }
     //    for(int i=0;i<elementof(out->flag_cands);i++) print(" FC:%d,%d", out->flag_cands[i].pos.x, out->flag_cands[i].pos.y );
