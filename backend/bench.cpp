@@ -108,7 +108,7 @@ void Client::poll( double dt ) {
             qid++;
             Format path( "_benchmark_%d", qid % g_filenum );
             int len;
-            len = ssproto_put_file_send( conn, qid, path.buf, buf, g_filesize );
+            len = ssproto_put_file_send( conn, qid, path.buf, buf, g_filesize, 0 );
             if(len<0) print("ssproto_put_file_send failed.");
             g_total_sent_bytes += len;
             g_total_sent_count ++;
@@ -123,15 +123,15 @@ void Client::poll( double dt ) {
     }
 }
 
-int ssproto_put_file_result_recv( conn_t _c, int query_id, int result, const char *filename ) {
+int ssproto_put_file_result_recv( conn_t _c, int query_id, int result, const char *filename, unsigned int offset ) {
     assertmsg(result==SSPROTO_OK, "ssproto_put_file_result_recv failed. result:%d",result);
-    int len = ssproto_get_file_send( _c, query_id, filename );
+    int len = ssproto_get_file_send( _c, query_id, filename, 0, 0 );
     if(len<0) print( "ssproto_get_file failed");
     g_total_sent_bytes += len;
     g_total_sent_count++;
     return 0;
 }
-int ssproto_get_file_result_recv( conn_t _c, int query_id, int result, const char *filename, const char *data, int data_len ) {
+int ssproto_get_file_result_recv( conn_t _c, int query_id, int result, const char *filename, const char *data, int data_len, unsigned int offset, unsigned int maxsize ) {
     assertmsg(result==SSPROTO_OK, "ssproto_get_file_result_recv failed. result:%d",result);
     g_total_recv_bytes += data_len;
     g_total_recv_count++;
