@@ -103,6 +103,15 @@ public:
     FlagCandidate() : finished(false) {}
 };
 
+typedef struct {
+    int project_id;
+    int owner_uid;
+    char owner_username[32];
+    char owner_nickname[32];
+    unsigned int created_at;
+    FlagCandidate flag_cands[200];     // MILESTONE_MAX
+} ProjectInfo_v_0_2_5; 
+
 class ProjectInfo {
 public:
     int project_id;
@@ -132,7 +141,19 @@ public:
     }
     static int getNextEasySeed( unsigned int start_seed );
     void getDifficultyString( char *out, size_t outsz );
-
+    void applyOldData( ProjectInfo_v_0_2_5 *data ) {
+        project_id = data->project_id;
+        owner_uid = data->owner_uid;
+        assert( sizeof(owner_username) == sizeof(data->owner_username) );
+        memcpy( owner_username, data->owner_username, sizeof(owner_username));
+        assert( sizeof(owner_nickname) == sizeof(data->owner_nickname) );
+        memcpy( owner_nickname, data->owner_nickname, sizeof(owner_nickname) );
+        created_at = data->created_at;
+        memset( orig_seed, 0, sizeof(orig_seed) );
+        final_seed = 0;
+        assert( sizeof(flag_cands) == sizeof(data->flag_cands) );
+        memcpy( flag_cands, data->flag_cands, sizeof(flag_cands) );
+    };
 };
 
 int countMilestoneCleared(ProjectInfo *pinfo );

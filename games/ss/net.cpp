@@ -414,16 +414,28 @@ unsigned int dbGetTime(int *usec) {
 
 
 bool dbSaveProjectInfo( ProjectInfo *pinfo ) {
-    print("XXXXXXXXXXXXXXXXXXXX: '%s' seed:%d", pinfo->orig_seed, pinfo->final_seed );
+    print("dbSaveProjectInfo: origseed:'%s' finalseed:%d", pinfo->orig_seed, pinfo->final_seed );
     return dbSave( g_project_info_ht_key, Format( "%d", pinfo->project_id ).buf, (const char*) pinfo, sizeof(*pinfo) ) ;
 }
+
+// ProjectInfo structure without seed info. (2476 bytes)
 bool dbLoadProjectInfo( int project_id, ProjectInfo *out ) {
-    size_t sz = sizeof(*out);    
-    bool res = dbLoad( g_project_info_ht_key, Format( "%d",project_id ).buf, (char*) out, &sz );
+    char tmpbuf[1024*16];
+    assert( sizeof(ProjectInfo) <= sizeof(tmpbuf) );
+    
+    size_t sz = sizeof(tmpbuf);    
+    bool res = dbLoad( g_project_info_ht_key, Format( "%d",project_id ).buf, tmpbuf, &sz );
     if(!res) return false;
-    if( sz != sizeof(*out) ) {
+    if( sz == sizeof(ProjectInfo_v_0_2_5) ) {
+        // Old version.Convert!
+        ProjectInfo_v_0_2_5 old;
+        memcpy( &old, tmpbuf, sz );
+        print("dbLoadProjectInfo: found v0.2.5 data. converting. size:%d id:%d owner:%d", sz, old.project_id, old.owner_uid );
+        out->applyOldData( &old );
+    } else if( sz != sizeof(*out) ) {
         // Size differs, old data! Ignore such a old projects.
-        print("dbLoadProjectInfo: got size:%d expect size:%d", sz, sizeof(*out) );
+        print("dbLoadProjectInfo: found latest version. size:%d expect size:%d", sz, sizeof(*out) );
+        memcpy( out, tmpbuf, sz );
         return false;
     }
     //    for(int i=0;i<elementof(out->flag_cands);i++) print(" FC:%d,%d", out->flag_cands[i].pos.x, out->flag_cands[i].pos.y );
