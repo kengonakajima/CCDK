@@ -20,12 +20,15 @@ CFLAGS= -O0 -g -Wall -I. -I../pdn -I.. -I$(MOYAI)/glfw-2.7.7/include/ -Irapidjso
 
 
 GAMESRCS=$(BACKEND)/ssproto_cli.cpp net.cpp main.cpp enemy.cpp util.cpp pwgrid.cpp item.cpp hud.cpp effect.cpp pc.cpp char.cpp noise.cpp field.cpp mapview.cpp
+CONVSRCS=conv.cpp
 
 GAMEOBJS=$(GAMESRCS:.cpp=.o)
+CONVOBJS=$(CONVSRCS:.cpp=.o)
 
 OUT=ss
+CONV=ssconv
 
-all : $(OUT)
+all : $(OUT) $(CONV)
 
 $(OUT) : $(GAMEOBJS) $(MOYAILIBS) $(GWFLLIB) $(VCELIB)
 	g++ $(CFLAGS) $(LIBFLAGS) $(GAMEOBJS)  -o $(OUT)
@@ -75,6 +78,9 @@ clearcontact:
 	find $(BACKEND)/datadir | grep followings | xargs rm -f
 
 cleardb: clearpj clearuser clearcontact
+
+$(CONV): $(CONVOBJS)
+	g++ $(CFLAGS) $(CONVOBJS) $(LIBFLAGS) -o $(CONV)
 
 
 -include deps.make

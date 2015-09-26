@@ -1,5 +1,6 @@
 *.o
 ss
+ssconv
 deps.make
 dumped.png
 sswin/ReleaseD3D/*
