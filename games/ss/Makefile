@@ -15,15 +15,14 @@ LIBFLAGS=-framework OpenGL -framework Cocoa -framework IOKit  -framework CoreFou
 
 
 #CFLAGS= -I/usr/x11/include  -g -Wall -I./moyai -O0
-CFLAGS= -O0 -g -Wall -I. -I../pdn -I.. -I$(MOYAI)/glfw-2.7.7/include/ -Irapidjson/include -DUSE_OPENGL -D_DEBUG -I$(VCE) -I$(BACKEND) -I$(EXTERNALS)
+CFLAGS= -O0 -g -Wall -I. -I.. -I$(MOYAI)/glfw-2.7.7/include/ -Irapidjson/include -DUSE_OPENGL -D_DEBUG -I$(VCE) -I$(BACKEND) -I$(EXTERNALS)
+
 
 
 
 GAMESRCS=$(BACKEND)/ssproto_cli.cpp net.cpp main.cpp enemy.cpp util.cpp pwgrid.cpp item.cpp hud.cpp effect.cpp pc.cpp char.cpp noise.cpp field.cpp mapview.cpp
-CONVSRCS=conv.cpp
 
 GAMEOBJS=$(GAMESRCS:.cpp=.o)
-CONVOBJS=$(CONVSRCS:.cpp=.o)
 
 OUT=ss
 CONV=ssconv
@@ -32,7 +31,6 @@ all : $(OUT) $(CONV)
 
 $(OUT) : $(GAMEOBJS) $(MOYAILIBS) $(GWFLLIB) $(VCELIB)
 	g++ $(CFLAGS) $(LIBFLAGS) $(GAMEOBJS)  -o $(OUT)
-
 
 %.o : %.cpp
 	g++ -c $(CFLAGS) $< -o $@
@@ -79,8 +77,8 @@ clearcontact:
 
 cleardb: clearpj clearuser clearcontact
 
-$(CONV): $(CONVOBJS)
-	g++ $(CFLAGS) $(CONVOBJS) $(LIBFLAGS) -o $(CONV)
+$(CONV): conv.cpp
+	g++ -O0 -g -Wall -I. -I.. -I$(VCE) -I$(BACKEND) -I$(EXTERNALS) conv.cpp $(VCELIB) $(MOYAI)/cumino.o $(MOYAI)/libsnappy.a -o $(CONV)
 
 
 -include deps.make
