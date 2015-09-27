@@ -37,7 +37,7 @@ $(OUT) : $(GAMEOBJS) $(MOYAILIBS) $(GWFLLIB) $(VCELIB)
 
 
 clean:
-	rm -f *.o deps.make $(OUT)
+	rm -f *.o deps.make $(OUT) $(CONV)
 
 depend: 
 	$(CC) $(CFLAGS) -MM $(GAMESRCS) > deps.make
