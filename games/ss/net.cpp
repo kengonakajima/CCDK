@@ -407,7 +407,7 @@ unsigned int dbGetTime(int *usec) {
         return out;
     } else {
         print("dbGetTime: no result from db" );
-        *usec = 0;
+        if(usec) *usec = 0;
         return 0;
     }
 }
@@ -2777,7 +2777,7 @@ void dbLoadRawImageSync( int imgid, int x, int y, int w, int h, unsigned char *o
 
 int ssproto_get_image_raw_result_recv( conn_t _c, int query_id, int result, int image_id, int x0, int y0, int w, int h, const char *raw_data, int raw_data_len ) {
     if( query_id == QID_RAWIMAGELOAD ) {
-        assert( g_wait_for_net_result );
+        assertmsg( g_wait_for_net_result, "invalid state? x0:%d y0:%d", x0, y0 );
         g_net_result_code = result;
         g_wait_for_net_result = false;
         assertmsg( raw_data_len <= g_db_get_file_size, "buffer too large! gotsize:%d expect:%d", raw_data_len, g_db_get_file_size );
