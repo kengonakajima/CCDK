@@ -43,7 +43,7 @@ char g_all_clear_ranking_z_key[] = "all_clear_z"; // Ranking by consumed time to
 char g_ms_progress_z_key[] = "ms_progress_z"; // Ranking by project id(!), value:time. Be careful project id is stored in score field.
 
 //
-bool g_wait_for_net_result = false;
+int g_wait_for_net_result = 0;
 int g_net_result_code = 0;
 int g_kvs_list_size = 0;
 int g_net_result_value = 0;
@@ -339,12 +339,18 @@ bool dbLoadPC() {
 }
 
 // Game gets into fatal error state when timed out
+#define WAITFORREPLY(...) print("WFR:%d",__LINE__); waitForReply(__VA_ARGS__);
+//#define WAITFORREPLY(flag) print("WFR:%d",__LINE__); waitForReply(flag);
+
 void waitForReply( bool use_db = true ) {
+    assert( g_wait_for_net_result == 0 );
     static int call_depth = 0;
     assertmsg( call_depth == 0, "waitForReply: can't call waitForReply in network callback func" );
     call_depth ++;
     double st = now();
-    g_wait_for_net_result = 1;
+    static int ccc=1;
+    ccc++;
+    g_wait_for_net_result = ccc;
     g_net_result_value = -123;
     g_net_result_value_option = -12345;    
     g_net_result_code = -1;
@@ -385,7 +391,7 @@ int dbGetNewUserId() {
 
 int dbGetNewId( char *key ) {
     ssproto_kvs_command_str_send( g_dbconn, 0, Format( "INCR %s", key ).buf );
-    waitForReply();
+    WAITFORREPLY();
     if( g_kvs_result_num == 1 ) {
         int id = atoilen( g_kvs_results[0], g_kvs_results_size[0] );
         print("dbGetNewGlobalId: got: %d", id );
@@ -399,7 +405,7 @@ int dbGetNewId( char *key ) {
 unsigned int dbGetTime(int *usec) {
     char cmd[32] = "TIME";
     ssproto_kvs_command_str_send( g_dbconn, 0, cmd );
-    waitForReply();
+    WAITFORREPLY();
     if( g_kvs_result_num == 2 ) {
         // Redis returns 1) "1394502783"  2) "12662" 
         unsigned int out = strtoullen( g_kvs_results[0], g_kvs_results_size[0] );
@@ -457,9 +463,10 @@ int dbSaveFlagCands() {
     return cnt;
 }
 
-bool dbSavePowerSystem( int pjid, PowerSystemDump *psd ) {
-    setWarnLine(WHITE, "dbSavePowerSystem");
+bool dbSavePowerSystemOneWay( int pjid, PowerSystemDump *psd ) {
+    setWarnLine(WHITE, "dbSavePowerSystemOneWay");
     Format f( "powersystem_%d", pjid );
+    print("dbSavePowerSystemOneWay");
     return dbSaveFileSync( f.buf, (const char*)psd, sizeof(*psd), true );
 }
 bool dbLoadPowerSystem( int pjid, PowerSystemDump *out ) {
@@ -562,31 +569,50 @@ typedef enum {
     QID_APPENDSTRINGARRAY = 150,
     QID_GETSTRINGARRAY = 160,
     QID_SAVE_FILE_SYNC = 170,
+    QID_SAVE_FILE_ASYNC = 171,
     QID_LOAD_FILE_SYNC = 180,
     QID_LOAD_ALL_CLEAR_LOGS = 190,
     QID_LOAD_MS_PROGRESS_LOGS = 200,    
 } QUERYID;
 
+#define ENABLE_DBLOG 0
 
+#if ENABLE_DBLOG
+#define DBLOG(nm)    print("dblog:%s",nm)
+#else
+#define DBLOG(nm)
+#endif
 
 int ssproto_put_file_result_recv( conn_t _c, int query_id, int result, const char *filename, unsigned int offset ) {
+    
+    
     //          print("ssproto_put_file_result_recv: qid:%d res:%d filename:'%s'", query_id, result, filename );
     if( query_id == QID_FIELDSAVER ) {
+        DBLOG("pfres-saver");
         assert(g_fsaver);
         g_fsaver->num_concurrent --;
     } else if( query_id == QID_FIELDIMAGESAVE ) {
+        DBLOG("pfres-fimgsave");
         //        print("ssproto_put_file_result_recv: query_id is QID_FIELDIMAGE, result:%d",result );
-        g_wait_for_net_result = false;
+        g_wait_for_net_result = 0;
         g_net_result_code = result;
     }  else if( query_id == QID_SAVE_FILE_SYNC ) {
-        g_wait_for_net_result = false;
+        DBLOG("pfres-savefilesync");        
+        g_wait_for_net_result = 0;
         g_net_result_code = result;
+    } else if( query_id == QID_SAVE_FILE_ASYNC ) {
+        DBLOG("pfres-savefileasync");
+        // don't reset g_wait_for_net_result, because this is async call. Just ignore the result.
+        if( result != 0 ) { 
+            print("ssproto_put_file_result_recv: qid:%d result:%d", query_id, result );
+        }
     }
     
     return 0;
 }
 int ssproto_get_file_result_recv( conn_t _c, int query_id, int result, const char *filename, const char *data, int data_len, unsigned int offset, unsigned int maxsize ) {
-#if 1    
+    DBLOG("gfres");
+#if 0    
     print("ssproto_get_file_result_recv: qid:%d result:%d filename:'%s' datalen:%d offset:%d maxsize:%d", query_id, result, filename, data_len , offset, maxsize );
     //    dump(data, data_len);
 #endif        
@@ -626,7 +652,7 @@ int ssproto_get_file_result_recv( conn_t _c, int query_id, int result, const cha
         g_fld->updateChunkStat( chx, chy );
         g_fld->setChunkLoadState( Pos2(lb_x, lb_y), CHUNKLOADSTATE_LOADED );
     } else if( query_id == QID_LOAD_FILE_SYNC ) {
-        g_wait_for_net_result = false;
+        g_wait_for_net_result = 0;
         g_net_result_code = result;
         g_db_file_got_size = data_len;
         assert( data_len <= sizeof( g_db_file_got_data) );
@@ -643,8 +669,10 @@ int ssproto_generate_id_32_result_recv( conn_t _c, int query_id, int generated_i
 
 
 int ssproto_kvs_command_str_result_recv( conn_t _c, int query_id, int retcode, int valtype, const char * const *result, int result_len ) {
+    DBLOG("kvscmdstrres");
+    
     assert(g_wait_for_net_result);
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     g_net_result_code = retcode;
     
     g_kvs_result_value_type = valtype;
@@ -664,8 +692,9 @@ int ssproto_kvs_command_str_result_recv( conn_t _c, int query_id, int retcode, i
 }
 
 int ssproto_kvs_save_bin_result_recv( conn_t _c, int query_id, int retcode, int has_data, const char *key, const char *field ) {
+    DBLOG("kvssavebinres");
     assert(g_wait_for_net_result);
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     g_net_result_code = retcode;
 
     //    print("ssproto_kvs_save_bin_result_recv: qid:%d retcode:%d has_data:%d key:'%s' field:'%s'",
@@ -674,8 +703,9 @@ int ssproto_kvs_save_bin_result_recv( conn_t _c, int query_id, int retcode, int 
 }
 int ssproto_kvs_load_bin_result_recv( conn_t _c, int query_id, int retcode, int has_data, const char *key, 
                                       const char *field, const char *data, int data_len ) {
+    DBLOG("kvsloadbinres");
     assert(g_wait_for_net_result);
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     g_net_result_code = retcode;
     
     g_kvs_result_num = has_data ? 1 : 0;
@@ -696,7 +726,7 @@ int ssproto_kvs_load_bin_result_recv( conn_t _c, int query_id, int retcode, int 
 bool dbPing() {
     char pingstr[] = "PING";
     ssproto_kvs_command_str_send( g_dbconn, 0, pingstr);
-    waitForReply();
+    WAITFORREPLY();
 
     if( g_kvs_result_num == 1 && strcmp( g_kvs_results[0], "PONG" ) == 0 ) {
         return true;
@@ -726,12 +756,12 @@ bool dbSaveFileSync( const char *fn, const char *data, size_t sz, bool one_way )
         } else {
             partsz = SSPROTO_FILE_SIZE_MAX;
         }
-        //        print("sending file part: '%s' size:%d total:%d", fmt.buf, partsz, sz );            
-        int res = ssproto_put_file_send( g_dbconn, QID_SAVE_FILE_SYNC, fmt.buf, data + ofs, partsz, 0 );
+        //        print("sending file part: '%s' size:%d total:%d", fmt.buf, partsz, sz );
+        int qid = one_way ? QID_SAVE_FILE_ASYNC : QID_SAVE_FILE_SYNC;
+        int res = ssproto_put_file_send( g_dbconn, qid, fmt.buf, data + ofs, partsz, 0 );
         if(res<0) return false;
         if( one_way == false ) {
-            g_wait_for_net_result = true;
-            waitForReply();
+            WAITFORREPLY();
             if( g_net_result_code != SSPROTO_OK ) {
                 return false;
             }
@@ -752,8 +782,7 @@ bool dbLoadFileSync( const char *fn, char *out, size_t *outsz ) {
         Format fmt( "%s_part_%d", fn, i );
         int res = ssproto_get_file_send( g_dbconn, QID_LOAD_FILE_SYNC, fmt.buf, 0, 0 );
         if(res<0) return false;
-        g_wait_for_net_result = true;
-        waitForReply();
+        WAITFORREPLY();
         if( g_net_result_code != SSPROTO_OK ) {
             return false;
         }
@@ -776,7 +805,7 @@ bool dbLoadFileSync( const char *fn, char *out, size_t *outsz ) {
 bool dbSave( const char *key, const char *field, const char *buf, size_t sz ) {
     if( ! isDBNetworkActive() ) return false;
     ssproto_kvs_save_bin_send( g_dbconn, 0, key, field, buf, sz );
-    waitForReply();
+    WAITFORREPLY();
     //    print("dbSave: retcode:%d resultnum:%d", g_net_result_code , g_kvs_result_num );
     if( g_net_result_code == SSPROTO_OK ) {
         return true;
@@ -789,7 +818,7 @@ bool dbSave( const char *key, const char *field, const char *buf, size_t sz ) {
 bool dbLoad( const char *key, const char *field, char *buf, size_t *sz ) {
     if( ! isDBNetworkActive() ) return false;    
     ssproto_kvs_load_bin_send( g_dbconn, 0, key, field );
-    waitForReply();
+    WAITFORREPLY();
     //    print("dbLoad: retcode:%d resultnum:%d size[0]:%d", g_net_result_code, g_kvs_result_num, g_kvs_results_size[0] );
     // Can only be used with dbSave(), so only the first element is returned. Arrays elements will be ignored.
     if( g_net_result_code == SSPROTO_OK ) {
@@ -999,7 +1028,7 @@ bool dbPutFieldFileSend( Field *f, int qid, int project_id, Pos2 lb, int w, int 
     unsigned int chy = lb.y / CHUNKSZ;
     unsigned int chw = f->width/CHUNKSZ;
     size_t offset = ( chx + chy * chw ) * chunkbufsz;
-    print("dbPutFieldFileSend: offset:%d size:%d", offset, chunkbufsz );
+    //    print("dbPutFieldFileSend: offset:%d size:%d", offset, chunkbufsz );
     
     int r = ssproto_put_file_send( g_dbconn, qid,  fn, buf, chunkbufsz, offset );
     if(r<0) {
@@ -1028,7 +1057,7 @@ bool dbLoadFieldFileSend( int project_id, Pos2 lb  ) {
     
     size_t offset = (chx + chy * chw) * chunkbufsize;
 
-    print("dbLoadFieldFileSend: calling ssproto_get_file_send: fn:'%s' offset:%d chunkbufsize:%d", fn, offset, chunkbufsize );
+    //    print("dbLoadFieldFileSend: calling ssproto_get_file_send: fn:'%s' offset:%d chunkbufsize:%d", fn, offset, chunkbufsize );
     int r = ssproto_get_file_send( g_dbconn, QID_FIELDLOADER, fn, offset, chunkbufsize );
     //    print("ssproto_get_file_send: %d bytes", r );
     return r > 0;
@@ -1092,7 +1121,7 @@ bool dbLoadFieldEnvSync( int pjid ) {
 
 
 
-int ssproto_list_presence_result_recv( conn_t _c, int project_id, const int *user_ids, int user_ids_len ) {
+int ssproto_list_presence_result_recv( conn_t _c, int project_id, const int *user_ids, int user_ids_len ) {    
     //    print("ssproto_list_presence_result_recv pj:%d uidn:%d",project_id, user_ids_len  );
     for(int i=0;i<user_ids_len;i++) {
         print("  id[%d] : %d", i, user_ids[i] );
@@ -1105,17 +1134,16 @@ int g_count_presence_result;
 int ssproto_count_presence_result_recv( conn_t _c, int project_id, int user_num ) {
     //    print("ssproto_count_presence_result_recv: pj:%d n:%d", project_id, user_num );
     if( g_wait_for_net_result ) {
-        g_wait_for_net_result = false;
+        g_wait_for_net_result = 0;
         g_count_presence_result = user_num;
     }
     return 0;
 }
 
 int dbCountOnlinePlayerSync( int project_id ) {
-    g_wait_for_net_result = true;
     if( isDBNetworkActive() ) {
         ssproto_count_presence_send( g_dbconn, project_id );
-        waitForReply();
+        WAITFORREPLY();
         return g_count_presence_result;
     }
     return 0;
@@ -1134,17 +1162,17 @@ void dbDeletePresenceSend() {
 // int *cnt: Number of elements after push
 bool dbPushStringToList( const char *key, const char *s, int trim, int *cnt ) {
     if(!isDBNetworkActive()) return false;
-    g_wait_for_net_result = true;    
     g_kvs_list_size = -1;
     ssproto_kvs_push_to_list_send( g_dbconn, QID_PUSHSTRINGTOLIST, key, s, trim );
-    waitForReply();
+    WAITFORREPLY();
     if(cnt) *cnt = g_kvs_list_size;
     return true;
 }
 int ssproto_kvs_push_to_list_result_recv( conn_t _c, int query_id, int retcode, const char *key, int cnt ) {
+    DBLOG("kvspushtolistres");
     if( query_id == QID_PUSHSTRINGTOLIST ) {
         //        print("ssproto_kvs_push_to_list_result_recv: k:'%s' cnt:%d",key,cnt);
-        g_wait_for_net_result = false;
+        g_wait_for_net_result = 0;
         g_kvs_list_size = cnt;
         g_net_result_code = retcode;
     }
@@ -1153,11 +1181,10 @@ int ssproto_kvs_push_to_list_result_recv( conn_t _c, int query_id, int retcode, 
 
 bool dbGetStringFromList( const char *key, int s_ind, int e_ind, char **out, int *out_num ) {
     if(!isDBNetworkActive()) return false;
-    g_wait_for_net_result = true;
     g_kvs_list_size = -1;
     //    print("ssproto_kvs_get_list_range_send! %d-%d", s_ind, e_ind );
     ssproto_kvs_get_list_range_send( g_dbconn, QID_GETSTRINGFROMLIST, key, s_ind, e_ind );
-    waitForReply();
+    WAITFORREPLY();
     if( g_net_result_code == SSPROTO_OK ) {
         //        print("dbGetStringFromList: list num:%d outn:%d", g_kvs_list_size, *out_num );
         int maxnum = *out_num;
@@ -1172,8 +1199,9 @@ bool dbGetStringFromList( const char *key, int s_ind, int e_ind, char **out, int
 }
 
 int ssproto_kvs_get_list_range_result_recv( conn_t _c, int query_id, int retcode, int start_ind, int end_ind, const char *key, const char * const *result, int result_len ) {
+    DBLOG("kvsgetlistrangeres");
     if( query_id == QID_GETSTRINGFROMLIST ) {
-        g_wait_for_net_result = false;
+        g_wait_for_net_result = 0;
         g_kvs_list_size = result_len;
         g_net_result_code = retcode;
         
@@ -1189,9 +1217,8 @@ int ssproto_kvs_get_list_range_result_recv( conn_t _c, int query_id, int retcode
 /////////
 
 bool dbAppendStringArray( const char *key, const char *field, const char *s, int trim) {
-    g_wait_for_net_result = true;
     ssproto_kvs_append_string_array_send( g_dbconn, QID_APPENDSTRINGARRAY, key, field, s, trim );
-    waitForReply();
+    WAITFORREPLY();
     if( g_net_result_code == SSPROTO_OK ) {
         return true;
     } else {
@@ -1200,9 +1227,10 @@ bool dbAppendStringArray( const char *key, const char *field, const char *s, int
 }
 
 int ssproto_kvs_append_string_array_result_recv( conn_t _c, int query_id, int retcode, const char *key, const char *field ) {
+    DBLOG("kvsappendstringarrayres");
     //    print("ssproto_kvs_append_string_array_result_recv: '%s':'%s' ret:%d", key,field,retcode);
     if( query_id == QID_APPENDSTRINGARRAY ) {
-        g_wait_for_net_result = false;
+        g_wait_for_net_result = 0;
         g_net_result_code = retcode;
     }
     return 0;
@@ -1210,9 +1238,8 @@ int ssproto_kvs_append_string_array_result_recv( conn_t _c, int query_id, int re
 
 // outn: pass max length of array and get actual length of loaded array
 bool dbGetStringArray( const char *key, const char *field, char **out, int *outn ) {
-    g_wait_for_net_result = true;
     ssproto_kvs_get_string_array_send( g_dbconn, QID_GETSTRINGARRAY, key, field );
-    waitForReply();
+    WAITFORREPLY();
     if( g_net_result_code == SSPROTO_OK ) {
         int maxnum = *outn;
         int n = MIN(maxnum, g_kvs_list_size);
@@ -1228,8 +1255,9 @@ bool dbGetStringArray( const char *key, const char *field, char **out, int *outn
 }
 
 int ssproto_kvs_get_string_array_result_recv( conn_t _c, int query_id, int retcode, const char *key, const char *field, const char * const *result, int result_len ) {
+    DBLOG("kvsgetstringarrayres");
     if( query_id == QID_GETSTRINGARRAY ) {
-        g_wait_for_net_result = false;
+        g_wait_for_net_result = 0;
         g_net_result_code = retcode;
         g_kvs_list_size = result_len;
         for(int i=0;i<result_len;i++) {
@@ -1862,7 +1890,7 @@ int ssproto_leave_channel_result_recv( conn_t _c, int retcode ) {
 }
 int realtimeGetChannelMemberCountSync( int channel_id, int *maxnum ) {
     ssproto_get_channel_member_count_send( g_rtconn, channel_id );
-    waitForReply(false);
+    WAITFORREPLY(false);
     print("realtimeGetChannelMemberCountSync: max:%d cur:%d", g_net_result_value_option, g_net_result_value );
     *maxnum = g_net_result_value_option;
     return g_net_result_value;    
@@ -1872,7 +1900,7 @@ int ssproto_get_channel_member_count_result_recv( conn_t _c, int channel_id, int
     g_net_result_code = SSPROTO_OK; 
     g_net_result_value = curnum;
     g_net_result_value_option = maxnum;
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     return 0;
 }
 
@@ -2365,7 +2393,7 @@ void reloadPowerSystem() {
 void savePowerSystem() {
     static PowerSystemDump psd;
     g_ps->dumpAll(&psd);
-    bool res = dbSavePowerSystem( g_current_project_id, &psd );
+    bool res = dbSavePowerSystemOneWay( g_current_project_id, &psd );
     if(!res) {
         g_log->print(WHITE, (char*)"CAN'T SAVE POWERSYSTEM");
     }
@@ -2515,7 +2543,7 @@ void dbPublishProjectSend( int pjid ) {
 }
 bool dbCheckProjectIsJoinable( int pjid, int userid ) {
     ssproto_project_is_joinable_send( g_dbconn, pjid, userid );
-    waitForReply();
+    WAITFORREPLY();
     print("dbCheckProjectIsJoinable: return code:%d", g_net_result_code );
     if( g_net_result_code == SSPROTO_OK ) {
         return true;
@@ -2532,17 +2560,17 @@ bool dbCheckProjectIsPrivate( int pjid, int uid ) {
 
 int ssproto_project_is_joinable_result_recv( conn_t _c, int project_id, int user_id, int result ) {
     g_net_result_code = result;
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     return 0;
 }
 int ssproto_is_published_project_result_recv( conn_t _c, int project_id, int published ) {
     g_net_result_value = published;
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     return 0;
 }
 bool dbCheckProjectIsPublished( int project_id ) {
     ssproto_is_published_project_send( g_dbconn, project_id );
-    waitForReply();
+    WAITFORREPLY();
     print("dbCheckProjectIsPublished: return value:%d", g_net_result_value );
     if( g_net_result_value == 1 ) {
         return true;
@@ -2554,12 +2582,12 @@ bool dbCheckProjectIsPublished( int project_id ) {
 int ssproto_is_shared_project_result_recv( conn_t _c, int project_id, int shared ) {
     print("ssproto_is_shared_project_result_recv: pjid:%d shared:%d",project_id, shared );
     g_net_result_value = shared;
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     return 0;
 }
 bool dbCheckProjectIsSharedByOwner( int project_id, int owner_uid ) {
     ssproto_is_shared_project_send( g_dbconn, project_id, owner_uid );
-    waitForReply();
+    WAITFORREPLY();
     print("dbCheckProjectIsSharedByOwner: val:%d", g_net_result_value );
     switch( g_net_result_value ) {
     case SSPROTO_PROJECT_IS_SHARED:
@@ -2622,15 +2650,14 @@ int ssproto_search_published_projects_result_recv( conn_t _c, const int *project
         g_db_int_array_result_store_ptr[i] = project_ids[i];
     }
     *g_db_int_array_result_size_ptr = cp_num;
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     return 0;
 }
 void dbSearchPublishedProjects( int *pjids, int *num ) {
     ssproto_search_published_projects_send( g_dbconn );
-    g_wait_for_net_result = true;
     g_db_int_array_result_store_ptr = pjids;
     g_db_int_array_result_size_ptr = num;
-    waitForReply();
+    WAITFORREPLY();
     print("dbSearchPublishedProjects done. got num:%d", *num );
 }
 int ssproto_search_shared_projects_result_recv( conn_t _c, int user_id, const int *project_ids, int project_ids_len ) {
@@ -2641,15 +2668,14 @@ int ssproto_search_shared_projects_result_recv( conn_t _c, int user_id, const in
         g_db_int_array_result_store_ptr[i] = project_ids[i];
     }
     *g_db_int_array_result_size_ptr = cp_num;
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     return 0;
 }
 void dbSearchSharedProjects( int *pjids, int *num ) {
     ssproto_search_shared_projects_send( g_dbconn, g_user_id );
-    g_wait_for_net_result = true;
     g_db_int_array_result_store_ptr = pjids;
     g_db_int_array_result_size_ptr = num;
-    waitForReply();
+    WAITFORREPLY();
     print("dbSearchSharedProjects done. got num:%d", *num );
 }
 
@@ -2657,15 +2683,15 @@ void dbSearchSharedProjects( int *pjids, int *num ) {
 
 void dbEnsureImage( int imgid ) {
     ssproto_ensure_image_send( g_dbconn, 0, imgid, 2048, 2048 );
-    g_wait_for_net_result = true;
-    waitForReply();
+    WAITFORREPLY();
     print("dbEnsureImage done. result:%d", g_net_result_code );
 }
 int ssproto_ensure_image_result_recv( conn_t _c, int query_id, int result, int image_id ) {
+    DBLOG("ensureimageres");
     print("ssproto_ensure_image_result_recv: qid:%d res:%d image_id:%d",query_id, result, image_id);
     assert( result == SSPROTO_OK );
     g_net_result_code = result;
-    g_wait_for_net_result = false;
+    g_wait_for_net_result = 0;
     return 0;
 }
 // Update image data in backend server
@@ -2701,6 +2727,7 @@ void dbUpdateImageAllRevealedSend( int imgid ) {
 }
 
 int ssproto_update_image_part_result_recv( conn_t _c, int query_id, int result, int image_id ) {
+    DBLOG("updateimagepartres");
     print("ssproto_update_image_part_result_recv: qid:%d res:%d image_id:%d", query_id, result, image_id );
     return 0;
 }
@@ -2708,10 +2735,9 @@ void dbLoadPNGImageSync( int imgid, Image *outimg ) {
     ssproto_get_image_png_send( g_dbconn, QID_PNGIMAGELOAD, imgid );
     size_t sz = SSPROTO_PNG_SIZE_MAX;
     char *buf = (char*) MALLOC(sz);
-    g_wait_for_net_result = true;
     g_db_get_file_size = sz;
     g_db_get_file_store_buffer = buf;
-    waitForReply();
+    WAITFORREPLY();
     sz = g_db_get_file_size;
     g_db_get_file_store_buffer = NULL;
     g_db_get_file_size = 0;
@@ -2727,9 +2753,10 @@ void dbLoadPNGImageSync( int imgid, Image *outimg ) {
 }
 
 int ssproto_get_image_png_result_recv( conn_t _c, int query_id, int result, int image_id, const char *png_data, int png_data_len ) {
+    DBLOG("getimagepngres");
     if( query_id == QID_PNGIMAGELOAD ) {
         g_net_result_code = result;
-        g_wait_for_net_result = false;        
+        g_wait_for_net_result = 0;        
         assertmsg( png_data_len <= g_db_get_file_size, "file too large! gotsize:%d maxexpect:%d", png_data_len, g_db_get_file_size );
         g_db_get_file_size = png_data_len;
         memcpy( g_db_get_file_store_buffer, png_data, png_data_len );
@@ -2765,10 +2792,9 @@ void dbLoadRawImageSync( int imgid, int x, int y, int w, int h, unsigned char *o
     print("dbLoadRawImageSync: xywh:%d,%d,%d,%d",x,y,w,h);
     ssproto_get_image_raw_send( g_dbconn, QID_RAWIMAGELOAD, imgid, x,y,w,h );
     assert( outsz <= SSPROTO_RAW_IMAGE_SIZE_MAX );
-    g_wait_for_net_result = true;
     g_db_get_file_size = outsz;
     g_db_get_file_store_buffer = (char*)out;
-    waitForReply();
+    WAITFORREPLY();
     g_db_get_file_store_buffer = NULL;
     g_db_get_file_size = 0;
     print("dbLoadRawImageSync: g_net_result_code: %d",g_net_result_code);
@@ -2776,10 +2802,11 @@ void dbLoadRawImageSync( int imgid, int x, int y, int w, int h, unsigned char *o
 
 
 int ssproto_get_image_raw_result_recv( conn_t _c, int query_id, int result, int image_id, int x0, int y0, int w, int h, const char *raw_data, int raw_data_len ) {
+    DBLOG("getimagerawres");
     if( query_id == QID_RAWIMAGELOAD ) {
         assertmsg( g_wait_for_net_result, "invalid state? x0:%d y0:%d", x0, y0 );
         g_net_result_code = result;
-        g_wait_for_net_result = false;
+        g_wait_for_net_result = 0;
         assertmsg( raw_data_len <= g_db_get_file_size, "buffer too large! gotsize:%d expect:%d", raw_data_len, g_db_get_file_size );
         g_db_get_file_size = raw_data_len;
         memcpy( g_db_get_file_store_buffer, raw_data, raw_data_len );
@@ -2799,8 +2826,7 @@ void dbIncrementPlaytimeSend( int pjid, int sec ) {
 }
 int dbLoadPlaytime( int pjid ) {
     ssproto_counter_get_send( g_dbconn, PLAYTIME_COUNTER_CATEGORY, pjid );
-    g_wait_for_net_result = true;
-    waitForReply();
+    WAITFORREPLY();
     if( g_net_result_code == SSPROTO_OK ) {
         if( g_net_result_value < 0 ) print( "dbloadplaytime: invalid value:%d", g_net_result_value  );
         return g_net_result_value;
@@ -2810,8 +2836,9 @@ int dbLoadPlaytime( int pjid ) {
 }
 
 int ssproto_counter_get_result_recv( conn_t _c, int counter_category, int counter_id, int result, int curvalue ) {
+    DBLOG("countergetres");
     if( counter_category == PLAYTIME_COUNTER_CATEGORY ) {
-        g_wait_for_net_result = false;
+        g_wait_for_net_result = 0;
         g_net_result_code = result;
         g_net_result_value = curvalue;        
     } else {
@@ -2830,7 +2857,7 @@ void dbLoadAllClearLogs( AllClearLogEntry *out, size_t *sz ) {
     Format fmt( "ZRANGE %s 0 10000000000 WITHSCORES", g_all_clear_ranking_z_key );
     print("dbLoadAllClearLogs: sending '%s'", fmt.buf );
     ssproto_kvs_command_str_send( g_dbconn, QID_LOAD_ALL_CLEAR_LOGS, fmt.buf );
-    waitForReply();
+    WAITFORREPLY();
     if( g_net_result_code == SSPROTO_OK ) {
         int outmax = *sz;
         int outi=0;
@@ -2870,7 +2897,7 @@ void dbLoadMilestoneProgressLogs( MilestoneProgressLogEntry *out, size_t *sz ) {
     Format fmt( "ZREVRANGE %s 0 100000000000000 WITHSCORES", g_ms_progress_z_key );
     print("dbLoadMilestoneProgressLogs: cmd:'%s'", fmt.buf );
     ssproto_kvs_command_str_send( g_dbconn, QID_LOAD_MS_PROGRESS_LOGS, fmt.buf );
-    waitForReply();
+    WAITFORREPLY();
     if( g_net_result_code == SSPROTO_OK ) {
         int outmax = *sz;
         int outi=0;

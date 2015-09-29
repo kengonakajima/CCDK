@@ -15,7 +15,8 @@ LIBFLAGS=-framework OpenGL -framework Cocoa -framework IOKit  -framework CoreFou
 
 
 #CFLAGS= -I/usr/x11/include  -g -Wall -I./moyai -O0
-CFLAGS= -O0 -g -Wall -I. -I.. -I$(MOYAI)/glfw-2.7.7/include/ -Irapidjson/include -DUSE_OPENGL -D_DEBUG -I$(VCE) -I$(BACKEND) -I$(EXTERNALS)
+#-DGEN_DEBUG_PRINT
+CFLAGS= -O0 -g -Wall -I. -I.. -I$(MOYAI)/glfw-2.7.7/include/ -Irapidjson/include -DUSE_OPENGL -D_DEBUG -I$(VCE) -I$(BACKEND) -I$(EXTERNALS) 
 
 
 
