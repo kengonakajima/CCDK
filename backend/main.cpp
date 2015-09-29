@@ -658,6 +658,7 @@ int ssproto_put_file_recv( conn_t _c, int query_id, const char *filename, const 
     //        print("ssproto_put_file_recv: fullpath: '%s' err:%d data_len:%d", fullpath, err, data_len );
     //    prt("[putfile %s]", fullpath);
     ssproto_put_file_result_send( _c, query_id, err, filename, offset );
+    prt("p");
     return 0;
 }
 
@@ -680,7 +681,7 @@ int ssproto_get_file_recv( conn_t _c, int query_id, const char *filename, unsign
             sz = 0;
         }
     }
-    prt("f");
+    prt("g");
     //    print("ssproto_get_file_recv: fullpath: '%s' err:%d read len:%d", fullpath, err, sz );        
     emulateSlowDisk();
     ssproto_get_file_result_send( _c, query_id, err, filename, buf, sz, offset, maxsize );
