@@ -4651,8 +4651,9 @@ void hudShowConfirmRecoveryMessage( ITEMTYPE itt ) {
     g_msgwin->clear();
     ItemConf *itc = ItemConf::getItemConf(itt);
     assert(itc);
-    Format fmt( "DO YOU RECEIVE %s ?", itc->name );
-    g_msgwin->writeLine( WHITE, fmt.buf );
+    g_msgwin->writeLine( WHITE, "DO YOU WANT TO RECEIVE" );
+    g_msgwin->writeLine( WHITE, "");
+    g_msgwin->writeLine( WHITE, Format( "%s ?", itc->name ).buf );
     g_msgwin->writeLine( WHITE, "" );
     Format fmt2( "RECOVERY COUNT : %d LEFT", g_pc->recovery_count_left );
     g_msgwin->writeLine( WHITE, fmt2.buf );    
