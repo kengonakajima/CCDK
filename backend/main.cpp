@@ -397,6 +397,8 @@ void printUsage() {
     print("--disk_latency_log=NUMBER : Milliseconds to enable disk read/write latency logging" );
 }
 
+bool saveAllSharedProjects() ;
+
 int main( int argc, char **argv ) {
 
     for(int i=0;i<argc;i++) {
@@ -564,6 +566,12 @@ int main( int argc, char **argv ) {
                 pollAllSharedProjects();
                 pollAllImageStore();
                 pollAllLockProject();            
+            }
+            static double last_save_sharedpjs_at = 0;
+            if( nt > last_save_sharedpjs_at + 20 ) {
+                saveAllSharedProjects();
+                prt("saveshpjs ");
+                last_save_sharedpjs_at = nt;
             }
         }
 
