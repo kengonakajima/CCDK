@@ -7,6 +7,7 @@ class CharGridTextBox : public Prop2D {
 public:
     Grid *bg;
     CharGrid *cg;
+    int metadata;
     CharGridTextBox( int w );
     void setString( Color c, const char *s );
     bool isEqual( const char *s, int l );
@@ -506,7 +507,6 @@ public:
 
     BlinkCursor *cursor;
     int cursor_at;
-    int project_num;
     int project_id_cache[LINE_NUM];
     
     PROJECTLISTTYPE list_type;

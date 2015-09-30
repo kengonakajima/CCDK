@@ -845,6 +845,7 @@ CharGridTextBox::CharGridTextBox( int w ) : Prop2D() {
     fillBG(Grid::GRID_NOT_USED);
     cg = new CharGrid(w,1);
     addGrid(cg);
+    metadata = 0;
 }
 void CharGridTextBox::fillBG( int ind ) {
     for(int i=0;i<bg->width;i++) {
@@ -2393,7 +2394,7 @@ ProjectListWindow::ProjectListWindow() : Window( PREPARATION_GRID_WIDTH, PREPARA
         lines[i]->setLoc( base - Vec2(0, 32 * i));
         g_hud_layer->insertProp(lines[i]);
     }
-    project_num = 0;
+
     for(int i=0;i<elementof(project_id_cache);i++) project_id_cache[i]=0;
     cursor_at = 0;
     cursor = new BlinkCursor( DIR_RIGHT );
@@ -2452,6 +2453,7 @@ void ProjectListWindow::toggle(bool vis ) {
 void ProjectListWindow::clear() {
     for(int i=0;i<elementof(lines);i++) {
         lines[i]->setString(WHITE,"");
+        project_id_cache[i] = 0;
     }
 }
 
@@ -2503,7 +2505,6 @@ void setupProjectInfoTB( CharGridTextBox *out_tb, const char *prefix, int projid
 
 void ProjectListWindow::updateProjectList() {
     clear();
-    project_num = 0;
 
     if( list_type == PJLT_PRIVATE ) { 
         // JSON forat : [ 112233, 113355, 11491, 5830, 85959 ] array of interger of project_id
@@ -2512,16 +2513,16 @@ void ProjectListWindow::updateProjectList() {
         bool dbres = dbLoadIntArrayJSON( g_project_by_owner_ht_key, g_user_name, projids, &n);
         if(dbres == false) {
             print("NO project!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            n=0;
         } else {
-            project_num = n;
             for(int i=0;i<n;i++) {
                 setupProjectInfoTB( lines[i], "", projids[i] );
                 project_id_cache[i] = projids[i];
             }
         }
-        if( project_num < MAX_PRIVATE_PROJECT ) {
-            lines[ project_num ]->setString( WHITE, MSG_CREATE_RANDOM_PROJECT );
-            lines[ project_num+1 ]->setString( WHITE, MSG_CREATE_PROJECT_WITH_SEED );
+        if( n < MAX_PRIVATE_PROJECT ) {
+            lines[ n ]->setString( WHITE, MSG_CREATE_RANDOM_PROJECT );
+            lines[ n+1 ]->setString( WHITE, MSG_CREATE_PROJECT_WITH_SEED );
         }
         for(int i=0;i<elementof(lines);i++) {
             if( lines[i]->isEmpty() ) {
@@ -2533,7 +2534,6 @@ void ProjectListWindow::updateProjectList() {
         int projids[elementof(lines)-1]; // -1:BACK用
         int n=elementof(projids);
         dbSearchSharedProjects(projids,&n);
-        project_num = n;
         if(n==0) {
             lines[0]->setString( WHITE, "NO SHARED PROJECT BY FRIENDS");
             lines[1]->setString( WHITE, "BACK" );
@@ -2546,10 +2546,9 @@ void ProjectListWindow::updateProjectList() {
         }
     } else if( list_type == PJLT_PUBLIC ) {
         // synchronous loading
-        int projids[elementof(lines)-1]; // -1:BACK
+        int projids[SSPROTO_SEARCH_MAX];
         int n=elementof(projids);
         dbSearchPublishedProjects(projids,&n);
-        project_num = n;
         if(n==0) {
             lines[0]->setString( WHITE, "NO PUBLIC PROJECT");
             lines[1]->setString( WHITE, "BACK" );
@@ -2732,12 +2731,13 @@ void ProjectListWindow::selectAtCursor() {
     } else if( lines[cursor_at]->isEmpty() == false ) {
         // Selected existing project. Common in every list_type
         g_craft_sound->play();
-        assert( cursor_at < project_num );
-        print("selected project: id:%d", project_id_cache[cursor_at] );
-        hide();
-        g_projinfowin->setProjectId( project_id_cache[cursor_at] );
-        g_projinfowin->previous_window = this;
-        g_projinfowin->show();
+        print("selected project: id:%d", project_id_cache[cursor_at] );        
+        if( project_id_cache[cursor_at] > 0 ) {
+            hide();
+            g_projinfowin->setProjectId( project_id_cache[cursor_at] );
+            g_projinfowin->previous_window = this;
+            g_projinfowin->show();
+        }
     }
 }
 void ProjectListWindow::setCursorAtLine( const char *msg ) {
