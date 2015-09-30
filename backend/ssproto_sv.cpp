@@ -38,6 +38,7 @@ static double ssproto_counter_add_recv_counter = 0;
 static double ssproto_counter_get_recv_counter = 0;
 static double ssproto_share_project_recv_counter = 0;
 static double ssproto_publish_project_recv_counter = 0;
+static double ssproto_update_project_activity_recv_counter = 0;
 static double ssproto_search_shared_projects_recv_counter = 0;
 static double ssproto_search_published_projects_recv_counter = 0;
 static double ssproto_project_is_joinable_recv_counter = 0;
@@ -127,6 +128,7 @@ static int ssproto_counter_add_recv_debugout = 1;
 static int ssproto_counter_get_recv_debugout = 1;
 static int ssproto_share_project_recv_debugout = 1;
 static int ssproto_publish_project_recv_debugout = 1;
+static int ssproto_update_project_activity_recv_debugout = 1;
 static int ssproto_search_shared_projects_recv_debugout = 1;
 static int ssproto_search_published_projects_recv_debugout = 1;
 static int ssproto_project_is_joinable_recv_debugout = 1;
@@ -1057,6 +1059,33 @@ int ssproto_sv_pcallback( conn_t _c, char *_data, int _len)
     }
 #endif
     _ret = ssproto_publish_project_recv( _c, user_id,project_id);
+    break;
+  }
+  case  SSPROTO_C2S_UPDATE_PROJECT_ACTIVITY :/* record length : 6 */
+  {
+    int project_id;
+
+    /* protocol length check */
+    if(6<_len){
+      int _eret=ssproto_toolong_recv_warning(_c,184,_len);
+#ifdef GEN_DEBUG_LEN_PRINT
+      vce_errout("invalid length : recv%dbytes ssproto_update_project_activity_recv\n",_len);
+#endif
+      if(_eret<0)
+        return _eret;
+    }
+
+    _POP_I4(project_id);
+
+    ssproto_update_project_activity_recv_counter += 1;
+#ifdef GEN_DEBUG_PRINT
+    if(ssproto_update_project_activity_recv_debugout)
+    {
+      char _addr[256];
+      vce_errout( "ssproto_update_project_activity_recv( [%s], project_id=%d )\n", vce_conn_get_remote_addr_string( _c, _addr, sizeof(_addr) ) ,project_id );
+    }
+#endif
+    _ret = ssproto_update_project_activity_recv( _c, project_id);
     break;
   }
   case  SSPROTO_C2S_SEARCH_SHARED_PROJECTS :/* record length : 6 */
@@ -2461,12 +2490,12 @@ int ssproto_publish_project_result_send( conn_t _c, int project_id )
 int ssproto_search_shared_projects_result_send( conn_t _c, int user_id, const int *project_ids, int project_ids_len )
 {
   /* Make bin_info array */
-  char _work[91];
+  char _work[267];
   int _ofs = 0;
   ssproto_search_shared_projects_result_send_counter += 1;
   _PUSH_I2( SSPROTO_S2C_SEARCH_SHARED_PROJECTS_RESULT, sizeof( _work));
   _PUSH_I4(user_id,sizeof(_work));
-  _PUSH_IA4(project_ids,project_ids_len,20,sizeof(_work));
+  _PUSH_IA4(project_ids,project_ids_len,64,sizeof(_work));
 
 #ifdef GEN_DEBUG_PRINT
   if(ssproto_search_shared_projects_result_send_debugout)
@@ -2490,11 +2519,11 @@ int ssproto_search_shared_projects_result_send( conn_t _c, int user_id, const in
 int ssproto_search_published_projects_result_send( conn_t _c, const int *project_ids, int project_ids_len )
 {
   /* Make bin_info array */
-  char _work[87];
+  char _work[263];
   int _ofs = 0;
   ssproto_search_published_projects_result_send_counter += 1;
   _PUSH_I2( SSPROTO_S2C_SEARCH_PUBLISHED_PROJECTS_RESULT, sizeof( _work));
-  _PUSH_IA4(project_ids,project_ids_len,20,sizeof(_work));
+  _PUSH_IA4(project_ids,project_ids_len,64,sizeof(_work));
 
 #ifdef GEN_DEBUG_PRINT
   if(ssproto_search_published_projects_result_send_debugout)
@@ -3098,6 +3127,10 @@ double ssproto_get_publish_project_recv_count( void )
 {
   return ssproto_publish_project_recv_counter;
 }
+double ssproto_get_update_project_activity_recv_count( void )
+{
+  return ssproto_update_project_activity_recv_counter;
+}
 double ssproto_get_search_shared_projects_recv_count( void )
 {
   return ssproto_search_shared_projects_recv_counter;
@@ -3448,6 +3481,10 @@ void ssproto_publish_project_recv_debugprint(int on_off)
 {
   ssproto_publish_project_recv_debugout=on_off;
 }
+void ssproto_update_project_activity_recv_debugprint(int on_off)
+{
+  ssproto_update_project_activity_recv_debugout=on_off;
+}
 void ssproto_search_shared_projects_recv_debugprint(int on_off)
 {
   ssproto_search_shared_projects_recv_debugout=on_off;
@@ -3707,7 +3744,7 @@ void ssproto_get_channel_member_count_result_send_debugprint(int on_off)
 #endif
 unsigned int ssproto_sv_get_version( unsigned int *subv )
 {
-  if(subv) *subv = 855499474;
+  if(subv) *subv = 581194608;
   return (unsigned int)10003;
 }
 conn_t ssproto_sv_get_current_conn( void )

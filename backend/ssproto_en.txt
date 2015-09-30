@@ -358,7 +358,12 @@ Space Sweeper ignores share_project_result.
 Publish the project specified by `project_id` to everyone.
 Space Sweeper ignores publish_project_result.
 
-=define SEARCH_MAX 20
+=c2s 184 update_project_activity( int project_id )
+Update last_activity_at in SharedProject in backend.
+Last activity time information is used to sort shared and publish projects in project lists.
+This command is used only in database backend.
+
+=define SEARCH_MAX 64
 =c2s 186 search_shared_projects( int user_id )
 =s2c 187 search_shared_projects_result( int user_id, int project_ids[SEARCH_MAX] )
 Find and return up to SEARCH_MAX projects that the user specified by ‘user_id’ can join.

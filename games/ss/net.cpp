@@ -261,11 +261,20 @@ void pollRealtimePing( double nt ) {
     }
 }
 void pollDBPing(double nt) {
-    static double last_db_ping_at = 0;    
+    static double last_db_ping_at = 0;
+    static double last_db_update_activity_at = 0;
+    
     if(isDBNetworkActive() ) {
         if( last_db_ping_at < nt - 2 ) {
             last_db_ping_at = nt;
             ssproto_ping_send( g_dbconn, now_usec(), PING_CMDTYPE_DATABASE );
+        }
+        if( last_db_update_activity_at < nt - 30 ) {
+            if( g_current_project_id != 0 ) {
+                last_db_update_activity_at = nt;
+                ssproto_update_project_activity_send( g_dbconn, g_current_project_id);
+                print("sent ssproto_update_project_activity");
+            }            
         }
     }
 }

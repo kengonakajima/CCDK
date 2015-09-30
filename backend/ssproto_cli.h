@@ -91,7 +91,7 @@ extern "C" {
 #undef SSPROTO_SHARE_MAX
 #define SSPROTO_SHARE_MAX 128
 #undef SSPROTO_SEARCH_MAX
-#define SSPROTO_SEARCH_MAX 20
+#define SSPROTO_SEARCH_MAX 64
 #undef SSPROTO_PROJECT_IS_NOT_SHARED
 #define SSPROTO_PROJECT_IS_NOT_SHARED 0
 #undef SSPROTO_PROJECT_IS_SHARED
@@ -140,6 +140,7 @@ typedef enum _SSPROTO_FUNCID{
   SSPROTO_C2S_COUNTER_GET=161,
   SSPROTO_C2S_SHARE_PROJECT=180,
   SSPROTO_C2S_PUBLISH_PROJECT=182,
+  SSPROTO_C2S_UPDATE_PROJECT_ACTIVITY=184,
   SSPROTO_C2S_SEARCH_SHARED_PROJECTS=186,
   SSPROTO_C2S_SEARCH_PUBLISHED_PROJECTS=188,
   SSPROTO_C2S_PROJECT_IS_JOINABLE=190,
@@ -242,6 +243,7 @@ double ssproto_get_counter_add_send_count( void );
 double ssproto_get_counter_get_send_count( void );
 double ssproto_get_share_project_send_count( void );
 double ssproto_get_publish_project_send_count( void );
+double ssproto_get_update_project_activity_send_count( void );
 double ssproto_get_search_shared_projects_send_count( void );
 double ssproto_get_search_published_projects_send_count( void );
 double ssproto_get_project_is_joinable_send_count( void );
@@ -334,6 +336,7 @@ void ssproto_counter_add_send_debugprint(int on_off);
 void ssproto_counter_get_send_debugprint(int on_off);
 void ssproto_share_project_send_debugprint(int on_off);
 void ssproto_publish_project_send_debugprint(int on_off);
+void ssproto_update_project_activity_send_debugprint(int on_off);
 void ssproto_search_shared_projects_send_debugprint(int on_off);
 void ssproto_search_published_projects_send_debugprint(int on_off);
 void ssproto_project_is_joinable_send_debugprint(int on_off);
@@ -424,6 +427,7 @@ int ssproto_counter_add_send( conn_t _c, int counter_category, int counter_id, i
 int ssproto_counter_get_send( conn_t _c, int counter_category, int counter_id );
 int ssproto_share_project_send( conn_t _c, int user_id, int project_id, const int *with, int with_len );
 int ssproto_publish_project_send( conn_t _c, int user_id, int project_id );
+int ssproto_update_project_activity_send( conn_t _c, int project_id );
 int ssproto_search_shared_projects_send( conn_t _c, int user_id );
 int ssproto_search_published_projects_send( conn_t _c );
 int ssproto_project_is_joinable_send( conn_t _c, int project_id, int user_id );

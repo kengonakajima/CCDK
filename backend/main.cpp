@@ -261,8 +261,9 @@ LockProject g_lockprojects[1024];
 
 ///////////
 void pollAllImageStore();
+void pollAllSharedProjects();
 void pollProgressLockGrids();
-void pollAllProject();
+void pollAllProjects();
 void cleanAll( conn_t c );
 bool checkCSChannel( ConnectionState *cs);
 void pollAllLockProject();
@@ -559,7 +560,8 @@ int main( int argc, char **argv ) {
             if( nt > last_pollall_at + 2 ) {
                 last_pollall_at = nt;
                 prt("$");
-                pollAllProject();
+                pollAllProjects();
+                pollAllSharedProjects();
                 pollAllImageStore();
                 pollAllLockProject();            
             }
@@ -931,7 +933,7 @@ void Project::poll(time_t nowt) {
     }
 }
 
-void pollAllProject() {
+void pollAllProjects() {
     time_t nowt = time(NULL);
     for(int i=0;i<elementof(g_projects);i++) {
         if( g_projects[i].id == 0 ) continue;
@@ -1473,7 +1475,9 @@ public:
     int member_uids[SSPROTO_SHARE_MAX];
     int members_num;
     bool published;
-    SharedProject() : project_id(0), owner_user_id(0), shared_at(0), members_num(0), published(false) {
+    time_t last_activity_at;
+    double heat;
+    SharedProject() : project_id(0), owner_user_id(0), shared_at(0), members_num(0), published(false), last_activity_at(0), heat(0) {
     }
     void setMembers( const int *with, int num ) {
         int to_copy = MIN( elementof(member_uids), num );
@@ -1483,8 +1487,13 @@ public:
         }
         members_num = to_copy;
     }
+    void updateLastActivity() {
+        last_activity_at = time(NULL);
+        heat += 1;
+    }
     void dump() {
-        print(" project_id:%d owner_user_id:%d shared_at:%u published:%d ", project_id, owner_user_id, (unsigned int)shared_at, published );
+        print(" project_id:%d owner_user_id:%d shared_at:%u published:%d last_activity_at:%u heat:%f",
+              project_id, owner_user_id, (unsigned int)shared_at, published, last_activity_at, heat );
         for(int i=0;i<members_num;i++) {
             print("  member_uids[%d] : %d", i, member_uids[i] );
         }
@@ -1492,6 +1501,15 @@ public:
 };
 
 SharedProject g_sharedpjs[2048];
+
+void pollAllSharedProjects() {
+    for(int i=0;i<elementof(g_sharedpjs);i++) {
+        if( g_sharedpjs[i].project_id != 0 ) {
+            // heat decays
+            g_sharedpjs[i].heat *= 0.99f;
+        }
+    }
+}
 
 char g_sharedproj_filename[] = "_sharedprojects";
 bool saveAllSharedProjects() {
@@ -1647,15 +1665,29 @@ void shareProject( int pjid, int uid, const int *with, int num ) {
     saveAllSharedProjects(); // Now it takes only 1ms or so.
 }
 
-// TODO: sort
+// Sort by heat
 int getPublishedProjects( int *out_ids, int maxn ) {
+    SorterEntry sents[1024];
+    if(maxn>elementof(sents)) print("getPublishedProjects: warning: maxn too large:%d",maxn);
+    
     int cnt=0;
     for(int i=0;i<elementof(g_sharedpjs);i++) {
         if( g_sharedpjs[i].project_id > 0 && g_sharedpjs[i].published ) {
-            out_ids[cnt] = g_sharedpjs[i].project_id;
+            sents[cnt].ptr = &g_sharedpjs[i];
+            sents[cnt].val =g_sharedpjs[i].heat;
+            print("getPublishedProjects: found pj:%d heat:%f", g_sharedpjs[i].project_id, g_sharedpjs[i].heat );
             cnt++;
-            if(cnt==maxn)return cnt;
+            if(cnt==maxn)break;
         }
+    }
+    quickSortF( sents, 0, cnt-1 );
+    for(int i=0;i<cnt;i++) {
+        print("sort result: %d : val:%f", i, sents[i].val );
+    }
+    // greater heat, goes first
+    for(int i=0;i<cnt;i++) {
+        SharedProject *sp = (SharedProject*) sents[cnt-1-i].ptr;
+        out_ids[i] = sp->project_id;
     }
     return cnt;
 }
@@ -1721,6 +1753,14 @@ int ssproto_publish_project_recv( conn_t _c, int user_id, int project_id ) {
     ssproto_publish_project_result_send( _c, project_id );
     return 0;
 }
+int ssproto_update_project_activity_recv( conn_t _c, int project_id ) {
+    CHECK_DATABASE("update_project_activity");
+    print("ssproto_update_project_activity_recv. pjid:%d", project_id );
+    SharedProject *sp = findSharedProject(project_id);
+    if(sp) sp->updateLastActivity();
+    return 0;
+}
+
 
 int ssproto_search_published_projects_recv( conn_t _c ) {
     CHECK_DATABASE("search_published_projects");        
