@@ -845,7 +845,6 @@ CharGridTextBox::CharGridTextBox( int w ) : Prop2D() {
     fillBG(Grid::GRID_NOT_USED);
     cg = new CharGrid(w,1);
     addGrid(cg);
-    metadata = 0;
 }
 void CharGridTextBox::fillBG( int ind ) {
     for(int i=0;i<bg->width;i++) {
@@ -2401,6 +2400,7 @@ ProjectListWindow::ProjectListWindow() : Window( PREPARATION_GRID_WIDTH, PREPARA
     g_hud_layer->insertProp(cursor);
 
     list_type = PJLT_PRIVATE;
+    page_index = 0;
     update();
 }
 
@@ -2445,6 +2445,7 @@ void ProjectListWindow::toggle(bool vis ) {
     }
     cursor->setVisible(vis);
     if(vis) {
+        page_index = 0;
         resetCursorPos();
         updateProjectList();
         update();
@@ -2504,9 +2505,8 @@ void setupProjectInfoTB( CharGridTextBox *out_tb, const char *prefix, int projid
 
 
 void ProjectListWindow::updateProjectList() {
-    clear();
-
-    if( list_type == PJLT_PRIVATE ) { 
+    if( list_type == PJLT_PRIVATE ) {
+        clear();
         // JSON forat : [ 112233, 113355, 11491, 5830, 85959 ] array of interger of project_id
         int projids[elementof(lines)-1]; // -1:BACK
         int n = elementof(projids);
@@ -2530,36 +2530,45 @@ void ProjectListWindow::updateProjectList() {
                 break;
             }
         }
-    } else if( list_type == PJLT_SHARED ) {
-        int projids[elementof(lines)-1]; // -1:BACK用
-        int n=elementof(projids);
-        dbSearchSharedProjects(projids,&n);
-        if(n==0) {
-            lines[0]->setString( WHITE, "NO SHARED PROJECT BY FRIENDS");
-            lines[1]->setString( WHITE, "BACK" );
-        } else {
-            for(int i=0;i<n;i++) {
-                setupProjectInfoTB( lines[i], "", projids[i] );
-                project_id_cache[i] = projids[i];
-            }
-            lines[n]->setString( WHITE, "BACK" );                        
-        }
-    } else if( list_type == PJLT_PUBLIC ) {
-        // synchronous loading
-        int projids[SSPROTO_SEARCH_MAX];
-        int n=elementof(projids);
+    } else if( list_type == PJLT_SHARED || list_type == PJLT_PUBLIC ) {
+        clear();
+        updateWithPage( page_index, list_type );
+    }
+}
+void ProjectListWindow::updateWithPage( int pi, PROJECTLISTTYPE lt ) {
+    int projids[SSPROTO_SEARCH_MAX];
+    int n=elementof(projids);
+
+    if(lt == PJLT_PUBLIC) {
         dbSearchPublishedProjects(projids,&n);
-        if(n==0) {
+    } else {
+        dbSearchSharedProjects(projids,&n);
+    }
+    if(n==0) {
+        if(lt==PJLT_PUBLIC) {
             lines[0]->setString( WHITE, "NO PUBLIC PROJECT");
-            lines[1]->setString( WHITE, "BACK" );
         } else {
-            for(int i=0;i<n;i++) {
-                setupProjectInfoTB( lines[i], "", projids[i] );
-                project_id_cache[i] = projids[i];
-            }
-            lines[n]->setString( WHITE, "BACK" );            
+            lines[0]->setString( WHITE, "NO SHARED PROJECT BY FRIENDS");
         }
+        lines[1]->setString( WHITE, "BACK" );
+    } else {
+        int per_page = 10; 
+        assert( per_page <= elementof(lines)-2 ); // -1 for BACK, -1 for NEXT PAGE
+        int num_of_page = (n % per_page) == 0 ? n/per_page : n/per_page+1;
+        print("num_of_page: %d", num_of_page );
         
+        int start_pi = pi * per_page;
+        int num_to_show;
+        if( n%per_page==0 ) num_to_show = per_page; else num_to_show = pi < num_of_page-1 ? per_page : n % per_page;
+        print("num_to_show:%d",num_to_show );
+        assert(num_to_show>0);
+        for(int i=0;i<num_to_show;i++) {
+            setupProjectInfoTB( lines[i], "", projids[start_pi+i] );
+            project_id_cache[i] = projids[start_pi+i];
+        }
+        int cur_line = num_to_show;
+        if( num_of_page > pi+1 )  lines[cur_line++]->setString( WHITE, "NEXT PAGE" );
+        lines[cur_line]->setString( WHITE, "BACK" );            
     }
 }
 
@@ -2655,7 +2664,7 @@ int findFinalLine( CharGridTextBox **lines, int n ) {
             return i-1;
         }
     }
-    return -1; // list is empty
+    return n-1; // list is full
 }
 
 
@@ -2666,13 +2675,14 @@ void ProjectListWindow::moveCursor( DIR dir ) {
     if( dir == DIR_DOWN ) {
         cursor_at ++;
         if( cursor_at >= elementof(lines) ) {
-            cursor_at = elementof(lines)-1;
+            cursor_at = 0;
         }
         if( lines[cursor_at]->isEmpty() ) cursor_at = 0;
     } else if( dir == DIR_UP ) {
         cursor_at --;
         if( cursor_at < 0 ) {
             cursor_at = findFinalLine(lines,elementof(lines));
+            print("findFinalLine::::::::::: %d", cursor_at );
             if(cursor_at<0) cursor_at = 0;
         }
     }
@@ -2728,6 +2738,12 @@ void ProjectListWindow::selectAtCursor() {
     } else if( lines[cursor_at]->isEqual( (char*) "BACK", 4) ) {
         hide();
         g_projtypewin->show();
+    } else if( lines[cursor_at]->isEqual( (char*) "NEXT P", 6 ) ) {
+        page_index++;
+        cursor_at = 0;
+        clear();
+        updateWithPage( page_index, list_type );
+        update();
     } else if( lines[cursor_at]->isEmpty() == false ) {
         // Selected existing project. Common in every list_type
         g_craft_sound->play();

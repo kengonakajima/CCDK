@@ -7,7 +7,6 @@ class CharGridTextBox : public Prop2D {
 public:
     Grid *bg;
     CharGrid *cg;
-    int metadata;
     CharGridTextBox( int w );
     void setString( Color c, const char *s );
     bool isEqual( const char *s, int l );
@@ -510,6 +509,8 @@ public:
     int project_id_cache[LINE_NUM];
     
     PROJECTLISTTYPE list_type;
+
+    int page_index; // start from 0, the first page
     
     ProjectListWindow();
     virtual void toggle(bool vis);
@@ -523,6 +524,7 @@ public:
     virtual void selectAtCursor();
     void startGenerateGame( const char *seedstr, unsigned int seed );
     void setCursorAtLine( const char *msg );
+    void updateWithPage( int pi, PROJECTLISTTYPE lt );
 };
 
 

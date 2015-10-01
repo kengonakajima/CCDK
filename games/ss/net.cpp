@@ -348,7 +348,7 @@ bool dbLoadPC() {
 }
 
 // Game gets into fatal error state when timed out
-#define WAITFORREPLY(...) print("WFR:%d",__LINE__); waitForReply(__VA_ARGS__);
+#define WAITFORREPLY(...) /*print("WFR:%d",__LINE__);*/ waitForReply(__VA_ARGS__);
 //#define WAITFORREPLY(flag) print("WFR:%d",__LINE__); waitForReply(flag);
 
 void waitForReply( bool use_db = true ) {
