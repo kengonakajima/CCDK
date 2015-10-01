@@ -911,6 +911,7 @@ public:
     Environment *getEnvironment( Pos2 at );
     bool isFlagPuttableCell( Pos2 p );
     void applySeed( const char *s, unsigned int i );
+    bool isOnEdgeOfField(Pos2 p);
     
     // Revealing
     void setChunkRevealed( int chx, int chy, bool flg );

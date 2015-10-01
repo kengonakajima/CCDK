@@ -1273,13 +1273,20 @@ bool LocalPC::tryAction( Vec2 direction ) {
                 }
                 break;
             case ITT_CABLE:
-                if( c->st == ST_NONE ) {
-                    c->bt = BT_CABLE;
-                    // Need to modify around cells quickly
-                    g_fld->notifyChangedAround( g_fld->getCellPos(c),2);
-                } else {
-                    return false;
-                }
+                {
+                    if( g_fld->isOnEdgeOfField( vec2ToPos2(lc) ) ) {
+                        g_log->printf( WHITE, "CANNOT PUT NETWORK CABLE HERE" );
+                        return false;
+                    } else {
+                        if( c->st == ST_NONE ) {
+                            c->bt = BT_CABLE;
+                            // Need to modify around cells quickly
+                            g_fld->notifyChangedAround( g_fld->getCellPos(c),2);
+                        } else {
+                            return false;
+                        }
+                    }
+                }                
                 break;
             case ITT_DEBRIS_IRONORE:
                 if( c->st == ST_NONE ) {

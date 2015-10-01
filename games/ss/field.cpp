@@ -4573,6 +4573,9 @@ void Field::applySeed( const char *s, unsigned int i )  {
     strncpy( orig_seed_string, s, sizeof(orig_seed_string) );
     print("Field::applySeed: s:'%s' i:%d", s, i );
 }
+bool Field::isOnEdgeOfField( Pos2 p ) {
+    return ( p.x == 0 || p.y == 0 || p.x == width-1 || p.y == height-1 );
+}
 
 /////////////////////
 
