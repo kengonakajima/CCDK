@@ -538,7 +538,7 @@ int ssproto_pong_recv( conn_t c, long long t_usec, int cmd ) {
     if(dt>thres) {
         Format fmt( "PING: SLOW RTT:%lld ms [CMD=%d]", dt/1000, cmd );
         print( fmt.buf );
-        if( g_runstate == RS_IN_PROJECT ) {
+        if( g_enable_debug_menu && g_runstate == RS_IN_PROJECT ) {
             Color col = WHITE;
             if( dt > thres*4 ) col = RED;
             g_log->printf( col, fmt.buf );
