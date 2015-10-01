@@ -82,6 +82,12 @@ public:
         case BT_CABLE:
         case BT_BUILDER_EYE: // Builder can go over this
         case BT_POLE:
+        case BT_REACTOR_INACTIVE:
+        case BT_REACTOR_ACTIVE:
+        case BT_REACTOR_ARM:
+        case BT_TURRET_INACTIVE:
+        case BT_TURRET_ACTIVE:
+        case BT_FENCE:
             return false;
         case BT_CELL:            
         case BT_SOIL:
@@ -107,16 +113,6 @@ public:
         case BT_ROUND_EYE:
         case BT_SHIELD_EYE:
         case BT_CHASER_EYE:
-        case BT_REACTOR_INACTIVE:
-        case BT_REACTOR_ACTIVE:
-        case BT_REACTOR_ARM:
-        case BT_EXCHANGE_INACTIVE:
-        case BT_EXCHANGE_ACTIVE:
-        case BT_PORTAL_INACTIVE:
-        case BT_PORTAL_ACTIVE:
-        case BT_TURRET_INACTIVE:
-        case BT_TURRET_ACTIVE:
-        case BT_FENCE:
         case BT_EYE_END:
         case BT_BARRIERGEN:
         case BT_BARRIER:
@@ -129,6 +125,10 @@ public:
         case BT_BIRDGEN:
         case BT_CORE_COVER:
         case BT_GRAY_GOO:
+        case BT_EXCHANGE_INACTIVE: // UI requires hit
+        case BT_EXCHANGE_ACTIVE:
+        case BT_PORTAL_INACTIVE: // UI requires hit
+        case BT_PORTAL_ACTIVE:
             return true;
         default:
             return false;
@@ -892,6 +892,7 @@ public:
     void meltSnow( Vec2 at );
     bool tryPutBlockNearestOnAir(Vec2 lc, BLOCKTYPE bt );
     int countBlock( Vec2 center, float dia, BLOCKTYPE bt );
+    int countBlockRect( Pos2 lb, Pos2 rt, BLOCKTYPE bt );
     void tryPutIvy( Pos2 at );
     void destroyConnectedIvy(Cell *c);
     void scatterIvy( Pos2 center, int dia, int n );

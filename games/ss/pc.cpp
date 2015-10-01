@@ -1151,7 +1151,10 @@ bool LocalPC::tryAction( Vec2 direction ) {
             g_log->printf( WHITE, "CANNOT PUT ANYTHING NEARBY RESPAWN POINT" );
             return false;
         }
-        if(c && c->isBlockPuttable() ) {
+        bool special_puttable = false;
+        if( itc->itt == ITT_BRICK_PANEL ) special_puttable = true; // brick panel can be placed under cables and poles
+        
+        if(c && (c->isBlockPuttable()||special_puttable) ) {
             bool put_block = false, removed_water = false;
             switch(itc->itt) {
             case ITT_DEBRIS_SOIL:
@@ -1259,19 +1262,38 @@ bool LocalPC::tryAction( Vec2 direction ) {
                 }
                 break;
             case ITT_EXCHANGE:
-                if( c->st == ST_NONE ) {
-                    g_fld->setExchange(c);
-                } else {
-                    return false;
+                {
+                    Pos2 p = vec2ToPos2(lc);
+                    Pos2 lb = p + Pos2(-1,-1);
+                    Pos2 rt = p + Pos2(1,1);
+                    int cnt = g_fld->countBlockRect( lb, rt, BT_EXCHANGE_INACTIVE ) + g_fld->countBlockRect( lb, rt, BT_EXCHANGE_ACTIVE );
+                    if( cnt > 0 ) {
+                        g_log->printf( WHITE, "CANNOT PUT RESOURCE EXCHANGE HERE, TOO NEAR!" );
+                        return false;
+                    }                
+                    if( c->st == ST_NONE ) {
+                        g_fld->setExchange(c);
+                    } else {
+                        return false;
+                    }
                 }
                 break;
             case ITT_PORTAL:
-                if( c->st == ST_NONE ) {
-                    g_fld->setPortal(c);
-                } else {
-                    return false;
+                {
+                    Pos2 p = vec2ToPos2(lc);
+                    Pos2 lb = p + Pos2(-1,-1), rt = p + Pos2(1,1);
+                    int cnt = g_fld->countBlockRect( lb, rt, BT_PORTAL_INACTIVE ) + g_fld->countBlockRect( lb, rt, BT_PORTAL_ACTIVE );
+                    if( cnt > 0 ) {
+                        g_log->printf( WHITE, "CANNOT PUT PORTAL HERE, TOO NEAR!" );
+                        return false;
+                    } 
+                    if( c->st == ST_NONE ) {
+                        g_fld->setPortal(c);
+                    } else {
+                        return false;
+                    }
                 }
-                break;
+                break;                
             case ITT_CABLE:
                 {
                     if( g_fld->isOnEdgeOfField( vec2ToPos2(lc) ) ) {
@@ -1334,7 +1356,7 @@ bool LocalPC::tryAction( Vec2 direction ) {
                 if( c->isWater() && c->gt != GT_DEEP ) {
                     c->st = ST_NONE;
                 }
-                if( c->st == ST_NONE && c->gt != GT_BRICK_PANEL ) {
+                if( c->gt != GT_BRICK_PANEL ) {
                     c->gt = GT_BRICK_PANEL;
                 } else {
                     return false;

@@ -3652,6 +3652,17 @@ bool Field::tryPutBlockNearestOnAir(Vec2 center, BLOCKTYPE bt ) {
     return false;
 }
 
+int Field::countBlockRect( Pos2 lb, Pos2 rt, BLOCKTYPE bt ) {
+    int cnt = 0;
+    for(int y=lb.y;y <= rt.y;y++) {
+        for(int x=lb.x;x<=rt.x; x++ ) {
+            Cell *c = get(x,y);
+            if(c && c->bt == bt ) cnt++;
+        }
+    }
+    return cnt;
+    
+}
 int Field::countBlock( Vec2 center, float dia, BLOCKTYPE bt ) {
     int cnt = 0;
     Pos2 p( center.x/PPC, center.y/PPC);
