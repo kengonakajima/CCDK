@@ -4533,8 +4533,9 @@ void DebugWindow::onEntrySelected(int ind) {
         g_pc->incItem( ITT_MICROBE, 10 );
 #endif
     
-#if 0
-        g_pc->incItem( ITT_FENCE, 20 );    
+
+        g_pc->incItem( ITT_FENCE, 20, PC_SUIT_NUM, false );
+#if 0        
         g_pc->incItem( ITT_REACTOR, 5 );
         g_pc->incItem( ITT_TURRET, 5 );    
 

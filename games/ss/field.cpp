@@ -1822,7 +1822,6 @@ void increaseScore( Char *by, int add ) {
 bool Field::damage( Vec2 at, int dmg, int *consumed, Char *by ) {
     Cell *c = get(at);
     if(!c)return false;
-
     
     if( c->isEarthBlock() ) {
         bool gen_debris = ( c->bt != BT_FIREGEN && c->bt != BT_SNOW );
@@ -1945,6 +1944,7 @@ bool Field::damage( Vec2 at, int dmg, int *consumed, Char *by ) {
         int fin_dmg = dmg;
         int maxdmg = c->getMaxBlockHP();
         if( maxdmg > 0 ) {
+
             int last = maxdmg - c->damage;
             if( last < fin_dmg ) fin_dmg = last;
             c->damage += fin_dmg;

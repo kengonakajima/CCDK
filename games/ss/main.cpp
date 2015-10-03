@@ -754,7 +754,8 @@ void GLFWCALL keyCallback( int key, int action ) {
     case 'T':
         //if( g_enable_debug_menu ) for(int i=0;i<10;i++) new Shrimp( g_pc->loc + Vec2(100,100).randomize(50) );
         if( g_enable_debug_menu) {
-            new Girev( g_pc->loc + Vec2(100,100) );
+            //new Girev( g_pc->loc + Vec2(100,100) );
+            new Takwashi(g_pc->loc + Vec2(100,100) );
         }
 
         break;
