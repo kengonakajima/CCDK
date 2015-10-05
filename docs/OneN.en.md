@@ -39,7 +39,15 @@ However, in order to run this script properly, the game needs to be deployed at 
 
 Launch “ShinraDevelopmentStation.exe” (SDS) and create a new project. You can locate the project anywhere, but for learning purposes you should name it "one_to_many". By saving the project, you will create “one_to_many.shinra”.
 
-For “DataPack”, designate the default directory “CCDK/skeletons/one_to_many”. Then set “debug” as the ID for “Startup config” and set 4 as the number for MultiConnection (as shown in the diagram below):
+For “DataPack”, designate the default directory “CCDK/Debug”. Debug directory is automatically created
+when you built the program by Visual Studio with Debug configuration.
+
+In addition to Debug directory, you have to add "assets" directory as well.
+You can add it by simply clicking "New" button at the right of "Alias".
+You browse your folders and choose "CCDK/skeletons/assets" and then the directory is automatically added to the top of your tree.
+After that, you can see Debug and assets in content of the DataPack.
+
+Then set “debug” as the ID for “Startup config” and set 4 as the number for MultiConnection (as shown in the diagram below):
 
 <img src="images/sds_1n_setting.png"></img>
 
