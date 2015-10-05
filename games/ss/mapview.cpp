@@ -464,7 +464,7 @@ void Chunk::update() {
             }
 
             if( c->damage > 0 ) {
-                int maxhp = c->getMaxTopHP();
+                int maxhp = c->getMaxTopHP(true);
                 DurBar::ensure( Pos2(cell_x,cell_y),  maxhp - c->damage, maxhp, g_durbar_deck );
             } else {
                 DurBar::clear( Pos2(cell_x,cell_y) );

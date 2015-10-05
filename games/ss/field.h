@@ -75,20 +75,21 @@ public:
             if( bt == BT_BARRIER )return false;
         }
         
-        switch(bt) {
+        switch(bt) {            
         case BT_INVAL:
         case BT_AIR:
         case BT_ENEMY_EYE_DESTROYED:
         case BT_CABLE:
         case BT_BUILDER_EYE: // Builder can go over this
         case BT_POLE:
+            return false;
         case BT_REACTOR_INACTIVE:
         case BT_REACTOR_ACTIVE:
         case BT_REACTOR_ARM:
         case BT_TURRET_INACTIVE:
         case BT_TURRET_ACTIVE:
         case BT_FENCE:
-            return false;
+            return enemy;            
         case BT_CELL:            
         case BT_SOIL:
         case BT_SNOW:
@@ -396,8 +397,8 @@ public:
         }
     }
     // HP of the top thing on a cell
-    inline int getMaxTopHP() {
-        if( isWall(false) || bt == BT_BUILDER_EYE ) {
+    inline int getMaxTopHP(bool enemy) {
+        if( isWall(enemy) || bt == BT_BUILDER_EYE ) {
             return getMaxBlockHP();
         } else {
             return getMaxGroundHP();
