@@ -355,7 +355,7 @@ void PowerGrid::poll( double dt ) {
         }
 
         // All equipments to a node
-        int prevene = ene;
+        int to_add=0;
         PowerEquipmentNode *cureq = equip_top;
         while(cureq) {
             switch( cureq->type ) {
@@ -363,18 +363,16 @@ void PowerGrid::poll( double dt ) {
                 assert(false);
                 break;
             case PEQT_REACTOR:
-            case PEQT_MOTHERSHIP:                
-                ene += cureq->ene_unit;
-                if(ene>MAXENE)ene=MAXENE;
+            case PEQT_MOTHERSHIP:
+                to_add += cureq->ene_unit;
                 break;
             case PEQT_EXCHANGE:
                 break;
             }
             cureq = cureq->next;
         }
-        if( ene != prevene ) {
-            int diff = ene - prevene;
-            modEne( diff, true ); // sync
+        if( to_add > 0 ) {
+            modEne( to_add, true ); // sync
         }
         if( last_snapshot_bcast_at < accum_time - 2 ) {
             realtimePowerGridSnapshotSend( id, ene );

@@ -64,9 +64,13 @@ public:
         default: return false;
         }
     }
-    inline bool isReactor() {
-        return bt == BT_REACTOR_INACTIVE || bt == BT_REACTOR_ACTIVE || bt == BT_REACTOR_ARM;
+    inline bool isReactorBody() {
+        return bt == BT_REACTOR_INACTIVE || bt == BT_REACTOR_ACTIVE;
     }
+    inline bool isReactorArm() {
+        return bt == BT_REACTOR_ARM;
+    }
+ 
     inline bool isSnowGrowable() {
         return gt == GT_TUNDRA || gt == GT_SNOW;
     }
@@ -83,8 +87,6 @@ public:
         case BT_BUILDER_EYE: // Builder can go over this
         case BT_POLE:
             return false;
-        case BT_REACTOR_INACTIVE:
-        case BT_REACTOR_ACTIVE:
         case BT_REACTOR_ARM:
         case BT_TURRET_INACTIVE:
         case BT_TURRET_ACTIVE:
@@ -130,6 +132,8 @@ public:
         case BT_EXCHANGE_ACTIVE:
         case BT_PORTAL_INACTIVE: // UI requires hit
         case BT_PORTAL_ACTIVE:
+        case BT_REACTOR_INACTIVE: // Reactors can't be broken. Power system is one-way growing
+        case BT_REACTOR_ACTIVE:
             return true;
         default:
             return false;
