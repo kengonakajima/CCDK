@@ -2334,7 +2334,7 @@ int ssproto_lock_keep_project_result_recv( conn_t _c, int project_id, int catego
         
     switch(category) {
     case LOCK_POWERSYSTEM:
-        if( retcode == SSPROTO_OK ) {                
+        if( retcode == SSPROTO_OK ) {
             g_powersystem_lock_obtained_at = now();
         } else {
             g_powersystem_lock_obtained_at = 0;
@@ -2366,11 +2366,10 @@ void realtimeCleanAllSend() {
 // Try to get project-wide lock every some seconds.
 #define KEEP_POWERSYSTEM_LOCK_INTERVAL 2
 
-void pollPowerSystemLock() {
+void pollPowerSystemLock( double nt ) {
     static double last_pwgrid_save_at = 0;
     
     if( g_current_project_id != 0 ) {
-        double nt = now();
         if( g_powersystem_lock_obtained_at == 0 ) {
             realtimeLockProjectSend( g_current_project_id, LOCK_POWERSYSTEM );
         } else {
@@ -2386,6 +2385,7 @@ void pollPowerSystemLock() {
     }
 }
 bool havePowerSystemLock( double nowtime ) {
+    //    print("havePowerSystemLock: obt:%f nt-kintv:%f now:%f gnt:%f", g_powersystem_lock_obtained_at, nowtime - KEEP_POWERSYSTEM_LOCK_INTERVAL, now(), g_now_time );
     return ( g_powersystem_lock_obtained_at > nowtime - KEEP_POWERSYSTEM_LOCK_INTERVAL );
 }
 

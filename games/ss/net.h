@@ -318,7 +318,7 @@ void realtimeLockProjectSend( int pjid, LOCKCATEGORY lc );
 void realtimeUnlockProjectSend( int pjid, LOCKCATEGORY lc );
 void realtimeLockKeepProjectSend( int pjid, LOCKCATEGORY lc );
 
-void pollPowerSystemLock();
+void pollPowerSystemLock(double nt);
 
 void realtimePowerNodeSend( int powergrid_id, Pos2 at );
 

@@ -1114,8 +1114,8 @@ void updateGame(void) {
         }
         if( g_total_frame_count % 50 == 0 ) { 
             realtimeUpdateNearcastPositionSend( g_pc->loc.x / PPC, g_pc->loc.y / PPC );
-            pollPowerSystemLock();
         }
+        pollPowerSystemLock(g_now_time);
         if( g_flag->all_cleared == false && g_total_frame_count % (INCREMENT_PLAYTIME_INTERVAL_SEC*60) == 0 ) {
             dbIncrementPlaytimeSend( g_current_project_id, INCREMENT_PLAYTIME_INTERVAL_SEC);
         }
@@ -1305,7 +1305,7 @@ void updateGame(void) {
         
         
         snprintf( tmp, sizeof(tmp),
-                  "FPS:%d st:%d ping:%dms prp:%d(%d) sim:%d pf:%d chg:%d tosim:%d(lk:%d) z:%.1f pc(%.1f,%.1f) ch:%d cid:%d SR:%d/%d GID:%d ft:%d rt:%d/%d db:%d/%d rb:%d",
+                  "FPS:%d st:%d ping:%dms prp:%d(%d) sim:%d pf:%d chg:%d tosim:%d(lk:%d) z:%.1f pc(%.1f,%.1f) ch:%d cid:%d SR:%d/%d GID:%d ft:%d rt:%d/%d db:%d/%d rb:%d pwlk:%d",
                   g_frame_count,
                   g_runstate,
                   (int)(g_last_ping_rtt_usec / 1000),
@@ -1323,7 +1323,8 @@ void updateGame(void) {
                   pgid,
                   ftid,
                   rt_rb/1024,rt_wb/1024, db_rb/1024,db_wb/1024,
-                  g_last_recvbuf_len/1024
+                  g_last_recvbuf_len/1024,
+                  g_ps && havePowerSystemLock(g_now_time)
                 );
         if( rt_rb > 1024*1250 ) {
             Format fmt("TOO MANY PACKETS? : %d Kbytes/sec", rt_rb/1024);
