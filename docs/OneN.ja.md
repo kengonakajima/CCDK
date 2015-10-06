@@ -50,7 +50,14 @@ ShinraDevelopmentStation.exe(SDS)を起動し、プロジェクトを新規作�
 プロジェクトの位置はどこでもかまいません。名称は one_to_many とします。
 これをセーブすると one_to_many.shinraが作成されます。
 
-DataPackは CCDK/skeletons/one_to_many ディレクトリをそのまま指定します。
+DataPackは, Debugビルドをした場合にできる CCDK/Debug ディレクトリをそのまま指定します。
+また、それぞれのスケルトンプログラムは、画像や音声ファイルなどが格納されているassetsというディレクトリが必要になるため、
+DataPackのツリーを開いているときに表示されている Aliasの右端にあるNewボタンを押し、
+DataPackにassetsディレクトリも追加します。
+すると次の図のように、Datapackの内容に、Debugとassetsの２つのディレクトリが見えるようになります。
+
+
+CCDK/skeletons/assets
 Startup configは Idをdebugとし、 MultiConnection数を4に設定します。(次図)
 
 <img src="images/sds_1n_setting.png"></img>

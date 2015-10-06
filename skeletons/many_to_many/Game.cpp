@@ -533,8 +533,8 @@ int ssproto_broadcast_notify_recv(conn_t _c, int type_id, int sender_cli_id, con
 int ssproto_version_notify_recv(conn_t _c, unsigned int maj, unsigned int min){ return 0; }
 
 int ssproto_clean_all_result_recv(conn_t _c){ return 0; }
-int ssproto_put_file_result_recv(conn_t _c, int query_id, int result, const char *filename) { return 0; }
-int ssproto_get_file_result_recv(conn_t _c, int query_id, int result, const char *filename, const char *data, int data_len) { return 0; }
+int ssproto_put_file_result_recv(conn_t _c, int query_id, int result, const char *filename, unsigned int offset ) { return 0; }
+int ssproto_get_file_result_recv(conn_t _c, int query_id, int result, const char *filename, const char *data, int data_len, unsigned int offset, unsigned int maxsize ) { return 0; }
 int ssproto_check_file_result_recv(conn_t _c, int query_id, int result, const char *filename){ return 0; }
 int ssproto_ensure_image_result_recv(conn_t _c, int query_id, int result, int image_id){ return 0; }
 int ssproto_update_image_part_result_recv(conn_t _c, int query_id, int result, int image_id){ return 0; }
