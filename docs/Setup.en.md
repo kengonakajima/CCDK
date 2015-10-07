@@ -289,7 +289,7 @@ Since the 'one_to_one.exe' executable window does not render any graphics, it sh
 ![](images/sds_one_to_one_stream_work.png)
 
 Close the ShinraClient and press the [Stop] button on the SDS to end the test.
-
+To close the ShinraClient window, you keep Alt key pressed and then press F4 key.
 
 <B>Step 5 - Perform validation tests on the N:N skeleton program with video streaming enabled</B>
 

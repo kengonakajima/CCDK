@@ -327,6 +327,7 @@ one_to_one.exeのウインドウは、画面に対しては描画していない
 ![](images/sds_one_to_one_stream_work.png)
 
 ShinraClientを閉じ、 SDSのStopボタンを押してテストを終了します。
+ShinraClientを終了するには、Altキーを押しながらF4キーを押します。
 
 
 <B>手順5, N:Nスケルトンをビデオストリーミングありで確認</B>
