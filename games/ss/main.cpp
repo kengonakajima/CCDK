@@ -245,12 +245,15 @@ int g_save_max_concurrent = 128; // 128 for SSDs.
 ////////////////////////////////////
 
 void setWarnLine( Color c, const char *s ) {
-    g_warnline->setVisible(true);
-    g_warnline->setString( c, s );
-    g_warnline->last_updated_at = g_warnline->accum_time;
+    if(g_warnline) {
+        g_warnline->setVisible(true);
+        g_warnline->setString( c, s );
+        g_warnline->last_updated_at = g_warnline->accum_time;
+    }
 }
+
 void pollWarnLine() {
-    if( g_warnline->last_updated_at < g_warnline->accum_time - 4 ) {
+    if( g_warnline && g_warnline->last_updated_at < g_warnline->accum_time - 4 ) {
         g_warnline->setVisible(false);
     }
 }
@@ -755,7 +758,8 @@ void GLFWCALL keyCallback( int key, int action ) {
         //if( g_enable_debug_menu ) for(int i=0;i<10;i++) new Shrimp( g_pc->loc + Vec2(100,100).randomize(50) );
         if( g_enable_debug_menu) {
             //new Girev( g_pc->loc + Vec2(100,100) );
-            new Takwashi(g_pc->loc + Vec2(100,100) );
+            //            new Takwashi(g_pc->loc + Vec2(100,100) );
+            //            new Debris(  g_pc->loc + Vec2(100,100) , B_ATLAS_ITEM_BATTERY1 );
         }
 
         break;
@@ -1950,10 +1954,13 @@ int moaiMain( int argc, char **argv ){
     g_stateline->setLoc( Vec2( -SCRW/2+8, SCRH/2-36 ) );
     g_debug_layer->insertProp( g_stateline );
 
-    g_warnline = new LogText();
-    g_warnline->setScl(8);
-    g_warnline->setLoc( Vec2( -SCRW/2+8, SCRH/2-12 ) );
-    g_debug_layer->insertProp( g_warnline );
+    
+    if( g_enable_debug_menu ) {
+        g_warnline = new LogText();
+        g_warnline->setScl(8);
+        g_warnline->setLoc( Vec2( -SCRW/2+8, SCRH/2-12 ) );
+        g_debug_layer->insertProp( g_warnline );
+    }
 
     g_nicktb = new CharGridTextBox(32);
     g_nicktb->setScl(16);
