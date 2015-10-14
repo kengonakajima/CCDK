@@ -4071,7 +4071,7 @@ void RankTypeWindow::onEntrySelected( int ind ) {
         g_rankwin->show();
         g_rankwin->updateByType( rts[ind] );
     } else if( ind == 2 ) { // back
-        g_titlewin->show();
+        cancel();
     }
 }
 void RankTypeWindow::cancel() {
