@@ -58,7 +58,6 @@ clearpj:
 	redis-cli del pj_info_h
 	redis-cli del project_id_gen
 	redis-cli del project_status_h
-	redis-cli del playtime_h
 	redis-cli del ms_progress_z
 	redis-cli del all_clear_z
 	find $(BACKEND)/datadir | grep field | xargs rm -f
@@ -67,7 +66,6 @@ clearpj:
 	find $(BACKEND)/datadir | grep research | xargs rm -f
 	find $(BACKEND)/datadir | grep reveal | xargs rm -f
 	find $(BACKEND)/datadir | grep envs | xargs rm -f
-	find $(BACKEND)/datadir | grep unfriendlog | xargs rm -f
 	find $(BACKEND)/datadir | grep _image_ | xargs rm -f
 	find $(BACKEND)/datadir | grep _counter_ | xargs rm -f
 	find $(BACKEND)/datadir | grep _sharedprojects | xargs rm -f
@@ -75,6 +73,7 @@ clearpj:
 clearcontact:
 	find $(BACKEND)/datadir | grep followers | xargs rm -f
 	find $(BACKEND)/datadir | grep followings | xargs rm -f
+	find $(BACKEND)/datadir | grep unfriendlog | xargs rm -f
 
 cleardb: clearpj clearuser clearcontact
 
