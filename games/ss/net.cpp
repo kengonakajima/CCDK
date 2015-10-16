@@ -2011,8 +2011,9 @@ int ssproto_nearcast_notify_recv( conn_t _c, int channel_id, int sender_cli_id, 
                 Cell *toc = g_fld->get(xx,yy);
                 assert(toc);
                 const char *ptr = uncompbuf + sizeof(Cell) * ind;
-                memcpy( (char*)toc, ptr, sizeof(Cell));
-                assertmsg( toc->bt >= 0 && toc->bt <= 255, "invalid bt:%d",toc->bt );
+                Cell owc;
+                memcpy( (char*)&owc, ptr, sizeof(Cell) );
+                toc->oneWayOverwrite( &owc );
                 ind++;
             }
         }

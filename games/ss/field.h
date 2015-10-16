@@ -619,6 +619,7 @@ public:
     bool isReactorArmPuttable() {
         return ( bt == BT_AIR && st == ST_ENERGIUM );
     }
+    void oneWayOverwrite( Cell *overwrite );
 };
 
 typedef enum {

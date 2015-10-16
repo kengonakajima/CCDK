@@ -4616,6 +4616,31 @@ bool Field::isOnEdgeOfField( Pos2 p ) {
     return ( p.x == 0 || p.y == 0 || p.x == width-1 || p.y == height-1 );
 }
 
+// check only important blocks
+void Cell::oneWayOverwrite( Cell *towrite ) {
+    assertmsg( towrite->bt >= 0 && towrite->bt <= 255, "invalid bt:%d", towrite->bt );
+    // don't write fortress after destruction
+    bool copy_bt = true;
+    if( towrite->bt == BT_ENEMY_FRAME || towrite->isEnemyEye() ) {
+        if( this->bt == BT_AIR || this->isEarthBlock() ) {
+            copy_bt = false;
+        }
+    }
+    if(copy_bt) bt = towrite->bt;
+
+    gt = towrite->gt;
+    st = towrite->st;
+    damage = towrite->damage;
+    content = towrite->content;
+    moisture = towrite->moisture;
+    dir = towrite->dir;
+    powergrid_id = towrite->powergrid_id;
+    fortress_id = towrite->fortress_id;
+    ftstate = towrite->ftstate;
+    hyper_count = towrite->hyper_count;
+    untouched = towrite->untouched;
+}
+
 /////////////////////
 
 void ResourceDeposit::dump( ResourceDepositDump *dump ) {
