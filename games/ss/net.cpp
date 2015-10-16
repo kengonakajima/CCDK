@@ -1881,7 +1881,13 @@ int ssproto_channelcast_notify_recv( conn_t _c, int channel_id, int sender_cli_i
         } else {
             ch = Char::getByNetworkId( pkt->client_id, pkt->internal_id );
         }
-        if(ch) ch->to_clean = true;
+        if(ch) {
+            ch->to_clean = true;
+            if( ch&& ch->category == CAT_ENEMY ) {
+                Enemy *e = (Enemy*) ch;
+                if(e->enable_durbar) DurBar::clear(e);
+            }
+        }
     }
     
     return 0;
