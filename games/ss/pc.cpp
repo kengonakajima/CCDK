@@ -1151,10 +1151,8 @@ bool LocalPC::tryAction( Vec2 direction ) {
             g_log->printf( WHITE, "CANNOT PUT ANYTHING NEARBY RESPAWN POINT" );
             return false;
         }
-        bool special_puttable = false;
-        if( itc->itt == ITT_BRICK_PANEL ) special_puttable = true; // brick panel can be placed under cables and poles
-        
-        if(c && (c->isBlockPuttable()||special_puttable) ) {
+        bool panel_toput = ( itc->itt == ITT_BRICK_PANEL && c && c->isBrickPanelPuttable() );
+        if( (c && c->isBlockPuttable()) || panel_toput ) {
             bool put_block = false, removed_water = false;
             switch(itc->itt) {
             case ITT_DEBRIS_SOIL:

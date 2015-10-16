@@ -165,6 +165,9 @@ public:
     inline bool isBlockPuttable() {
         return bt == BT_AIR && ( gt != GT_CORE ) && (gt != GT_PIT );
     }
+    inline bool isBrickPanelPuttable() {
+        return st == ST_NONE && gt != GT_PIT && gt != GT_CORE && gt != GT_DEEP;
+    }
     inline bool isGroundBeamHit() {
         return (gt == GT_ENHANCER ) || (gt == GT_NUCLEUS) || (gt == GT_CORE);
     }
