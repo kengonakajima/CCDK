@@ -331,7 +331,13 @@ bool Field::asyncGenerateDebugMinimum() {
                 }
                 Cell *c = get(x,y);
                 c->bt = bt;
-                c->gt = GT_DEEP;
+                
+                if( x>50 || y>50) {
+                    c->st = ST_WATER;
+                    c->gt = GT_SOIL;
+                } else {
+                    c->gt = GT_DEEP;
+                }
             }
         }
         setupFlagCands();        
@@ -980,8 +986,10 @@ void Field::simStepChunk( bool paused ){
     } else {
         double hogedt = now() - ts->last_lock_sent_at;
         if( ts->lock_state == LOCKSTATE_GOT && hogedt > 5.0 )  print("tosim delayed?:%d,%d %.1f", ts->chx, ts->chy, hogedt );
+
+        CHUNKLOADSTATE ls = getChunkLoadState(Pos2(ts->chx*CHUNKSZ,ts->chy*CHUNKSZ));
         
-        if( ts->lock_state == LOCKSTATE_GOT || isDBNetworkActive() == false ) { // Perform simulation in offline mode too
+        if( (ts->lock_state == LOCKSTATE_GOT && ls == CHUNKLOADSTATE_LOADED ) || isDBNetworkActive() == false ) { // Perform simulation in offline mode too
             if( paused == false ) { 
                 ts->cnt --;
                 if( simChunk( ts->chx, ts->chy ) ) {
@@ -1018,13 +1026,10 @@ void Field::simStepChunk( bool paused ){
                 }
                 if( ts->last_snapshot_sync_at < nt - ToSim::SNAPSHOT_SYNC_INTERVAL_SEC ) {
                     ts->last_snapshot_sync_at = nt + range(0, ToSim::SNAPSHOT_SYNC_INTERVAL_SEC/2); // Slightly adjust timing to get smoother
-                    CHUNKLOADSTATE ls = getChunkLoadState(Pos2(ts->chx*CHUNKSZ,ts->chy*CHUNKSZ));
-                    if( ls == CHUNKLOADSTATE_LOADED ) {
 #ifdef _DEBUG                        
-                        debugValidateChunkAt( Pos2(ts->chx*CHUNKSZ,ts->chy*CHUNKSZ) );
+                    debugValidateChunkAt( Pos2(ts->chx*CHUNKSZ,ts->chy*CHUNKSZ) );
 #endif                        
-                        realtimeSyncChunkSnapshotSend(ts->chx, ts->chy);
-                    }
+                    realtimeSyncChunkSnapshotSend(ts->chx, ts->chy);
                 }
                 if( ts->last_save_at < ts->last_important_change_at - ToSim::SAVE_DELAY ) {
                     Pos2 lb(ts->chx*CHUNKSZ, ts->chy*CHUNKSZ);
