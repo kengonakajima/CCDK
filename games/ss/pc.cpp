@@ -1349,7 +1349,7 @@ bool LocalPC::tryAction( Vec2 direction ) {
                 }
                 break;
             case ITT_BRICK_PANEL:
-                if( c->gt == GT_DEEP ) {
+                if( c->gt == GT_DEEP && c->isWater() ) {
                     g_log->printf(WHITE, "WATER IS TOO DEEP TO PUT A BRICK PANEL" );
                     return false;
                 }
