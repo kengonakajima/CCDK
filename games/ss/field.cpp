@@ -3182,7 +3182,7 @@ int Field::generateBoss( Cell *cell_destroyed ) {
             Cell *c = get(x,y);
             c->bt = BT_AIR;
             c->gt = GT_ROCK;
-            c->st = ST_GROUNDWORK;
+            if(c->isCoreCircuit()==false) c->st = ST_GROUNDWORK;
             bst = (BOSSTYPE) c->content;
             c->content = 0;
             createBuildingExplosion( toCellCenter(x,y) );
@@ -4600,7 +4600,7 @@ void Field::checkCleanFortressLeftOver( Pos2 center, int dia ) {
                 Cell *c = get(x,y);
                 if( c && c->bt == BT_ENEMY_FRAME ) {
                     c->bt = BT_AIR;
-                    c->st = ST_GROUNDWORK;
+                    if(c->isCoreCircuit()==false) c->st = ST_GROUNDWORK;
                     notifyChanged(c);
                 }
             }
