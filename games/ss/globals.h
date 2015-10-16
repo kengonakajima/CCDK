@@ -202,6 +202,7 @@ class RankingWindow;
 extern RankingWindow *g_rankwin;
 
 extern bool g_enable_debug_menu;
+extern bool g_enable_debug_minimum_field;
 extern bool g_enable_autoplay;
 extern bool g_enable_infinity_items;
 

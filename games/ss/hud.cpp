@@ -2580,7 +2580,13 @@ void ProjectListWindow::poll() {
     
     if( g_fld->isGenerateStarted() ) {
         // Started to generate
-        bool finished = g_fld->asyncGenerate();
+        bool finished = false;
+        if( g_enable_debug_minimum_field ) {
+            finished = g_fld->asyncGenerateDebugMinimum();
+        } else {
+            finished = g_fld->asyncGenerate();
+        }
+        
         if( finished ) { 
             bool save_finished;
             g_fsaver->poll( &save_finished );

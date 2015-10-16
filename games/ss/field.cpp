@@ -317,6 +317,29 @@ bool Field::asyncGenerate() {
     }
     return false;
 }
+
+bool Field::asyncGenerateDebugMinimum() {
+    if( generate_step == 1 ) {
+        clear();
+        int u = 2;
+        for(int y=0;y<height;y++) {
+            for(int x=0;x<width;x++) {
+                BLOCKTYPE bt = BT_AIR;
+                if( x%u==0 && y%u==0) bt = BT_ROCK;
+                if( x%16==0 && y%16==0) {
+                    bt = BT_HARDROCK;
+                }
+                Cell *c = get(x,y);
+                c->bt = bt;
+                c->gt = GT_DEEP;
+            }
+        }
+        setupFlagCands();        
+    }
+    generate_step++;
+    return true;
+}
+
 void Field::generateSync( unsigned int seed ) {
     startGenerate( "", 1 );
     while(true) {

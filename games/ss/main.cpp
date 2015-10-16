@@ -223,6 +223,7 @@ Flag *g_flag;
 bool g_enable_auto_charge = false;
 bool g_enable_network = true;
 bool g_enable_debug_menu = false;
+bool g_enable_debug_minimum_field = false;
 bool g_enable_debug_joystick = false;
 float g_pc_walk_speed_accel = 1;
 bool g_enable_infinity_items = false;
@@ -1514,6 +1515,8 @@ int moaiMain( int argc, char **argv ){
             strncpy( g_rthost, p, sizeof(g_rthost) );                        
         } else if( strncmp( argv[i], "--debug", strlen("--debug") ) == 0 ) {
             g_enable_debug_menu = true;
+        } else if( strncmp( argv[i], "--minfield", strlen("--minfield") ) == 0 ) {
+            g_enable_debug_minimum_field = true;
         } else if( strncmp( argv[i], "--autoplay", strlen("--autoplay") ) == 0 ) {
             g_enable_autoplay = true;
             g_enable_auto_charge = true;

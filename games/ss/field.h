@@ -792,6 +792,7 @@ public:
     // Generation takes more than 10 seconds, so make it asynchronous.
     void startGenerate( const char *seedstr, unsigned int seed );
     bool asyncGenerate();
+    bool asyncGenerateDebugMinimum();    
     void generateSync( unsigned int seed );
     bool isGenerateStarted();
     
