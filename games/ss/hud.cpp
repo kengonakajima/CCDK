@@ -4146,9 +4146,9 @@ void RankingWindow::updateByType( RANKTYPE rt ) {
         }
     } else if( rt == RANKTYPE_MILESTONE_PROGRES_DAY ) {
         title_tb->setString( WHITE, MSG_RANKTYPE_MOST_MILESTONE_PROGRESS );
-        header->setString( WHITE,       "RANK ID       OWNER        PROGRESS/NOW   PLAYERS" );
+        header->setString( WHITE,       "RANK ID       LEVEL       OWNER        PROGRESS/NOW   PLAYERS" );
         MilestoneProgressRankEntry ranks[16];
-        size_t n = elementof(ranks);
+        size_t n = elementof(ranks) - 1; // 1 for BACK
         dbLoadMilestoneProgressRanking( ranks, &n );
 
         for(int i=0;i<elementof(lines);i++) lines[i]->clear();
