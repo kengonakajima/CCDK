@@ -2986,7 +2986,8 @@ void dbLoadMilestoneProgressRanking( MilestoneProgressRankEntry *out, size_t *sz
         out[i].progress = re->progress;
     }
     *sz = si;
-    print("dbLoadMilestoneProgressRanking: out n:%d", si );
+    if( *sz > outmax ) *sz = outmax;
+    print("dbLoadMilestoneProgressRanking: out n:%d", *sz );
 }
 
 //////////////
