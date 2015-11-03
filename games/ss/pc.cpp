@@ -1375,6 +1375,9 @@ bool LocalPC::tryAction( Vec2 direction ) {
                 int ind = findItemType( itc->itt );
                 if( ind >= 0 ) swapItem( ind, selected_item_index );
             }
+        } else {
+            Format fmt( "CANNOT PUT %s HERE", itc->name );
+            g_log->printf( WHITE, fmt.buf );
         }
         return true;
     } else {
