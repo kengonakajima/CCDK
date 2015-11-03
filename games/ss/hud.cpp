@@ -3803,7 +3803,7 @@ void FollowWindow::updateCursor() {
 }
 //////////////////
 
-MessageWindow::MessageWindow() : Window( 22,15, B_ATLAS_WINDOW_FRAME_BASE ), show_at(0), close_callback(NULL), cursor_at(0), with_cancel(false) {
+MessageWindow::MessageWindow() : Window( 24,15, B_ATLAS_WINDOW_FRAME_BASE ), show_at(0), close_callback(NULL), cursor_at(0), with_cancel(false) {
     g_msg_layer->insertProp(this);
     setLoc(-250,-100);
     
