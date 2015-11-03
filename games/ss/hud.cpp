@@ -3711,7 +3711,7 @@ void leave_confirm_callback( bool positive ) {
 }
 void hudShowConfirmLeaveMessage() {
     g_msgwin->clear();
-    g_msgwin->writeLine( WHITE, "ARE YOU SURE TO LEAVE?" );
+    g_msgwin->writeLine( WHITE, "ARE YOU SURE YOU WANT TO LEAVE?" );
     g_msgwin->setCloseCallback(leave_confirm_callback);
     g_msgwin->setWithCancel(true);
     g_msgwin->show();
