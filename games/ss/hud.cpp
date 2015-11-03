@@ -2936,7 +2936,7 @@ void ProjectInfoWindow::selectAtCursor() {
         showPreviousWindow();
     } else if( curp == delete_tb ) {
         if( pinfo.owner_uid == g_user_id ) {
-            hudShowConfirmProjectInfoMessage( "ARE YOU SURE TO DELETE?", delete_project_confirm_callback );
+            hudShowConfirmProjectInfoMessage( "ARE YOU SURE YOU WANT TO\n \nDELETE THIS PROJECT?", delete_project_confirm_callback );
         } else {
             result_ok = false;
         }
@@ -3232,16 +3232,29 @@ void CharGridTextArea::scrollUp() {
         }
     }
 }
+// Support multiple lines with "\n" in given string
 void CharGridTextArea::writeLine( Color c, const char *s ) {
-    if( to_write == cg->height ) {
-        scrollUp();
+    //    print("CharGridTextArea: writeLine: s:'%s' l:%d", s, strlen(s));
+    int l = strlen(s);
+    char *work = (char*)MALLOC(l+1);
+    memcpy(work, s, l+1);
+    char *tk = strtok(work,"\n");
+    if(!tk) tk = (char*)"";
+    while(true) {
+        if( to_write == cg->height ) {
+            scrollUp();
+        }
+        int wy = cg->height - 1 - to_write;
+        cg->printf(0, wy, c, "%s", tk );
+        to_write ++;
+        if( to_write == cg->height ) {        
+            to_write = cg->height - 1;
+        }
+        tk = strtok(NULL,"\n");
+        if(!tk)break;
     }
-    int wy = cg->height - 1 - to_write;
-    cg->printf(0, wy, c, "%s", s );
-    to_write ++;
-    if( to_write == cg->height ) {        
-        to_write = cg->height - 1;
-    }
+
+    FREE(work);
 }
 
 void CharGridTextArea::fillBG( int ind ) {
