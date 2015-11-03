@@ -40,7 +40,7 @@ public:
     void setNetworkId( int cliid, int intid ) { client_id = cliid; internal_id = intid; }
     bool isRemote() { return client_id; }
     bool isLocal() { return client_id==0;}
-
+    virtual bool onWorldOut() {return false;} // REturn false to clean this character, true to keep
 };
 
 
@@ -71,6 +71,9 @@ public:
     Debris( Vec2 lc, int index, int client_id=0, int internal_id=0 );
     void init(int ind);
     virtual bool charPoll( double dt );
+    void bounce( double dt );
+    virtual bool onWorldOut();
+    
 };
 
 

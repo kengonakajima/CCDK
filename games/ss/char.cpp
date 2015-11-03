@@ -29,7 +29,9 @@ Char::~Char() {
 bool Char::prop2DPoll( double dt ) {
     if( charPoll(dt) == false ) return false;
     if( clean_at > 0 && accum_time > clean_at ) return false;
-    if( loc.x < 0 ||  loc.x > g_fld->loc_max.x || loc.y < 0 || loc.y > g_fld->loc_max.y  ) return false;
+    if( loc.x < 0 ||  loc.x > g_fld->loc_max.x || loc.y < 0 || loc.y > g_fld->loc_max.y  ) {
+        return onWorldOut();
+    }
     return true;
 }
 Vec2 Char::calcNextLoc( Vec2 from, Vec2 nextloc, float body_size, bool enemy, bool flying, bool swimming, BLOCKTYPE bt_can_enter ) {
@@ -327,6 +329,29 @@ void Debris::init( int ind ) {
         setFragmentShader( g_eye_col_replacer );
     }
 }
+bool Debris::onWorldOut() {
+    if( loc.x < 0 || loc.x >= g_fld->loc_max.x ) v.x *= -1;
+    if( loc.y < 0 || loc.y >= g_fld->loc_max.y ) v.y *= -1;
+    return true;
+}
+void Debris::bounce(double dt) {
+    // Just reversing. First X and then Y
+    bool xhit=false, yhit=false;
+    Vec2 nxloc = loc + Vec2( v.x * dt, 0 );
+    Cell *nxc = g_fld->get(nxloc);
+        
+    if( (!nxc) || nxc->isWall(false)) {
+        v.x *= -1;
+        xhit = true;
+    }
+    Vec2 nyloc = loc + Vec2( 0, v.y * dt );
+    Cell *nyc = g_fld->get(nyloc);
+    if( (!nyc) || nyc->isWall(false) ) {
+        v.y *= -1;
+        yhit = true;
+    }
+    if( xhit && yhit ) v *= 0;
+}
 
 bool Debris::charPoll( double dt ) {
     if( falling_to_pit ) {
@@ -348,22 +373,7 @@ bool Debris::charPoll( double dt ) {
     Cell *c = g_fld->get(nextloc);
     
     if( c && c->isWall(false) ) {
-        // Just reversing. First X and then Y
-        bool xhit=false, yhit=false;
-        Vec2 nxloc = loc + Vec2( v.x * dt, 0 );
-        Cell *nxc = g_fld->get(nxloc);
-        
-        if( (!nxc) || nxc->isWall(false)) {
-            v.x *= -1;
-            xhit = true;
-        }
-        Vec2 nyloc = loc + Vec2( 0, v.y * dt );
-        Cell *nyc = g_fld->get(nyloc);
-        if( (!nyc) || nyc->isWall(false) ) {
-            v.y *= -1;
-            yhit = true;
-        }
-        if( xhit && yhit ) v *= 0;
+        bounce(dt);
     } else if(c && c->gt == GT_PIT ) {
         Cell *cells[4];
         g_fld->getCorner4(loc, PPC/3, &cells[0], &cells[1], &cells[2], &cells[3] );
