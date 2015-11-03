@@ -2952,7 +2952,7 @@ void ProjectInfoWindow::selectAtCursor() {
     } else if( curp == share_tb ) {
         if( pinfo.owner_uid == g_user_id ) {
             if( share_tb->isEqual( "SHARE",5 ) ) {
-                hudShowConfirmProjectInfoMessage( "ARE YOU SURE TO SHARE?", share_project_confirm_callback );
+                hudShowConfirmProjectInfoMessage( "ARE YOU SURE YOU WANT TO SHARE?", share_project_confirm_callback );
             } else if( share_tb->isEqual( "STOP", 4) ) {
                 hudShowConfirmProjectInfoMessage( "ARE YOU SURE TO STOP SHARING?", stop_share_project_confirm_callback );
             }
