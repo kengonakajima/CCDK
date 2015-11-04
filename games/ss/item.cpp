@@ -194,7 +194,7 @@ void setupItemConf(){
     item_confs[ind].addResearchIngredient( ITT_DARK_MATTER_PARTICLE, 1 );
     ind++;
     
-    item_confs[ind] = ItemConf( ITT_SHOVEL, 1, "SNOW SHOVEL", g_base_deck, B_ATLAS_ITEM_SHOVEL, 1, false );
+    item_confs[ind] = ItemConf( ITT_SHOVEL, 1, "SHOVEL", g_base_deck, B_ATLAS_ITEM_SHOVEL, 1, false );
     item_confs[ind].addIngredient( ITT_IRON_PLATE, 10 );
     item_confs[ind].dur = 500;
     item_confs[ind].required_ene = 50;
