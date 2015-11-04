@@ -175,5 +175,9 @@ typedef enum {
     BST_DEFENDER = 7,
 } BOSSTYPE;
 
+typedef enum {
+    RESPAWN_KILLED = 1,
+    RESPAWN_RECALLED = 2,
+} RESPAWNMODE;
 
 #endif

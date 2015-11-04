@@ -138,6 +138,7 @@ Sound *g_slimejump_sound;
 Sound *g_shoottornado_sound;
 Sound *g_birdfly_sound;
 Sound *g_abandon_sound;
+Sound *g_recall_sound;
 
 int g_last_render_cnt ;
 float g_zoom_rate = 2.0f;
@@ -1684,6 +1685,7 @@ int moaiMain( int argc, char **argv ){
     g_shoottornado_sound = g_sound_system->newSound( "sounds/shoottornado.wav", 1, false ); // bird shoot tornado
     g_birdfly_sound = g_sound_system->newSound( "sounds/birdfly.wav", 1, false ); // bird flies
     g_abandon_sound = g_sound_system->newSound( "sounds/abandon.wav", 1, false ); // abandon item
+    g_recall_sound = g_sound_system->newSound( "sounds/pcrecall.wav", 1, false ); // recall and respawn
     
     // moyai
     g_moyai_client = new MoyaiClient();

@@ -9,8 +9,8 @@
 #include "ids.h"
 #include "conf.h"
 #include "item.h"
-#include "hud.h"
 #include "char.h"
+#include "hud.h"
 #include "pc.h"
 #include "util.h"
 #include "field.h"
@@ -1447,6 +1447,7 @@ public:
     ITEMTYPE equip_itt;
     int ene,maxene,hp,maxhp;
     int died;
+    int recalled;
     int warping;
     PCSyncPacket(PC *pc) : CharSyncPacket(pc),
                            shoot_sound_index(pc->shoot_sound_index),
@@ -1459,6 +1460,7 @@ public:
         ItemConf *itc = pc->items[pc->selected_item_index].conf;
         if(itc) equip_itt = itc->itt; else equip_itt = ITT_EMPTY;
         died = pc->died_at > 0;
+        recalled = pc->recalled_at > 0;
     }
 };
 
@@ -2056,6 +2058,11 @@ int ssproto_nearcast_notify_recv( conn_t _c, int channel_id, int sender_cli_id, 
                 if( pc->died_at == 0 ) pc->died_at = pc->accum_time;
             } else {
                 if( pc->died_at > 0 ) pc->died_at = 0;
+            }
+            if( pkt->recalled ) {
+                if( pc->recalled_at == 0 ) pc->recalled_at = pc->accum_time;
+            } else {
+                if( pc->recalled_at > 0 ) pc->recalled_at = 0;
             }
             pc->last_network_update_at = pc->accum_time;
             ensurePartyIndicator( pkt->client_id, pkt->loc, pkt->face_base_index, pkt->hair_base_index );

@@ -20,7 +20,7 @@
 
 
 
-PC::PC(Vec2 lc) : Char(CAT_PC, lc, g_base_deck, g_char_layer ), ItemOwner(PC_ITEM_NUM, 1), ideal_v(0,0), dir(DIR_DOWN), body_size(8), shoot_v(0,0), selected_item_index(PC_SUIT_NUM), last_charge_at(0), enable_ai(false), warping(false), warp_dir(DIR_NONE), knockback_until(0), knockback_v(0,0), enable_hpbar(false), enable_enebar(false), equip_prop(NULL), died_at(0), total_milestone_cleared(0), shoot_sound_index(0), last_network_update_at(0), energy_chain_heat_count(0), score(0), recovery_count_left(PC_RECOVERY_COUNT_MAX), nktb(NULL), last_insert_history_at(0) {
+PC::PC(Vec2 lc) : Char(CAT_PC, lc, g_base_deck, g_char_layer ), ItemOwner(PC_ITEM_NUM, 1), ideal_v(0,0), dir(DIR_DOWN), body_size(8), shoot_v(0,0), selected_item_index(PC_SUIT_NUM), last_charge_at(0), enable_ai(false), warping(false), warp_dir(DIR_NONE), knockback_until(0), knockback_v(0,0), enable_hpbar(false), enable_enebar(false), equip_prop(NULL), died_at(0), recalled_at(0), total_milestone_cleared(0), shoot_sound_index(0), last_network_update_at(0), energy_chain_heat_count(0), score(0), recovery_count_left(PC_RECOVERY_COUNT_MAX), nktb(NULL), last_insert_history_at(0) {
     tex_epsilon=0;
     priority = PRIO_CHAR;
 
@@ -151,7 +151,7 @@ bool PC::charPoll( double dt ) {
         }
         // Equipment is not visible during warping
         equip_prop->setVisible(false);
-    } else if( died_at == 0 ) {
+    } else if( died_at == 0 && recalled_at == 0 ) {
         setIndex(-1);
         bool walking = (d != DIR_NONE);
         body_prop->setXFlip( false );
@@ -429,7 +429,8 @@ bool PC::charPoll( double dt ) {
         body_prop->setColor( Color(1,1,1,1));
         face_prop->setColor( Color(1,1,1,1));
         hair_prop->setColor( Color(1,1,1,1));
-    } else if( accum_time > died_at && accum_time < died_at + 3 ) {
+    } else if( died_at > 0 && accum_time > died_at && accum_time < died_at + RESPAWN_DELAY_SEC ) {
+        // Die effect
         body_prop->setIndex( body_base_index+3);
         face_prop->setIndex( face_base_index+1);
         hair_prop->setIndex( hair_base_index+1);
@@ -440,9 +441,30 @@ bool PC::charPoll( double dt ) {
         body_prop->setColor( Color(1,0.4,0.4,1) );
         face_prop->setColor( Color(1,0.4,0.4,1) );
         hair_prop->setColor( Color(1,0.4,0.4,1) );
+    } else if( recalled_at > 0 && accum_time > recalled_at && accum_time < recalled_at + RESPAWN_DELAY_SEC ) {
+        // Recall effect
+        int m = (int)( accum_time * 20 ) % 2;
+        if(m) createSpark( loc + Vec2(0,0).randomize(30).normalize( range(0,40) ), 1 );
+        int mm = (int)( accum_time * 10 ) % 2;
+        Color blue(0,1,0.5,0.7), normal(1,1,1,0.7);
+        if(mm) {
+            body_prop->setColor(blue);
+            face_prop->setColor(blue);
+            hair_prop->setColor(blue);
+        } else {
+            body_prop->setColor(normal);
+            face_prop->setColor(normal);
+            hair_prop->setColor(normal);            
+        }
     } else {
-        respawn();
+        g_abandon_sound->play();
+        if( died_at > 0 ) {
+            respawn( RESPAWN_KILLED );            
+        } else if( recalled_at > 0 ) {
+            respawn( RESPAWN_RECALLED );
+        }
     }
+     
 
     // Edge of the world
     float mgn = body_size * 1.3;
@@ -695,18 +717,17 @@ void PC::onAttacked( int dmg, Enemy *e ) {
     onStatusUpdated();
 }
 
-void PC::suicide() {
-    hp = 0;
-    died_at = accum_time;
-    onStatusUpdated();
+void PC::recall() {
+    recalled_at = accum_time;
 }
-void PC::respawn() {
+void PC::respawn( RESPAWNMODE mode ) {
     Pos2 p = g_fld->getRespawnPoint();
     loc = Vec2( p.x*PPC,p.y*PPC);
     clearHistory(loc);
     hp = maxhp;
     died_at = 0;
-    hudKilledMessage(nickname, true);
+    recalled_at = 0;
+    hudRespawnMessage(nickname, mode, true);
 }
 
 // Returns how much energy is charged
@@ -1133,7 +1154,7 @@ bool LocalPC::tryAction( Vec2 direction ) {
     if( isDBNetworkActive() && g_fld->getChunkLoadState( vec2ToPos2(loc)) != CHUNKLOADSTATE_LOADED ) return false;
     
     if( knockback_until > accum_time ) return false;
-    if( died_at > 0 ) return false;
+    if( died_at > 0 || recalled_at > 0 ) return false;    
     if( items[selected_item_index].isEmpty() ) return false;
     ItemConf *itc = items[selected_item_index].conf;
     if(!itc) return false;

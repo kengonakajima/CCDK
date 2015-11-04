@@ -170,4 +170,6 @@
 
 #define PC_RECOVERY_COUNT_MAX 5
 
+#define RESPAWN_DELAY_SEC 3
+
 #endif

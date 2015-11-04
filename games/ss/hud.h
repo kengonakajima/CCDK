@@ -855,7 +855,7 @@ void hudUpdateMilestone( int cleared );
 void hudMilestoneMessage( const char *nick, int cnt, bool write_db );
 void hudFortressDestroyMessage( const char *nick, int size, bool write_db );
 void hudCoreDestroyMessage( const char *nick, bool write_db );
-void hudKilledMessage( const char *nick, bool write_db );
+void hudRespawnMessage( const char *nick, RESPAWNMODE mode, bool write_db );
     
 void hudCongratulateProjectIsOver();
 void hudShowErrorMessage( const char *caption, const char *msg, void (*cbfunc)( bool positive) );

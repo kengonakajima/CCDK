@@ -103,6 +103,7 @@ extern Sound *g_slimejump_sound;
 extern Sound *g_shoottornado_sound;
 extern Sound *g_birdfly_sound;
 extern Sound *g_abandon_sound;
+extern Sound *g_recall_sound;
 
 extern AnimCurve *g_digsmoke_curve;
 extern AnimCurve *g_spark_curve;

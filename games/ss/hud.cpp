@@ -3513,11 +3513,15 @@ void hudCoreDestroyMessage( const char *nick, bool write_db ) {
         dbAppendProjectStatus( g_current_project_id, f.buf );
     }
 }
-void hudKilledMessage( const char *nick, bool write_db ) {
-    Format f("%s KILLED BY ENEMY", nick );
+void hudRespawnMessage( const char *nick, RESPAWNMODE mode, bool write_db ) {
+    char *fmt;
+    switch(mode) {
+    case RESPAWN_KILLED: fmt = (char*)"%s KILLED BY ENEMY ATTACK"; break;
+    case RESPAWN_RECALLED: fmt = (char*)"%s RECALLED"; break;
+    }
+    Format f( fmt, nick );
     g_log->printf( WHITE, f.buf );
     if(write_db) {
-        Format f( "KILLED: %s", nick );
         dbAppendProjectStatus( g_current_project_id, f.buf );
     }
 }
@@ -3663,7 +3667,7 @@ void SpecialMenuWindow::setupMenu() {
     }
     options[0]->setString( WHITE, "RESUME" );
     options[1]->setString( WHITE, "LEAVE THIS PROJECT" );
-    options[2]->setString( WHITE, "SUICIDE");
+    options[2]->setString( WHITE, "RECALL");
     if( g_enable_debug_menu ) options[3]->setString( WHITE, "DEBUG MENU" );
     
     update();
@@ -3730,8 +3734,9 @@ void SpecialMenuWindow::selectAtCursor() {
     } else if( options[cursor_at]->isEqual( "DEBUG MENU", 10 ) ) {
         hide();
         g_debugwin->show();
-    } else if( options[cursor_at]->isEqual( "SUICIDE", 7 ) ) {
-        g_pc->suicide();
+    } else if( options[cursor_at]->isEqual( "RECALL", 7 ) ) {
+        g_recall_sound->play();
+        g_pc->recall();
         hide();
     }
 }

@@ -4,6 +4,8 @@
 class Debris;
 class Enemy;
 
+
+
 class PCDump {
 public:
     int shoot_sound_index;
@@ -64,6 +66,7 @@ public:
     Prop2D *hair_prop; //
 
     double died_at;
+    double recalled_at;
 
     // stats
     int total_milestone_cleared;
@@ -127,8 +130,8 @@ public:
     Vec2 getFromHistory();
     bool findAcceleratorInSuit();
     float getShootIntervalSec();
-    void respawn();
-    void suicide();
+    void respawn( RESPAWNMODE mode );
+    void recall();
     void abandonItem( int ind );
     
     static Vec2 calcEquipPosition(DIR d);
