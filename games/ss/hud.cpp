@@ -2955,6 +2955,9 @@ void ProjectInfoWindow::selectAtCursor() {
                 hudShowConfirmProjectInfoMessage( "ARE YOU SURE YOU WANT TO SHARE?", share_project_confirm_callback );
             } else if( share_tb->isEqual( "STOP", 4) ) {
                 hudShowConfirmProjectInfoMessage( "ARE YOU SURE TO STOP SHARING?", stop_share_project_confirm_callback );
+            } else {
+                // MAKE FRIENDS..
+                result_ok = false;
             }
         } else {
             result_ok = false;
@@ -2990,7 +2993,12 @@ void ProjectInfoWindow::update() {
     // Button Textboxes
     delete_tb->setString( WHITE, "DELETE" );
     if( dbCheckProjectIsSharedByOwner( project_id, g_user_id) == false  ) {
-        share_tb->setString( WHITE, Format( "SHARE WITH %d FRIENDS", countFriends() ).buf );
+        int friend_num = countFriends();
+        if( friend_num > 0 ) {
+            share_tb->setString( WHITE, Format( "SHARE WITH %d FRIENDS", friend_num ).buf );
+        } else {
+            share_tb->setString( RED, "MAKE FRIENDS TO SHARE" );            
+        }
     } else {
         share_tb->setString( WHITE, Format( "STOP SHARING" ).buf );
     }
